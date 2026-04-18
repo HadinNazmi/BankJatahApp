@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="6dp"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="3dp"
+    app:cardBackgroundColor="@color/white">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- Foto Produk -->
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="100dp"
+            android:background="@color/orange_light">
+
+            <ImageView
+                android:id="@+id/ivFotoProduk"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop"
+                android:visibility="gone" />
+
+            <!-- Placeholder kalau tidak ada foto -->
+            <ImageView
+                android:id="@+id/ivPlaceholder"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_gravity="center"
+                android:src="@android:drawable/ic_menu_gallery"
+                android:alpha="0.4" />
+
+            <!-- Badge stok habis -->
+            <TextView
+                android:id="@+id/tvStokHabis"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Habis"
+                android:textSize="10sp"
+                android:textColor="@color/white"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
+                android:paddingTop="3dp"
+                android:paddingBottom="3dp"
+                android:background="@drawable/ic_bg_status_gagal"
+                android:layout_gravity="top|end"
+                android:layout_margin="8dp"
+                android:visibility="gone" />
+
+        </FrameLayout>
+
+        <!-- Info Produk -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="10dp">
+
+            <TextView
+                android:id="@+id/tvNamaProduk"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Nama Produk"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:textColor="@color/black"
+                android:fontFamily="@font/poppins_semibold"
+                android:maxLines="2"
+                android:ellipsize="end" />
+
+            <!-- Poin dibutuhkan -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginTop="4dp">
+
+                <ImageView
+                    android:layout_width="14dp"
+                    android:layout_height="14dp"
+                    android:src="@drawable/ic_koin"
+                    android:scaleType="centerInside" />
+
+                <TextView
+                    android:id="@+id/tvPoin"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="0 poin"
+                    android:textSize="11sp"
+                    android:textColor="@color/orange_primary"
+                    android:fontFamily="@font/poppins_semibold"
+                    android:layout_marginStart="4dp" />
+
+                <TextView
+                    android:id="@+id/tvStok"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Stok 0"
+                    android:textSize="10sp"
+                    android:textColor="@color/gray_text"
+                    android:fontFamily="@font/poppins_regular" />
+
+            </LinearLayout>
+
+            <!-- Tombol Tukar -->
+            <Button
+                android:id="@+id/btnTukar"
+                android:layout_width="match_parent"
+                android:layout_height="34dp"
+                android:text="Tukar"
+                android:textSize="12sp"
+                android:textColor="@color/white"
+                android:fontFamily="@font/poppins_semibold"
+                android:backgroundTint="@color/orange_primary"
+                android:layout_marginTop="8dp"
+                app:cornerRadius="8dp" />
+
+        </LinearLayout>
+    </LinearLayout>
+</androidx.cardview.widget.CardView>

@@ -1,0 +1,560 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingBottom="40dp">
+
+        <!-- HEADER -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/white"
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp"
+            android:paddingTop="16dp"
+            android:paddingBottom="16dp">
+
+            <ImageView
+                android:id="@+id/btnBack"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:src="@drawable/ic_back"
+                android:scaleType="centerInside"
+                android:clickable="true"
+                android:focusable="true"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Request Penarikan"
+                android:textSize="17sp"
+                android:textStyle="bold"
+                android:textColor="@color/black"
+                android:fontFamily="@font/poppins_bold"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <!-- CARD PILIH JENIS SALDO -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_marginEnd="20dp"
+            android:layout_marginTop="16dp"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="4dp"
+            app:cardBackgroundColor="@color/white">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Pilih Jenis Saldo"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/black"
+                    android:fontFamily="@font/poppins_semibold"
+                    android:layout_marginBottom="12dp" />
+
+                <!-- Opsi Saldo Tabungan -->
+                <LinearLayout
+                    android:id="@+id/optionTabungan"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:background="@drawable/ic_bg_tab_active"
+                    android:padding="14dp"
+                    android:layout_marginBottom="8dp"
+                    android:clickable="true"
+                    android:focusable="true">
+
+                    <RadioButton
+                        android:id="@+id/radioTabungan"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:checked="true"
+                        android:buttonTint="@color/white" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical"
+                        android:layout_marginStart="10dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Saldo Tabungan"
+                            android:textSize="13sp"
+                            android:textStyle="bold"
+                            android:textColor="@color/white"
+                            android:fontFamily="@font/poppins_semibold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Dari hasil setor minyak sebagai nasabah"
+                            android:textSize="11sp"
+                            android:textColor="#CCFFFFFF"
+                            android:fontFamily="@font/poppins_regular" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/tvSaldoTabunganNilai"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Rp 0"
+                        android:textSize="13sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/white"
+                        android:fontFamily="@font/poppins_bold" />
+                </LinearLayout>
+
+                <!-- Opsi Saldo Komisi -->
+                <LinearLayout
+                    android:id="@+id/optionKomisi"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:background="@drawable/ic_bg_tab_inactive"
+                    android:padding="14dp"
+                    android:clickable="true"
+                    android:focusable="true">
+
+                    <RadioButton
+                        android:id="@+id/radioKomisi"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:checked="false"
+                        android:buttonTint="@color/orange_primary" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical"
+                        android:layout_marginStart="10dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Saldo Komisi"
+                            android:textSize="13sp"
+                            android:textStyle="bold"
+                            android:textColor="@color/black"
+                            android:fontFamily="@font/poppins_semibold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Dari komisi penerimaan setoran nasabah"
+                            android:textSize="11sp"
+                            android:textColor="@color/gray_text"
+                            android:fontFamily="@font/poppins_regular" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/tvSaldoKomisiNilai"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Rp 0"
+                        android:textSize="13sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/black"
+                        android:fontFamily="@font/poppins_bold" />
+                </LinearLayout>
+
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <!-- CARD INFO SALDO DIPILIH -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_marginEnd="20dp"
+            android:layout_marginTop="12dp"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="4dp"
+            app:cardBackgroundColor="@color/orange_primary">
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="16dp">
+
+                <TextView
+                    android:id="@+id/tvJenisSaldoLabel"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:text="Saldo Tabungan Tersedia"
+                    android:textSize="12sp"
+                    android:textColor="#CCFFFFFF"
+                    android:fontFamily="@font/poppins_regular"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <TextView
+                    android:id="@+id/tvSaldoTersedia"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:text="Rp 0"
+                    android:textSize="28sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/white"
+                    android:fontFamily="@font/poppins_bold"
+                    android:layout_marginTop="4dp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/tvJenisSaldoLabel" />
+
+                <TextView
+                    android:id="@+id/tvMinimumInfo"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:text="Minimum penarikan: Rp 50.000"
+                    android:textSize="11sp"
+                    android:textColor="#CCFFFFFF"
+                    android:fontFamily="@font/poppins_regular"
+                    android:layout_marginTop="6dp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/tvSaldoTersedia"
+                    app:layout_constraintBottom_toBottomOf="parent" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+        </androidx.cardview.widget.CardView>
+
+        <!-- CARD FORM NOMINAL -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_marginEnd="20dp"
+            android:layout_marginTop="12dp"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="4dp"
+            app:cardBackgroundColor="@color/white">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Jumlah Penarikan"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/black"
+                    android:fontFamily="@font/poppins_semibold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Masukkan nominal yang ingin ditarik (min. Rp 50.000)"
+                    android:textSize="11sp"
+                    android:textColor="@color/gray_text"
+                    android:fontFamily="@font/poppins_regular"
+                    android:layout_marginTop="2dp"
+                    android:layout_marginBottom="10dp" />
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/tilNominal"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:boxCornerRadiusTopStart="10dp"
+                    app:boxCornerRadiusTopEnd="10dp"
+                    app:boxCornerRadiusBottomStart="10dp"
+                    app:boxCornerRadiusBottomEnd="10dp"
+                    app:boxStrokeColor="@color/orange_primary"
+                    app:prefixText="Rp "
+                    app:prefixTextColor="@color/gray_text"
+                    app:hintEnabled="false">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etNominal"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="0"
+                        android:textSize="18sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/black"
+                        android:fontFamily="@font/poppins_bold"
+                        android:inputType="number" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <TextView
+                    android:id="@+id/tvWarningNominal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="⚠ Nominal melebihi saldo tersedia"
+                    android:textSize="11sp"
+                    android:textColor="#E53935"
+                    android:fontFamily="@font/poppins_regular"
+                    android:layout_marginTop="4dp"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Pilih cepat:"
+                    android:textSize="11sp"
+                    android:textColor="@color/gray_text"
+                    android:fontFamily="@font/poppins_regular"
+                    android:layout_marginTop="12dp" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="6dp">
+
+                    <Button android:id="@+id/btn50k"
+                        android:layout_width="0dp" android:layout_height="36dp" android:layout_weight="1"
+                        android:layout_marginEnd="6dp" android:text="50rb" android:textSize="12sp"
+                        android:textColor="@color/orange_primary" android:backgroundTint="#FFF3E0"
+                        android:fontFamily="@font/poppins_semibold" app:cornerRadius="8dp" />
+
+                    <Button android:id="@+id/btn100k"
+                        android:layout_width="0dp" android:layout_height="36dp" android:layout_weight="1"
+                        android:layout_marginEnd="6dp" android:text="100rb" android:textSize="12sp"
+                        android:textColor="@color/orange_primary" android:backgroundTint="#FFF3E0"
+                        android:fontFamily="@font/poppins_semibold" app:cornerRadius="8dp" />
+
+                    <Button android:id="@+id/btn500k"
+                        android:layout_width="0dp" android:layout_height="36dp" android:layout_weight="1"
+                        android:layout_marginEnd="6dp" android:text="500rb" android:textSize="12sp"
+                        android:textColor="@color/orange_primary" android:backgroundTint="#FFF3E0"
+                        android:fontFamily="@font/poppins_semibold" app:cornerRadius="8dp" />
+
+                    <Button android:id="@+id/btnSemua"
+                        android:layout_width="0dp" android:layout_height="36dp" android:layout_weight="1"
+                        android:text="Semua" android:textSize="12sp"
+                        android:textColor="@color/orange_primary" android:backgroundTint="#FFF3E0"
+                        android:fontFamily="@font/poppins_semibold" app:cornerRadius="8dp" />
+                </LinearLayout>
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <!-- CARD REKENING TUJUAN -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_marginEnd="20dp"
+            android:layout_marginTop="12dp"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="4dp"
+            app:cardBackgroundColor="@color/white">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Rekening Tujuan Transfer"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/black"
+                    android:fontFamily="@font/poppins_semibold"
+                    android:layout_marginBottom="14dp" />
+
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="Bank" android:textSize="12sp"
+                    android:textColor="@color/black" android:fontFamily="@font/poppins_semibold" />
+
+                <Spinner android:id="@+id/spinnerBank"
+                    android:layout_width="match_parent" android:layout_height="52dp"
+                    android:layout_marginTop="6dp" android:layout_marginBottom="14dp"
+                    android:background="@drawable/ic_bg_tab_inactive" android:padding="12dp" />
+
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="Nomor Rekening" android:textSize="12sp"
+                    android:textColor="@color/black" android:fontFamily="@font/poppins_semibold" />
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/tilNoRekening"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp" android:layout_marginBottom="14dp"
+                    app:boxCornerRadiusTopStart="10dp" app:boxCornerRadiusTopEnd="10dp"
+                    app:boxCornerRadiusBottomStart="10dp" app:boxCornerRadiusBottomEnd="10dp"
+                    app:boxStrokeColor="@color/orange_primary" app:hintEnabled="false">
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etNoRekening"
+                        android:layout_width="match_parent" android:layout_height="wrap_content"
+                        android:hint="Contoh: 1234567890"
+                        android:textSize="14sp" android:textColor="@color/black"
+                        android:fontFamily="@font/poppins_regular" android:inputType="number" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="Nama Pemilik Rekening" android:textSize="12sp"
+                    android:textColor="@color/black" android:fontFamily="@font/poppins_semibold" />
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/tilNamaPemilik"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    android:layout_width="match_parent" android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    app:boxCornerRadiusTopStart="10dp" app:boxCornerRadiusTopEnd="10dp"
+                    app:boxCornerRadiusBottomStart="10dp" app:boxCornerRadiusBottomEnd="10dp"
+                    app:boxStrokeColor="@color/orange_primary" app:hintEnabled="false">
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etNamaPemilik"
+                        android:layout_width="match_parent" android:layout_height="wrap_content"
+                        android:hint="Sesuai nama di buku tabungan"
+                        android:textSize="14sp" android:textColor="@color/black"
+                        android:fontFamily="@font/poppins_regular"
+                        android:inputType="textPersonName|textCapWords" />
+                </com.google.android.material.textfield.TextInputLayout>
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <!-- CARD RINGKASAN -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/cardRingkasan"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_marginEnd="20dp"
+            android:layout_marginTop="12dp"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="4dp"
+            app:cardBackgroundColor="@color/white"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="wrap_content" android:layout_height="wrap_content"
+                    android:text="Ringkasan Penarikan" android:textSize="13sp" android:textStyle="bold"
+                    android:textColor="@color/black" android:fontFamily="@font/poppins_semibold"
+                    android:layout_marginBottom="12dp" />
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent" android:layout_height="wrap_content">
+                    <TextView android:layout_width="0dp" android:layout_height="wrap_content"
+                        android:text="Jumlah Tarik" android:textSize="13sp"
+                        android:textColor="@color/gray_text" android:fontFamily="@font/poppins_regular"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintEnd_toStartOf="@+id/tvRingkasanJumlah"
+                        app:layout_constraintTop_toTopOf="parent" />
+                    <TextView android:id="@+id/tvRingkasanJumlah"
+                        android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:text="Rp 0" android:textSize="13sp" android:textStyle="bold"
+                        android:textColor="@color/black" android:fontFamily="@font/poppins_semibold"
+                        app:layout_constraintEnd_toEndOf="parent" app:layout_constraintTop_toTopOf="parent" />
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+                <View android:layout_width="match_parent" android:layout_height="1dp"
+                    android:background="@color/gray_border" android:layout_marginTop="10dp" android:layout_marginBottom="10dp" />
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent" android:layout_height="wrap_content">
+                    <TextView android:layout_width="0dp" android:layout_height="wrap_content"
+                        android:text="Biaya Admin" android:textSize="13sp"
+                        android:textColor="@color/gray_text" android:fontFamily="@font/poppins_regular"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintEnd_toStartOf="@+id/tvRingkasanBiaya"
+                        app:layout_constraintTop_toTopOf="parent" />
+                    <TextView android:id="@+id/tvRingkasanBiaya"
+                        android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:text="Gratis" android:textSize="13sp"
+                        android:textColor="@color/gray_text" android:fontFamily="@font/poppins_regular"
+                        app:layout_constraintEnd_toEndOf="parent" app:layout_constraintTop_toTopOf="parent" />
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+                <View android:layout_width="match_parent" android:layout_height="1dp"
+                    android:background="@color/gray_border" android:layout_marginTop="10dp" android:layout_marginBottom="10dp" />
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent" android:layout_height="wrap_content">
+                    <TextView android:layout_width="0dp" android:layout_height="wrap_content"
+                        android:text="Total Diterima" android:textSize="14sp" android:textStyle="bold"
+                        android:textColor="@color/black" android:fontFamily="@font/poppins_semibold"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintEnd_toStartOf="@+id/tvRingkasanBersih"
+                        app:layout_constraintTop_toTopOf="parent" />
+                    <TextView android:id="@+id/tvRingkasanBersih"
+                        android:layout_width="wrap_content" android:layout_height="wrap_content"
+                        android:text="Rp 0" android:textSize="14sp" android:textStyle="bold"
+                        android:textColor="@color/orange_primary" android:fontFamily="@font/poppins_bold"
+                        app:layout_constraintEnd_toEndOf="parent" app:layout_constraintTop_toTopOf="parent" />
+                </androidx.constraintlayout.widget.ConstraintLayout>
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <!-- INFO PROSES -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:background="#EEF2FF"
+            android:padding="14dp"
+            android:layout_marginStart="20dp"
+            android:layout_marginEnd="20dp"
+            android:layout_marginTop="12dp">
+
+            <ImageView android:layout_width="18dp" android:layout_height="18dp"
+                android:src="@android:drawable/ic_menu_info_details"
+                android:scaleType="centerInside" android:layout_marginTop="2dp" />
+
+            <TextView android:layout_width="0dp" android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Proses transfer membutuhkan waktu 1x24 jam kerja. Status dapat dipantau di menu Riwayat."
+                android:textSize="11sp" android:textColor="@color/black"
+                android:fontFamily="@font/poppins_regular" android:layout_marginStart="8dp" />
+        </LinearLayout>
+
+        <!-- TOMBOL AJUKAN -->
+        <Button
+            android:id="@+id/btnAjukanPenarikan"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:text="Ajukan Penarikan"
+            android:textSize="15sp"
+            android:textColor="@color/white"
+            android:fontFamily="@font/poppins_semibold"
+            android:backgroundTint="@color/orange_primary"
+            android:layout_marginStart="20dp"
+            android:layout_marginEnd="20dp"
+            android:layout_marginTop="20dp"
+            app:cornerRadius="14dp" />
+
+    </LinearLayout>
+</ScrollView>

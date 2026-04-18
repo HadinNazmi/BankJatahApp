@@ -1,0 +1,55 @@
+# Built application files
+*.apk
+*.aab
+*.ap_
+
+# Java/Kotlin class files
+*.class
+
+# Generated files
+bin/
+gen/
+out/
+build/
+/build
+
+# Gradle files
+.gradle
+*.gradle.kts.dsl-cache
+
+# Local configuration (SDK path — WAJIB di-ignore)
+local.properties
+/local.properties
+
+# IntelliJ / Android Studio
+*.iml
+.idea/
+/.idea/caches
+/.idea/libraries
+/.idea/modules.xml
+/.idea/workspace.xml
+/.idea/navEditor.xml
+/.idea/assetWizardSettings.xml
+/.idea/gradle.xml
+/.idea/deploymentTargetDropDown.xml
+
+# macOS
+.DS_Store
+
+# Captures & profiling
+/captures
+
+# Native build
+.externalNativeBuild
+.cxx
+
+# Keystore — JANGAN pernah di-upload ke GitHub
+*.jks
+*.keystore
+release/
+
+# Google Services (Firebase)
+google-services.json
+
+# Logs
+*.log

@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="300dp"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center"
+    app:cardCornerRadius="20dp"
+    app:cardElevation="8dp"
+    app:cardBackgroundColor="@color/white">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:padding="24dp">
+
+        <!-- Judul -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="QR Identitas Nasabah"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="@color/black"
+            android:fontFamily="@font/poppins_bold" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Tunjukkan QR ini ke petugas saat setoran"
+            android:textSize="12sp"
+            android:textColor="@color/gray_text"
+            android:fontFamily="@font/poppins_regular"
+            android:gravity="center"
+            android:layout_marginTop="4dp" />
+
+        <!-- QR Code -->
+        <ImageView
+            android:id="@+id/ivQrCode"
+            android:layout_width="220dp"
+            android:layout_height="220dp"
+            android:layout_marginTop="20dp"
+            android:scaleType="fitCenter" />
+
+        <!-- Nama nasabah -->
+        <TextView
+            android:id="@+id/tvNamaQr"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Nama Nasabah"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            android:textColor="@color/black"
+            android:fontFamily="@font/poppins_bold"
+            android:layout_marginTop="16dp" />
+
+        <!-- Kode ID -->
+        <TextView
+            android:id="@+id/tvKodeId"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="ID: xxxxxxxx"
+            android:textSize="13sp"
+            android:textColor="@color/gray_text"
+            android:fontFamily="@font/poppins_regular"
+            android:layout_marginTop="4dp" />
+
+        <!-- Garis -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/gray_border"
+            android:layout_marginTop="16dp" />
+
+        <!-- Tombol Tutup -->
+        <TextView
+            android:id="@+id/btnTutupQr"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Tutup"
+            android:textSize="14sp"
+            android:textColor="@color/orange_primary"
+            android:fontFamily="@font/poppins_semibold"
+            android:paddingTop="14dp"
+            android:paddingBottom="4dp"
+            android:clickable="true"
+            android:focusable="true" />
+
+    </LinearLayout>
+</androidx.cardview.widget.CardView>

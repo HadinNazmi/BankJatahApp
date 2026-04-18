@@ -1,0 +1,274 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    tools:context=".ui.auth.LoginActivity">
+
+    <!-- Card utama -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/cardLogin"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="8dp"
+        app:cardBackgroundColor="@color/white"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/btnMasuk"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintVertical_chainStyle="packed"
+        app:layout_constraintVertical_bias="0.4">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingStart="24dp"
+            android:paddingEnd="24dp"
+            android:paddingTop="32dp"
+            android:paddingBottom="32dp">
+
+            <ImageView
+                android:id="@+id/imgLogo"
+                android:layout_width="64dp"
+                android:layout_height="64dp"
+                android:src="@drawable/bankjatahlogo"
+                android:scaleType="centerInside"
+                android:padding="12dp"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent" />
+
+            <TextView
+                android:id="@+id/tvNamaBank"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Bank Jatah Indonesia"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:textColor="@color/black"
+                android:fontFamily="@font/poppins_bold"
+                android:layout_marginTop="16dp"
+                app:layout_constraintTop_toBottomOf="@+id/imgLogo"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent" />
+
+            <TextView
+                android:id="@+id/tvSelamatDatang"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Selamat Datang"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="@color/black"
+                android:fontFamily="@font/poppins_bold"
+                android:layout_marginTop="20dp"
+                app:layout_constraintTop_toBottomOf="@+id/tvNamaBank"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent" />
+
+            <TextView
+                android:id="@+id/tvSubtitle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="Mulai menabung minyak jelantah dan dapatkan reward!"
+                android:textSize="13sp"
+                android:textColor="@color/gray_text"
+                android:fontFamily="@font/poppins_regular"
+                android:gravity="center"
+                android:layout_marginTop="6dp"
+                app:layout_constraintTop_toBottomOf="@+id/tvSelamatDatang"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent" />
+
+            <TextView
+                android:id="@+id/tvLabelEmail"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="Email"
+                android:textSize="13sp"
+                android:textColor="@color/black"
+                android:textStyle="bold"
+                android:fontFamily="@font/poppins_semibold"
+                android:layout_marginTop="24dp"
+                app:layout_constraintTop_toBottomOf="@+id/tvSubtitle"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent" />
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilEmail"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                app:boxCornerRadiusTopStart="10dp"
+                app:boxCornerRadiusTopEnd="10dp"
+                app:boxCornerRadiusBottomStart="10dp"
+                app:boxCornerRadiusBottomEnd="10dp"
+                app:boxStrokeColor="@color/gray_border"
+                app:hintEnabled="false"
+                app:layout_constraintTop_toBottomOf="@+id/tvLabelEmail"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etEmail"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Masukkan email"
+                    android:textSize="13sp"
+                    android:fontFamily="@font/poppins_regular"
+                    android:inputType="textEmailAddress"
+                    android:drawableEnd="@drawable/ic_email"
+                    android:drawablePadding="8dp" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <TextView
+                android:id="@+id/tvLabelPassword"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="Password"
+                android:textSize="13sp"
+                android:textColor="@color/black"
+                android:textStyle="bold"
+                android:fontFamily="@font/poppins_semibold"
+                android:layout_marginTop="16dp"
+                app:layout_constraintTop_toBottomOf="@+id/tilEmail"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent" />
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilPassword"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                app:boxCornerRadiusTopStart="10dp"
+                app:boxCornerRadiusTopEnd="10dp"
+                app:boxCornerRadiusBottomStart="10dp"
+                app:boxCornerRadiusBottomEnd="10dp"
+                app:boxStrokeColor="@color/gray_border"
+                app:hintEnabled="false"
+                app:passwordToggleEnabled="true"
+                app:layout_constraintTop_toBottomOf="@+id/tvLabelPassword"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etPassword"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Masukkan password"
+                    android:textSize="13sp"
+                    android:fontFamily="@font/poppins_regular"
+                    android:inputType="textPassword" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <TextView
+                android:id="@+id/tvLupaPassword"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Lupa Password?"
+                android:textSize="13sp"
+                android:textColor="@color/orange_primary"
+                android:fontFamily="@font/poppins_regular"
+                android:layout_marginTop="8dp"
+                app:layout_constraintTop_toBottomOf="@+id/tilPassword"
+                app:layout_constraintEnd_toEndOf="parent" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.cardview.widget.CardView>
+
+    <!-- Tombol Masuk -->
+    <Button
+        android:id="@+id/btnMasuk"
+        android:layout_width="0dp"
+        android:layout_height="52dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
+        android:layout_marginTop="16dp"
+        android:text="Masuk"
+        android:textColor="@color/white"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:fontFamily="@font/poppins_bold"
+        android:backgroundTint="@color/orange_primary"
+        android:drawableStart="@drawable/ic_button_login"
+        android:drawablePadding="8dp"
+        app:cornerRadius="12dp"
+        app:layout_constraintTop_toBottomOf="@+id/cardLogin"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/progressBar" />
+
+    <!-- ProgressBar -->
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:indeterminateTint="@color/orange_primary"
+        android:visibility="gone"
+        app:layout_constraintTop_toBottomOf="@+id/btnMasuk"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/tvBelumPunyaAkun" />
+
+    <!-- Belum punya akun -->
+    <TextView
+        android:id="@+id/tvBelumPunyaAkun"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="Belum punya akun? "
+        android:textSize="13sp"
+        android:textColor="@color/gray_text"
+        android:fontFamily="@font/poppins_regular"
+        app:layout_constraintTop_toBottomOf="@+id/progressBar"
+        app:layout_constraintEnd_toStartOf="@+id/tvDaftar"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintHorizontal_chainStyle="packed"
+        app:layout_constraintBottom_toTopOf="@+id/tvSyaratKetentuan" />
+
+    <TextView
+        android:id="@+id/tvDaftar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Daftar"
+        android:textSize="13sp"
+        android:textColor="@color/orange_primary"
+        android:textStyle="bold"
+        android:fontFamily="@font/poppins_bold"
+        app:layout_constraintTop_toTopOf="@+id/tvBelumPunyaAkun"
+        app:layout_constraintBottom_toBottomOf="@+id/tvBelumPunyaAkun"
+        app:layout_constraintStart_toEndOf="@+id/tvBelumPunyaAkun"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- Syarat dan Kebijakan (klikabel) -->
+    <TextView
+        android:id="@+id/tvSyaratKetentuan"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:layout_marginStart="32dp"
+        android:layout_marginEnd="32dp"
+        android:layout_marginBottom="24dp"
+        android:gravity="center"
+        android:textSize="11sp"
+        android:textColor="@color/gray_text"
+        android:fontFamily="@font/poppins_regular"
+        android:clickable="true"
+        android:focusable="true"
+        app:layout_constraintTop_toBottomOf="@+id/tvBelumPunyaAkun"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        tools:text="Dengan masuk, Anda menyetujui Syarat &amp; Ketentuan dan Kebijakan Privasi" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
