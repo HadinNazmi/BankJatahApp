@@ -115,7 +115,7 @@
                         app:layout_constraintTop_toTopOf="parent" />
                 </androidx.constraintlayout.widget.ConstraintLayout>
 
-                <!-- Dua card saldo: putih dengan teks orange -->
+                <!-- 2 Card putih: Saldo Tabungan + Saldo Bonus (saldo_afiliasi) -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -160,7 +160,7 @@
                         </LinearLayout>
                     </androidx.cardview.widget.CardView>
 
-                    <!-- Card Poin Reward -->
+                    <!-- Card Saldo Bonus (saldo_afiliasi) -->
                     <androidx.cardview.widget.CardView
                         android:id="@+id/cardSaldoBonus"
                         android:layout_width="0dp"
@@ -180,7 +180,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Poin Reward"
+                                android:text="Saldo Bonus"
                                 android:textColor="@color/gray_text"
                                 android:textSize="11sp"
                                 android:fontFamily="@font/poppins_regular" />
@@ -189,7 +189,7 @@
                                 android:id="@+id/tvSaldoBonus"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="0 pts"
+                                android:text="Rp 0"
                                 android:textColor="@color/orange_primary"
                                 android:textSize="16sp"
                                 android:textStyle="bold"
@@ -361,7 +361,7 @@
             android:clipToPadding="false" android:orientation="horizontal"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
 
-        <!-- CARD TOTAL SETORAN -->
+        <!-- CARD TOTAL SETORAN & LEVEL -->
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -461,7 +461,7 @@
             </androidx.constraintlayout.widget.ConstraintLayout>
         </androidx.cardview.widget.CardView>
 
-        <!-- ===== BANNER PELUANG UNIT BISNIS ===== -->
+        <!-- BANNER PELUANG UNIT BISNIS -->
         <androidx.cardview.widget.CardView
             android:id="@+id/cardAjakUnitBisnis"
             android:layout_width="match_parent"
@@ -479,7 +479,6 @@
                 android:orientation="vertical"
                 android:padding="16dp">
 
-                <!-- Badge Peluang Ekstra -->
                 <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -538,7 +537,6 @@
                     android:backgroundTint="@color/orange_primary"
                     android:layout_marginTop="14dp"
                     app:cornerRadius="12dp" />
-
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 

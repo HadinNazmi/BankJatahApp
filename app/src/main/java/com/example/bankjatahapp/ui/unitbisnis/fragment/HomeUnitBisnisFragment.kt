@@ -52,15 +52,13 @@ class HomeUnitBisnisFragment : Fragment() {
                     .select { filter { eq("id_user", idUser) } }
                     .decodeSingle<User>()
 
-                // 2. Data dompet — pakai DompetUser model (bukan regex manual)
-                // Unit bisnis punya saldo_nasabah (tabungan) + saldo_unit (komisi)
+                // 2. Data dompet — unit bisnis: saldo_nasabah + saldo_unit + saldo_afiliasi
                 val dompet = client.postgrest
                     .from("dompet_user")
                     .select { filter { eq("id_dompet", idUser) } }
                     .decodeSingle<DompetUser>()
 
                 // 3. Data nasabah_data → level + total setoran
-                // Unit bisnis juga nasabah, datanya tetap ada di nasabah_data
                 val nasabah = client.postgrest
                     .from("nasabah_data")
                     .select { filter { eq("id_nasabah", idUser) } }
@@ -90,9 +88,10 @@ class HomeUnitBisnisFragment : Fragment() {
         // Header
         binding.tvNamaUser.text = user.namaLengkap
 
-        // Saldo tabungan (saldo_nasabah) & saldo komisi (saldo_unit) dari DompetUser model
-        binding.tvSaldoTabungan.text = formatRupiah(dompet.saldoNasabah)
-        binding.tvSaldoKomisi.text   = formatRupiah(dompet.saldoUnit)
+        // 3 card saldo:
+        binding.tvSaldoTabungan.text = formatRupiah(dompet.saldoNasabah)  // saldo_nasabah
+        binding.tvSaldoKomisi.text   = formatRupiah(dompet.saldoUnit)      // saldo_unit
+        binding.tvSaldoBonus.text    = formatRupiah(dompet.saldoAfiliasi)  // saldo_afiliasi
 
         // Poin & reward
         binding.tvTotalPoin.text      = dompet.poinReward.toString()
@@ -103,7 +102,7 @@ class HomeUnitBisnisFragment : Fragment() {
         val totalKg = nasabah.totalSetoranLifetime ?: 0.0
         binding.tvSaldoMinyak.text = "$totalKg Kg"
 
-        // Level bintang dari nasabah_data
+        // Level bintang
         val level = nasabah.levelBintang ?: 1
         binding.tvLevelLabel.text = labelLevel(level)
 
@@ -150,15 +149,12 @@ class HomeUnitBisnisFragment : Fragment() {
         binding.btnRiwayat.setOnClickListener {
             (activity as? UnitBisnisActivity)?.navigateTo(R.id.nav_riwayat)
         }
-
-        // Tombol Request Penarikan → navigasi ke PenarikanUnitBisnisFragment
         binding.btnRequestPenarikan.setOnClickListener {
             parentFragmentManager.beginTransaction()
                 .replace(R.id.fragmentContainer, PenarikanUnitBisnisFragment())
                 .addToBackStack(null)
                 .commit()
         }
-
         binding.tvLihatSemua.setOnClickListener { }
         binding.ivNotifikasi.setOnClickListener { }
     }

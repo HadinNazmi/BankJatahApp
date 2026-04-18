@@ -52,7 +52,7 @@ class HomeNasabahFragment : Fragment() {
                     .select { filter { eq("id_user", idUser) } }
                     .decodeSingle<User>()
 
-                // 2. Data dompet — pakai model DompetUser langsung (tidak manual parse JSON)
+                // 2. Data dompet
                 val dompet = client.postgrest
                     .from("dompet_user")
                     .select { filter { eq("id_dompet", idUser) } }
@@ -93,11 +93,11 @@ class HomeNasabahFragment : Fragment() {
             else          -> user.role
         }
 
-        // Saldo tabungan dari DompetUser model — tidak perlu regex
+        // Card orange: Saldo Tabungan (saldo_nasabah) + Saldo Bonus (saldo_afiliasi)
         binding.tvSaldoTabungan.text = formatRupiah(dompet.saldoNasabah)
-        binding.tvSaldoBonus.text    = "${dompet.poinReward} pts"
+        binding.tvSaldoBonus.text    = formatRupiah(dompet.saldoAfiliasi)
 
-        // Poin & reward
+        // Card poin reward (tetap tampil di card bawah)
         binding.tvTotalPoin.text      = dompet.poinReward.toString()
         binding.tvRewardTersedia.text = rewardTersedia.toString()
         binding.tvInfoReward.text     = "Ada $rewardTersedia reward yang bisa kamu tukar sekarang!"
@@ -150,19 +150,14 @@ class HomeNasabahFragment : Fragment() {
         binding.btnRiwayat.setOnClickListener {
             (activity as? NasabahActivity)?.navigateTo(R.id.nav_riwayat)
         }
-
-        // Tombol Request Penarikan → navigasi ke PenarikanNasabahFragment
         binding.btnRequestPenarikan.setOnClickListener {
             parentFragmentManager.beginTransaction()
                 .replace(R.id.fragmentContainer, PenarikanNasabahFragment())
                 .addToBackStack(null)
                 .commit()
         }
-
         binding.tvLihatSemua.setOnClickListener { }
         binding.ivNotifikasi.setOnClickListener { }
-
-        // Banner daftar unit bisnis
         binding.btnDaftarUnitBisnis.setOnClickListener {
             parentFragmentManager.beginTransaction()
                 .replace(R.id.fragmentContainer, RegistrasiUnitBisnisFragment())

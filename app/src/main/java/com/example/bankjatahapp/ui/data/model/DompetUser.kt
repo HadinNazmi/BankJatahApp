@@ -24,6 +24,9 @@ data class DompetUser(
     @SerialName("poin_reward")
     val poinReward: Int = 0,
 
+    @SerialName("saldo_afiliasi")
+    val saldoAfiliasi: Double = 0.0,
+
     @SerialName("created_at")
     val createdAt: String? = null,
 
