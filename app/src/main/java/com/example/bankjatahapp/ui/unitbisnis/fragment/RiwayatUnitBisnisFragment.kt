@@ -23,12 +23,18 @@ import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import java.text.NumberFormat
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Date
 import java.util.Locale
+import java.util.TimeZone
 
 class RiwayatUnitBisnisFragment : Fragment() {
 
     private var _binding: FragmentRiwayatUnitBisnisBinding? = null
     private val binding get() = _binding!!
+
+    private var filterAktif = "semua"
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -50,8 +56,21 @@ class RiwayatUnitBisnisFragment : Fragment() {
             (activity as? UnitBisnisActivity)?.navigateTo(R.id.nav_home)
         }
         binding.btnFilter.setOnClickListener { }
-        listOf(binding.tabSemua, binding.tabMingguIni, binding.tabBulanIni).forEach { tab ->
-            tab.setOnClickListener { setActiveTab(tab); loadData() }
+
+        binding.tabSemua.setOnClickListener {
+            filterAktif = "semua"
+            setActiveTab(binding.tabSemua)
+            loadData()
+        }
+        binding.tabMingguIni.setOnClickListener {
+            filterAktif = "minggu"
+            setActiveTab(binding.tabMingguIni)
+            loadData()
+        }
+        binding.tabBulanIni.setOnClickListener {
+            filterAktif = "bulan"
+            setActiveTab(binding.tabBulanIni)
+            loadData()
         }
     }
 
@@ -67,22 +86,61 @@ class RiwayatUnitBisnisFragment : Fragment() {
         }
     }
 
+    private fun getBatasTanggal(): String? {
+        val cal = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
+        return when (filterAktif) {
+            "minggu" -> {
+                cal.add(Calendar.DAY_OF_YEAR, -7)
+                formatIso(cal.time)
+            }
+            "bulan" -> {
+                cal.set(Calendar.DAY_OF_MONTH, 1)
+                cal.set(Calendar.HOUR_OF_DAY, 0)
+                cal.set(Calendar.MINUTE, 0)
+                cal.set(Calendar.SECOND, 0)
+                formatIso(cal.time)
+            }
+            else -> null
+        }
+    }
+
+    private fun formatIso(date: Date): String {
+        val sdf = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.getDefault())
+        sdf.timeZone = TimeZone.getTimeZone("UTC")
+        return sdf.format(date)
+    }
+
     private fun loadData() {
         lifecycleScope.launch {
             try {
                 val idUnit = client.auth.currentUserOrNull()?.id ?: return@launch
+                val batas  = getBatasTanggal()
 
-                // 1. Setoran yang DITERIMA unit bisnis ini (id_unit = idUnit)
-                val setoranJson = client.postgrest
-                    .from("setoran")
-                    .select { filter { eq("id_unit", idUnit) } }
-                    .data
+                val setoranJson = if (batas != null) {
+                    client.postgrest.from("setoran").select {
+                        filter {
+                            eq("id_unit", idUnit)
+                            gte("created_at", batas)
+                        }
+                    }.data
+                } else {
+                    client.postgrest.from("setoran").select {
+                        filter { eq("id_unit", idUnit) }
+                    }.data
+                }
 
-                // 2. Riwayat pencairan dana unit bisnis ini (saldo_unit maupun saldo_nasabah)
-                val pencairanJson = client.postgrest
-                    .from("pencairan_dana")
-                    .select { filter { eq("id_user", idUnit) } }
-                    .data
+                val pencairanJson = if (batas != null) {
+                    client.postgrest.from("pencairan_dana").select {
+                        filter {
+                            eq("id_user", idUnit)
+                            gte("created_at", batas)
+                        }
+                    }.data
+                } else {
+                    client.postgrest.from("pencairan_dana").select {
+                        filter { eq("id_user", idUnit) }
+                    }.data
+                }
 
                 tampilkanRiwayat(setoranJson, pencairanJson)
 
@@ -98,7 +156,7 @@ class RiwayatUnitBisnisFragment : Fragment() {
         var totalBerat  = 0.0
         var totalKomisi = 0.0
 
-        // ===== SETORAN DITERIMA =====
+        // ===== SETORAN =====
         try {
             val arr = kotlinx.serialization.json.Json.parseToJsonElement(setoranJson).jsonArray
             tambahkanLabel("Setoran Minyak Diterima")
@@ -112,19 +170,10 @@ class RiwayatUnitBisnisFragment : Fragment() {
                     val status = obj["status_setoran"]?.jsonPrimitive?.content ?: "-"
                     val tgl    = obj["tgl_setoran"]?.jsonPrimitive?.content?.take(10) ?: "-"
                     val kode   = obj["kode_transaksi"]?.jsonPrimitive?.content ?: "-"
-
                     totalBerat  += berat
                     totalKomisi += komisi
-
-                    tambahkanItemRiwayat(
-                        icon       = "💧",
-                        judul      = "Penerimaan Setoran",
-                        detail     = "$berat Kg  •  Komisi ${formatRupiah(komisi)}",
-                        tanggal    = tgl,
-                        kode       = kode,
-                        status     = status,
-                        tipeStatus = "setoran"
-                    )
+                    tambahkanItemRiwayat("💧", "Penerimaan Setoran",
+                        "$berat Kg  •  Komisi ${formatRupiah(komisi)}", tgl, kode, status, "setoran")
                 }
             }
         } catch (e: Exception) {
@@ -132,7 +181,7 @@ class RiwayatUnitBisnisFragment : Fragment() {
             tambahkanInfoKosong("Belum ada riwayat setoran")
         }
 
-        // ===== PENCAIRAN DANA =====
+        // ===== PENCAIRAN =====
         try {
             val arr = kotlinx.serialization.json.Json.parseToJsonElement(pencairanJson).jsonArray
             tambahkanLabel("Request Penarikan")
@@ -149,22 +198,14 @@ class RiwayatUnitBisnisFragment : Fragment() {
                     val tgl      = obj["tgl_request"]?.jsonPrimitive?.content?.take(10) ?: "-"
                     val kode     = obj["kode_pencairan"]?.jsonPrimitive?.content ?: "-"
                     val sumber   = obj["sumber_dana"]?.jsonPrimitive?.content ?: "setoran_minyak"
-
                     val labelSumber = when (sumber) {
                         "komisi_unit"     -> "Komisi Unit"
                         "komisi_afiliasi" -> "Komisi Afiliasi"
                         else              -> "Tabungan Minyak"
                     }
-
-                    tambahkanItemRiwayat(
-                        icon       = "🏦",
-                        judul      = "Penarikan $labelSumber",
-                        detail     = "${formatRupiah(jumlah)}  •  $bank $noRek  •  Diterima ${formatRupiah(bersih)}",
-                        tanggal    = tgl,
-                        kode       = kode,
-                        status     = status,
-                        tipeStatus = "pencairan"
-                    )
+                    tambahkanItemRiwayat("🏦", "Penarikan $labelSumber",
+                        "${formatRupiah(jumlah)}  •  $bank $noRek  •  Diterima ${formatRupiah(bersih)}",
+                        tgl, kode, status, "pencairan")
                 }
             }
         } catch (e: Exception) {
@@ -172,12 +213,10 @@ class RiwayatUnitBisnisFragment : Fragment() {
             tambahkanInfoKosong("Belum ada riwayat penarikan")
         }
 
-        // Update ringkasan header
         binding.tvTotalSetor.text = "$totalBerat Kg"
         binding.tvSaldo.text      = formatRupiah(totalKomisi)
     }
 
-    // ===== HELPERS =====
     private fun tambahkanLabel(teks: String) {
         val tv = TextView(requireContext()).apply {
             text = teks; textSize = 13f
@@ -203,13 +242,8 @@ class RiwayatUnitBisnisFragment : Fragment() {
     }
 
     private fun tambahkanItemRiwayat(
-        icon: String,
-        judul: String,
-        detail: String,
-        tanggal: String,
-        kode: String,
-        status: String,
-        tipeStatus: String
+        icon: String, judul: String, detail: String,
+        tanggal: String, kode: String, status: String, tipeStatus: String
     ) {
         val dp8  = (8  * resources.displayMetrics.density).toInt()
         val dp20 = (20 * resources.displayMetrics.density).toInt()
@@ -259,14 +293,12 @@ class RiwayatUnitBisnisFragment : Fragment() {
             val mr = (8 * resources.displayMetrics.density).toInt()
             setPadding(0, 0, mr, 0)
         }
-
         val tvJudul = TextView(requireContext()).apply {
             text = judul; textSize = 13f
             setTypeface(null, Typeface.BOLD)
             setTextColor(requireContext().getColor(R.color.black))
             layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
         }
-
         val tvBadge = TextView(requireContext()).apply {
             text = labelStatus; textSize = 11f
             setTextColor(requireContext().getColor(R.color.white))
@@ -275,7 +307,6 @@ class RiwayatUnitBisnisFragment : Fragment() {
             val pv = (4  * resources.displayMetrics.density).toInt()
             setPadding(ph, pv, ph, pv)
         }
-
         row1.addView(tvIcon); row1.addView(tvJudul); row1.addView(tvBadge)
 
         val tvTgl = TextView(requireContext()).apply {

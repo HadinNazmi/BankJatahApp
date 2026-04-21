@@ -22,12 +22,19 @@ import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import java.text.NumberFormat
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Date
 import java.util.Locale
+import java.util.TimeZone
 
 class RiwayatFragment : Fragment() {
 
     private var _binding: FragmentRiwayatBinding? = null
     private val binding get() = _binding!!
+
+    // "semua" | "minggu" | "bulan"
+    private var filterAktif = "semua"
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -45,9 +52,21 @@ class RiwayatFragment : Fragment() {
     }
 
     private fun setupTabListeners() {
-        binding.tabSemua.setOnClickListener    { setActiveTab(binding.tabSemua);    loadData() }
-        binding.tabMingguIni.setOnClickListener { setActiveTab(binding.tabMingguIni); loadData() }
-        binding.tabBulanIni.setOnClickListener  { setActiveTab(binding.tabBulanIni);  loadData() }
+        binding.tabSemua.setOnClickListener {
+            filterAktif = "semua"
+            setActiveTab(binding.tabSemua)
+            loadData()
+        }
+        binding.tabMingguIni.setOnClickListener {
+            filterAktif = "minggu"
+            setActiveTab(binding.tabMingguIni)
+            loadData()
+        }
+        binding.tabBulanIni.setOnClickListener {
+            filterAktif = "bulan"
+            setActiveTab(binding.tabBulanIni)
+            loadData()
+        }
         binding.btnFilter.setOnClickListener { }
     }
 
@@ -63,28 +82,78 @@ class RiwayatFragment : Fragment() {
         }
     }
 
+    // ===== HITUNG BATAS TANGGAL FILTER =====
+    private fun getBatasTanggal(): String? {
+        val cal = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
+        return when (filterAktif) {
+            "minggu" -> {
+                cal.add(Calendar.DAY_OF_YEAR, -7)
+                formatIso(cal.time)
+            }
+            "bulan" -> {
+                cal.set(Calendar.DAY_OF_MONTH, 1)
+                cal.set(Calendar.HOUR_OF_DAY, 0)
+                cal.set(Calendar.MINUTE, 0)
+                cal.set(Calendar.SECOND, 0)
+                formatIso(cal.time)
+            }
+            else -> null // semua data
+        }
+    }
+
+    private fun formatIso(date: Date): String {
+        val sdf = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.getDefault())
+        sdf.timeZone = TimeZone.getTimeZone("UTC")
+        return sdf.format(date)
+    }
+
     private fun loadData() {
         lifecycleScope.launch {
             try {
                 val idUser = client.auth.currentUserOrNull()?.id ?: return@launch
+                val batas  = getBatasTanggal()
 
-                // 1. Riwayat setoran (sebagai nasabah)
-                val setoranJson = client.postgrest
-                    .from("setoran")
-                    .select { filter { eq("id_nasabah", idUser) } }
-                    .data
+                // 1. Setoran
+                val setoranJson = if (batas != null) {
+                    client.postgrest.from("setoran").select {
+                        filter {
+                            eq("id_nasabah", idUser)
+                            gte("created_at", batas)
+                        }
+                    }.data
+                } else {
+                    client.postgrest.from("setoran").select {
+                        filter { eq("id_nasabah", idUser) }
+                    }.data
+                }
 
-                // 2. Riwayat redeem reward
-                val redeemJson = client.postgrest
-                    .from("redeem_reward")
-                    .select { filter { eq("id_nasabah", idUser) } }
-                    .data
+                // 2. Pencairan dana
+                val pencairanJson = if (batas != null) {
+                    client.postgrest.from("pencairan_dana").select {
+                        filter {
+                            eq("id_user", idUser)
+                            gte("created_at", batas)
+                        }
+                    }.data
+                } else {
+                    client.postgrest.from("pencairan_dana").select {
+                        filter { eq("id_user", idUser) }
+                    }.data
+                }
 
-                // 3. Riwayat pencairan dana
-                val pencairanJson = client.postgrest
-                    .from("pencairan_dana")
-                    .select { filter { eq("id_user", idUser) } }
-                    .data
+                // 3. Redeem reward
+                val redeemJson = if (batas != null) {
+                    client.postgrest.from("redeem_reward").select {
+                        filter {
+                            eq("id_nasabah", idUser)
+                            gte("created_at", batas)
+                        }
+                    }.data
+                } else {
+                    client.postgrest.from("redeem_reward").select {
+                        filter { eq("id_nasabah", idUser) }
+                    }.data
+                }
 
                 tampilkanRiwayat(setoranJson, redeemJson, pencairanJson)
 
@@ -107,11 +176,10 @@ class RiwayatFragment : Fragment() {
         // ===== SETORAN =====
         try {
             val arr = kotlinx.serialization.json.Json.parseToJsonElement(setoranJson).jsonArray
+            tambahkanLabel("Setoran Minyak")
             if (arr.isEmpty()) {
-                tambahkanLabel("Setoran Minyak")
                 tambahkanInfoKosong("Belum ada riwayat setoran")
             } else {
-                tambahkanLabel("Setoran Minyak")
                 arr.forEach { element ->
                     val obj    = element.jsonObject
                     val berat  = obj["berat_bersih_kg"]?.jsonPrimitive?.content?.toDoubleOrNull() ?: 0.0
@@ -119,19 +187,10 @@ class RiwayatFragment : Fragment() {
                     val status = obj["status_setoran"]?.jsonPrimitive?.content ?: "-"
                     val tgl    = obj["tgl_setoran"]?.jsonPrimitive?.content?.take(10) ?: "-"
                     val kode   = obj["kode_transaksi"]?.jsonPrimitive?.content ?: "-"
-
                     totalBerat += berat
                     totalSaldo += total
-
-                    tambahkanItemRiwayat(
-                        icon      = "💧",
-                        judul     = "Setor Minyak Jelantah",
-                        detail    = "$berat Kg  •  ${formatRupiah(total)}",
-                        tanggal   = tgl,
-                        kode      = kode,
-                        status    = status,
-                        tipeStatus = "setoran"
-                    )
+                    tambahkanItemRiwayat("💧", "Setor Minyak Jelantah",
+                        "$berat Kg  •  ${formatRupiah(total)}", tgl, kode, status, "setoran")
                 }
             }
         } catch (e: Exception) {
@@ -139,7 +198,7 @@ class RiwayatFragment : Fragment() {
             tambahkanInfoKosong("Belum ada setoran")
         }
 
-        // ===== PENCAIRAN DANA =====
+        // ===== PENCAIRAN =====
         try {
             val arr = kotlinx.serialization.json.Json.parseToJsonElement(pencairanJson).jsonArray
             tambahkanLabel("Request Penarikan")
@@ -147,24 +206,17 @@ class RiwayatFragment : Fragment() {
                 tambahkanInfoKosong("Belum ada riwayat penarikan")
             } else {
                 arr.forEach { element ->
-                    val obj        = element.jsonObject
-                    val jumlah     = obj["jumlah_tarik"]?.jsonPrimitive?.content?.toDoubleOrNull() ?: 0.0
-                    val bersih     = obj["jumlah_bersih"]?.jsonPrimitive?.content?.toDoubleOrNull() ?: 0.0
-                    val bank       = obj["bank_tujuan"]?.jsonPrimitive?.content ?: "-"
-                    val noRek      = obj["no_rekening_tujuan"]?.jsonPrimitive?.content ?: "-"
-                    val status     = obj["status_request"]?.jsonPrimitive?.content ?: "-"
-                    val tgl        = obj["tgl_request"]?.jsonPrimitive?.content?.take(10) ?: "-"
-                    val kode       = obj["kode_pencairan"]?.jsonPrimitive?.content ?: "-"
-
-                    tambahkanItemRiwayat(
-                        icon      = "🏦",
-                        judul     = "Penarikan Dana",
-                        detail    = "${formatRupiah(jumlah)}  •  $bank $noRek  •  Diterima ${formatRupiah(bersih)}",
-                        tanggal   = tgl,
-                        kode      = kode,
-                        status    = status,
-                        tipeStatus = "pencairan"
-                    )
+                    val obj    = element.jsonObject
+                    val jumlah = obj["jumlah_tarik"]?.jsonPrimitive?.content?.toDoubleOrNull() ?: 0.0
+                    val bersih = obj["jumlah_bersih"]?.jsonPrimitive?.content?.toDoubleOrNull() ?: 0.0
+                    val bank   = obj["bank_tujuan"]?.jsonPrimitive?.content ?: "-"
+                    val noRek  = obj["no_rekening_tujuan"]?.jsonPrimitive?.content ?: "-"
+                    val status = obj["status_request"]?.jsonPrimitive?.content ?: "-"
+                    val tgl    = obj["tgl_request"]?.jsonPrimitive?.content?.take(10) ?: "-"
+                    val kode   = obj["kode_pencairan"]?.jsonPrimitive?.content ?: "-"
+                    tambahkanItemRiwayat("🏦", "Penarikan Dana",
+                        "${formatRupiah(jumlah)}  •  $bank $noRek  •  Diterima ${formatRupiah(bersih)}",
+                        tgl, kode, status, "pencairan")
                 }
             }
         } catch (e: Exception) {
@@ -172,7 +224,7 @@ class RiwayatFragment : Fragment() {
             tambahkanInfoKosong("Belum ada penarikan")
         }
 
-        // ===== REDEEM REWARD =====
+        // ===== REDEEM =====
         try {
             val arr = kotlinx.serialization.json.Json.parseToJsonElement(redeemJson).jsonArray
             if (arr.isNotEmpty()) {
@@ -183,45 +235,32 @@ class RiwayatFragment : Fragment() {
                     val status = obj["status_redeem"]?.jsonPrimitive?.content ?: "-"
                     val tgl    = obj["tgl_redeem"]?.jsonPrimitive?.content?.take(10) ?: "-"
                     val kode   = obj["id_redeem"]?.jsonPrimitive?.content?.take(8) ?: "-"
-
-                    tambahkanItemRiwayat(
-                        icon      = "🎁",
-                        judul     = "Penukaran Reward",
-                        detail    = "$poin Poin digunakan",
-                        tanggal   = tgl,
-                        kode      = "ID: $kode",
-                        status    = status,
-                        tipeStatus = "redeem"
-                    )
+                    tambahkanItemRiwayat("🎁", "Penukaran Reward",
+                        "$poin Poin digunakan", tgl, "ID: $kode", status, "redeem")
                 }
             }
         } catch (e: Exception) { /* skip */ }
 
-        // Update ringkasan header
         binding.tvTotalSetor.text = "$totalBerat Kg"
         binding.tvSaldo.text      = formatRupiah(totalSaldo)
     }
 
-    // ===== HELPER: LABEL SECTION =====
     private fun tambahkanLabel(teks: String) {
         val tv = TextView(requireContext()).apply {
-            text = teks
-            textSize = 13f
+            text = teks; textSize = 13f
             setTypeface(null, Typeface.BOLD)
             setTextColor(requireContext().getColor(R.color.black))
             val px = (14 * resources.displayMetrics.density).toInt()
             val pt = (16 * resources.displayMetrics.density).toInt()
-            val pb = (6 * resources.displayMetrics.density).toInt()
+            val pb = (6  * resources.displayMetrics.density).toInt()
             setPadding(px, pt, px, pb)
         }
         binding.layoutDaftarRiwayat.addView(tv)
     }
 
-    // ===== HELPER: INFO KOSONG =====
     private fun tambahkanInfoKosong(pesan: String) {
         val tv = TextView(requireContext()).apply {
-            text = pesan
-            textSize = 12f
+            text = pesan; textSize = 12f
             setTextColor(requireContext().getColor(R.color.gray_text))
             gravity = Gravity.CENTER
             val p = (16 * resources.displayMetrics.density).toInt()
@@ -230,17 +269,11 @@ class RiwayatFragment : Fragment() {
         binding.layoutDaftarRiwayat.addView(tv)
     }
 
-    // ===== HELPER: ITEM CARD RIWAYAT (universal untuk semua tipe) =====
     private fun tambahkanItemRiwayat(
-        icon: String,
-        judul: String,
-        detail: String,
-        tanggal: String,
-        kode: String,
-        status: String,
-        tipeStatus: String  // "setoran" | "pencairan" | "redeem"
+        icon: String, judul: String, detail: String,
+        tanggal: String, kode: String, status: String, tipeStatus: String
     ) {
-        val dp8  = (8 * resources.displayMetrics.density).toInt()
+        val dp8  = (8  * resources.displayMetrics.density).toInt()
         val dp20 = (20 * resources.displayMetrics.density).toInt()
 
         val (bgStatus, labelStatus) = when (tipeStatus) {
@@ -285,7 +318,6 @@ class RiwayatFragment : Fragment() {
             setPadding(p, p, p, p)
         }
 
-        // Row: icon + judul + badge status
         val row1 = LinearLayout(requireContext()).apply {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
@@ -296,14 +328,12 @@ class RiwayatFragment : Fragment() {
             val mr = (8 * resources.displayMetrics.density).toInt()
             setPadding(0, 0, mr, 0)
         }
-
         val tvJudul = TextView(requireContext()).apply {
             text = judul; textSize = 13f
             setTypeface(null, Typeface.BOLD)
             setTextColor(requireContext().getColor(R.color.black))
             layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
         }
-
         val tvBadge = TextView(requireContext()).apply {
             text = labelStatus; textSize = 11f
             setTextColor(requireContext().getColor(R.color.white))
@@ -312,39 +342,25 @@ class RiwayatFragment : Fragment() {
             val pv = (4  * resources.displayMetrics.density).toInt()
             setPadding(ph, pv, ph, pv)
         }
+        row1.addView(tvIcon); row1.addView(tvJudul); row1.addView(tvBadge)
 
-        row1.addView(tvIcon)
-        row1.addView(tvJudul)
-        row1.addView(tvBadge)
-
-        // Tanggal
         val tvTgl = TextView(requireContext()).apply {
             text = tanggal; textSize = 11f
             setTextColor(requireContext().getColor(R.color.gray_text))
-            val mt = (4 * resources.displayMetrics.density).toInt()
-            setPadding(0, mt, 0, 0)
+            val mt = (4 * resources.displayMetrics.density).toInt(); setPadding(0, mt, 0, 0)
         }
-
-        // Detail
         val tvDetail = TextView(requireContext()).apply {
             text = detail; textSize = 12f
             setTextColor(requireContext().getColor(R.color.orange_primary))
-            val mt = (4 * resources.displayMetrics.density).toInt()
-            setPadding(0, mt, 0, 0)
+            val mt = (4 * resources.displayMetrics.density).toInt(); setPadding(0, mt, 0, 0)
         }
-
-        // Kode transaksi
         val tvKode = TextView(requireContext()).apply {
             text = kode; textSize = 10f
             setTextColor(requireContext().getColor(R.color.gray_text))
-            val mt = (2 * resources.displayMetrics.density).toInt()
-            setPadding(0, mt, 0, 0)
+            val mt = (2 * resources.displayMetrics.density).toInt(); setPadding(0, mt, 0, 0)
         }
 
-        inner.addView(row1)
-        inner.addView(tvTgl)
-        inner.addView(tvDetail)
-        inner.addView(tvKode)
+        inner.addView(row1); inner.addView(tvTgl); inner.addView(tvDetail); inner.addView(tvKode)
         card.addView(inner)
         binding.layoutDaftarRiwayat.addView(card)
     }

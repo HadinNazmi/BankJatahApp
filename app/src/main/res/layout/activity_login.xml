@@ -9,7 +9,6 @@
     android:background="@color/white"
     tools:context=".ui.auth.LoginActivity">
 
-    <!-- Card utama -->
     <androidx.cardview.widget.CardView
         android:id="@+id/cardLogin"
         android:layout_width="0dp"
@@ -87,8 +86,48 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent" />
 
+            <!-- Toggle Email / No HP -->
+            <LinearLayout
+                android:id="@+id/layoutToggleLogin"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="20dp"
+                android:background="@drawable/ic_bg_tab_inactive"
+                android:padding="4dp"
+                app:layout_constraintTop_toBottomOf="@+id/tvSubtitle"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent">
+
+                <TextView
+                    android:id="@+id/tabEmail"
+                    android:layout_width="0dp"
+                    android:layout_height="40dp"
+                    android:layout_weight="1"
+                    android:text="Email"
+                    android:gravity="center"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/white"
+                    android:fontFamily="@font/poppins_semibold"
+                    android:background="@drawable/ic_bg_tab_active" />
+
+                <TextView
+                    android:id="@+id/tabNoHp"
+                    android:layout_width="0dp"
+                    android:layout_height="40dp"
+                    android:layout_weight="1"
+                    android:text="No. HP"
+                    android:gravity="center"
+                    android:textSize="13sp"
+                    android:textColor="@color/gray_text"
+                    android:fontFamily="@font/poppins_regular"
+                    android:background="@android:color/transparent" />
+            </LinearLayout>
+
+            <!-- Label Email / No HP (dinamis) -->
             <TextView
-                android:id="@+id/tvLabelEmail"
+                android:id="@+id/tvLabelIdentitas"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:text="Email"
@@ -96,11 +135,12 @@
                 android:textColor="@color/black"
                 android:textStyle="bold"
                 android:fontFamily="@font/poppins_semibold"
-                android:layout_marginTop="24dp"
-                app:layout_constraintTop_toBottomOf="@+id/tvSubtitle"
+                android:layout_marginTop="16dp"
+                app:layout_constraintTop_toBottomOf="@+id/layoutToggleLogin"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent" />
 
+            <!-- Input Email -->
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/tilEmail"
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
@@ -113,7 +153,7 @@
                 app:boxCornerRadiusBottomEnd="10dp"
                 app:boxStrokeColor="@color/gray_border"
                 app:hintEnabled="false"
-                app:layout_constraintTop_toBottomOf="@+id/tvLabelEmail"
+                app:layout_constraintTop_toBottomOf="@+id/tvLabelIdentitas"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent">
 
@@ -127,6 +167,37 @@
                     android:inputType="textEmailAddress"
                     android:drawableEnd="@drawable/ic_email"
                     android:drawablePadding="8dp" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- Input No HP (awalnya hidden) -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilNoHp"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:visibility="gone"
+                app:boxCornerRadiusTopStart="10dp"
+                app:boxCornerRadiusTopEnd="10dp"
+                app:boxCornerRadiusBottomStart="10dp"
+                app:boxCornerRadiusBottomEnd="10dp"
+                app:boxStrokeColor="@color/gray_border"
+                app:hintEnabled="false"
+                app:prefixText="+62 "
+                app:prefixTextColor="@color/gray_text"
+                app:layout_constraintTop_toBottomOf="@+id/tvLabelIdentitas"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etNoHp"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="8xxxxxxxxxx"
+                    android:textSize="13sp"
+                    android:fontFamily="@font/poppins_regular"
+                    android:inputType="phone"
+                    android:maxLength="13" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <TextView
@@ -185,7 +256,6 @@
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.cardview.widget.CardView>
 
-    <!-- Tombol Masuk -->
     <Button
         android:id="@+id/btnMasuk"
         android:layout_width="0dp"
@@ -207,7 +277,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toTopOf="@+id/progressBar" />
 
-    <!-- ProgressBar -->
     <ProgressBar
         android:id="@+id/progressBar"
         android:layout_width="wrap_content"
@@ -220,7 +289,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toTopOf="@+id/tvBelumPunyaAkun" />
 
-    <!-- Belum punya akun -->
     <TextView
         android:id="@+id/tvBelumPunyaAkun"
         android:layout_width="wrap_content"
@@ -250,7 +318,6 @@
         app:layout_constraintStart_toEndOf="@+id/tvBelumPunyaAkun"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- Syarat dan Kebijakan (klikabel) -->
     <TextView
         android:id="@+id/tvSyaratKetentuan"
         android:layout_width="0dp"
