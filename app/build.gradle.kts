@@ -81,5 +81,9 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")  // ← tambah ini
     implementation("com.google.zxing:core:3.5.2")
     implementation("com.journeyapps:zxing-android-embedded:4.3.0")
+    // OSMDroid - OpenStreetMap
+    implementation("org.osmdroid:osmdroid-android:6.1.18")
+    // FusedLocationProvider untuk tombol "Lokasi Saya"
+    implementation("com.google.android.gms:play-services-location:21.2.0")
 
 }
