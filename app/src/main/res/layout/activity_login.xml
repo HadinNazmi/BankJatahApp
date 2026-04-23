@@ -183,8 +183,6 @@
                 app:boxCornerRadiusBottomEnd="10dp"
                 app:boxStrokeColor="@color/gray_border"
                 app:hintEnabled="false"
-                app:prefixText="+62 "
-                app:prefixTextColor="@color/gray_text"
                 app:layout_constraintTop_toBottomOf="@+id/tvLabelIdentitas"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent">
@@ -193,11 +191,11 @@
                     android:id="@+id/etNoHp"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="8xxxxxxxxxx"
+                    android:hint="Contoh: 082xxxxxxxxx"
                     android:textSize="13sp"
                     android:fontFamily="@font/poppins_regular"
                     android:inputType="phone"
-                    android:maxLength="13" />
+                    android:maxLength="15" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <TextView

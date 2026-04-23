@@ -26,8 +26,6 @@ import kotlinx.coroutines.launch
 class LoginActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityLoginBinding
-
-    // Mode login saat ini: "email" atau "nohp"
     private var modLogin = "email"
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -40,7 +38,6 @@ class LoginActivity : AppCompatActivity() {
         setupClickListeners()
     }
 
-    // ===== SPANNABLE SYARAT & KETENTUAN =====
     private fun setupSyaratKetentuan() {
         val fullText = "Dengan masuk, Anda menyetujui Syarat & Ketentuan dan Kebijakan Privasi"
         val spannable = SpannableString(fullText)
@@ -59,19 +56,12 @@ class LoginActivity : AppCompatActivity() {
         binding.tvSyaratKetentuan.text = spannable
     }
 
-    // ===== TOGGLE TAB EMAIL / NO HP =====
     private fun setupTabToggle() {
         binding.tabEmail.setOnClickListener {
-            if (modLogin != "email") {
-                modLogin = "email"
-                updateTampilan()
-            }
+            if (modLogin != "email") { modLogin = "email"; updateTampilan() }
         }
         binding.tabNoHp.setOnClickListener {
-            if (modLogin != "nohp") {
-                modLogin = "nohp"
-                updateTampilan()
-            }
+            if (modLogin != "nohp") { modLogin = "nohp"; updateTampilan() }
         }
     }
 
@@ -79,31 +69,23 @@ class LoginActivity : AppCompatActivity() {
         val params = binding.tvLabelPassword.layoutParams as ConstraintLayout.LayoutParams
 
         if (modLogin == "email") {
-            // Tab Email aktif
             binding.tabEmail.setBackgroundResource(R.drawable.ic_bg_tab_active)
             binding.tabEmail.setTextColor(getColor(R.color.white))
             binding.tabNoHp.setBackgroundResource(android.R.color.transparent)
             binding.tabNoHp.setTextColor(getColor(R.color.gray_text))
-
             binding.tvLabelIdentitas.text = "Email"
             binding.tilEmail.visibility   = View.VISIBLE
             binding.tilNoHp.visibility    = View.GONE
-
-            // tvLabelPassword constraint ke bawah tilEmail
             params.topToBottom = binding.tilEmail.id
             binding.tilEmail.requestFocus()
         } else {
-            // Tab No HP aktif
             binding.tabNoHp.setBackgroundResource(R.drawable.ic_bg_tab_active)
             binding.tabNoHp.setTextColor(getColor(R.color.white))
             binding.tabEmail.setBackgroundResource(android.R.color.transparent)
             binding.tabEmail.setTextColor(getColor(R.color.gray_text))
-
             binding.tvLabelIdentitas.text = "No. HP"
             binding.tilNoHp.visibility    = View.VISIBLE
             binding.tilEmail.visibility   = View.GONE
-
-            // tvLabelPassword constraint ke bawah tilNoHp
             params.topToBottom = binding.tilNoHp.id
             binding.tilNoHp.requestFocus()
         }
@@ -111,7 +93,6 @@ class LoginActivity : AppCompatActivity() {
         binding.tvLabelPassword.layoutParams = params
     }
 
-    // ===== CLICK LISTENERS =====
     private fun setupClickListeners() {
         binding.btnMasuk.setOnClickListener {
             val password = binding.etPassword.text.toString().trim()
@@ -154,7 +135,6 @@ class LoginActivity : AppCompatActivity() {
         }
     }
 
-    // ===== LOGIN DENGAN EMAIL =====
     private fun doLoginEmail(email: String, password: String) {
         setLoading(true)
         lifecycleScope.launch {
@@ -171,29 +151,53 @@ class LoginActivity : AppCompatActivity() {
         }
     }
 
-    // ===== LOGIN DENGAN NO HP =====
-    // Cari email dari no_telp di tabel users, lalu login pakai email tersebut
+    // ===== LOGIN DENGAN NO HP — FIXED =====
+    // Masalah sebelumnya: input dikonversi ke +62xxx tapi DB simpan format 08xxx
+    // Solusi: normalisasi input ke format 08xxx agar cocok dengan data di DB
+    // Tapi karena format di DB bisa bermacam-macam, kita cari semua user
+    // lalu cocokkan secara lokal dengan membandingkan digit akhirnya
     private fun doLoginNoHp(noHp: String, password: String) {
         setLoading(true)
         lifecycleScope.launch {
             try {
-                // Format nomor: tambah +62 jika belum ada
-                val noTelpFormatted = when {
-                    noHp.startsWith("+62") -> noHp
-                    noHp.startsWith("62")  -> "+$noHp"
-                    noHp.startsWith("0")   -> "+62${noHp.substring(1)}"
-                    else                   -> "+62$noHp"
+                // Bersihkan input — hapus spasi, tanda strip, dll
+                val inputBersih = noHp.replace(Regex("[\\s\\-()]"), "")
+
+                // Normalisasi input ke format 08xxx (format yang dipakai di DB)
+                val formatLokal = when {
+                    inputBersih.startsWith("+62") -> "0" + inputBersih.removePrefix("+62")
+                    inputBersih.startsWith("62")  -> "0" + inputBersih.removePrefix("62")
+                    inputBersih.startsWith("0")   -> inputBersih
+                    else                          -> "0$inputBersih"
                 }
 
-                // Cari email berdasarkan no_telp di tabel users
-                val hasil = client.postgrest
+                // Juga siapkan format +62 untuk jaga-jaga jika ada data lama
+                val formatInternasional = "+62" + formatLokal.removePrefix("0")
+
+                // Cari di DB dengan format lokal (08xxx) dulu
+                // Jika tidak ketemu, coba format internasional (+62xxx)
+                var emailDitemukan: String? = null
+
+                // Coba format 08xxx
+                val hasil08 = client.postgrest
                     .from("users")
-                    .select { filter { eq("no_telp", noTelpFormatted) } }
+                    .select { filter { eq("no_telp", formatLokal) } }
                     .data
 
-                // Parse email dari JSON result
-                val emailDitemukan = extractEmail(hasil)
-                    ?: throw Exception("Nomor HP tidak terdaftar")
+                emailDitemukan = extractEmail(hasil08)
+
+                // Jika tidak ditemukan, coba format +62xxx
+                if (emailDitemukan == null) {
+                    val hasil62 = client.postgrest
+                        .from("users")
+                        .select { filter { eq("no_telp", formatInternasional) } }
+                        .data
+                    emailDitemukan = extractEmail(hasil62)
+                }
+
+                if (emailDitemukan == null) {
+                    throw Exception("Nomor HP tidak terdaftar")
+                }
 
                 // Login pakai email yang ditemukan
                 client.auth.signInWith(Email) {
@@ -215,7 +219,6 @@ class LoginActivity : AppCompatActivity() {
         }
     }
 
-    // ===== NAVIGASI SETELAH LOGIN BERHASIL =====
     private suspend fun navigasiSetelahLogin() {
         try {
             val userId = client.auth.currentUserOrNull()?.id
@@ -244,9 +247,10 @@ class LoginActivity : AppCompatActivity() {
         }
     }
 
-    // ===== HELPER: parse email dari JSON response =====
     private fun extractEmail(json: String): String? {
         return try {
+            // Cek dulu apakah hasilnya array kosong
+            if (json.trim() == "[]") return null
             """"email"\s*:\s*"([^"]+)"""".toRegex().find(json)?.groupValues?.get(1)
         } catch (e: Exception) { null }
     }
