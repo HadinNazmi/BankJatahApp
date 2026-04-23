@@ -12,6 +12,9 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.FileProvider
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import com.example.bankjatahapp.data.model.HargaMinyak
+import com.example.bankjatahapp.data.model.SystemConfig
+import com.example.bankjatahapp.data.model.UnitBisnisData
 import com.example.bankjatahapp.data.model.User
 import com.example.bankjatahapp.data.remote.SupabaseClient.client
 import com.example.bankjatahapp.databinding.FragmentSetoranBinding
@@ -23,10 +26,10 @@ import io.github.jan.supabase.postgrest.postgrest
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
-import kotlinx.serialization.json.JsonNull
 import java.io.File
 import java.text.NumberFormat
 import java.util.Locale
+import java.util.UUID
 
 class SetoranFragment : Fragment() {
 
@@ -38,16 +41,16 @@ class SetoranFragment : Fragment() {
     private var fotoUri: Uri? = null
     private var fotoFile: File? = null
 
-    private val hargaSatuanSnapshot = 90.0
-    private val hargaPerKg          = 90.0
-    private val komisiPerKg         = 1000.0
+    // Dimuat dari DB saat fragment dibuka
+    private var hargaPerKg: Double? = null
+    private var komisiPerKg: Double? = null
 
     // ===== SCAN QR =====
     private val scanQrLauncher = registerForActivityResult(ScanContract()) { result: ScanIntentResult ->
         if (result.contents != null) {
             val uuid = result.contents.trim()
             binding.etIdNasabah.setText(uuid.take(8) + "...")
-            cekNasabahByUuid(uuid)
+            cekUserByUuid(uuid)
         } else {
             Toast.makeText(requireContext(), "Scan dibatalkan", Toast.LENGTH_SHORT).show()
         }
@@ -75,9 +78,76 @@ class SetoranFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        muatHargaDanKomisi()
         setupListeners()
     }
 
+    // ===== LOAD HARGA & KOMISI =====
+    private fun muatHargaDanKomisi() {
+        setFormEnabled(false)
+        binding.btnKonfirmasi.text = "Memuat harga..."
+
+        lifecycleScope.launch {
+            try {
+                val idUnit = client.auth.currentUserOrNull()?.id
+                    ?: throw Exception("Session tidak ditemukan, silakan login ulang.")
+
+                // 1. Ambil id_wilayah + tipe_unit dari unit_bisnis_data
+                val unitData = client.postgrest
+                    .from("unit_bisnis_data")
+                    .select { filter { eq("id_unit_bisnis", idUnit) } }
+                    .decodeSingle<UnitBisnisData>()
+
+                val idWilayah = unitData.idWilayah
+                    ?: throw Exception("Wilayah unit bisnis belum diatur. Hubungi admin.")
+
+                // 2. Ambil harga aktif berdasarkan wilayah
+                val harga = client.postgrest
+                    .from("harga_minyak")
+                    .select {
+                        filter {
+                            eq("id_wilayah", idWilayah)
+                            eq("status_harga", true)
+                        }
+                    }
+                    .decodeSingle<HargaMinyak>()
+
+                hargaPerKg = harga.hargaPerKg
+
+                // 3. Ambil bonus_rate dari system_config
+                val config = client.postgrest
+                    .from("system_config")
+                    .select { filter { eq("id_config", 1) } }
+                    .decodeSingle<SystemConfig>()
+
+                komisiPerKg = when (unitData.tipeUnit) {
+                    "kabupaten" -> config.bonusUbKabupaten
+                    else        -> config.bonusUbKelurahan
+                }
+
+                setFormEnabled(true)
+                binding.btnKonfirmasi.text = "Konfirmasi Setor"
+
+            } catch (e: Exception) {
+                binding.btnKonfirmasi.text = "Konfirmasi Setor"
+                Toast.makeText(
+                    requireContext(),
+                    "Gagal memuat data harga: ${e.message}",
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+        }
+    }
+
+    private fun setFormEnabled(enabled: Boolean) {
+        binding.btnKonfirmasi.isEnabled  = enabled
+        binding.etJumlah.isEnabled       = enabled
+        binding.btnBukaKamera.isEnabled  = enabled
+        binding.frameQrScanner.isEnabled = enabled
+        binding.btnCekNasabah.isEnabled  = enabled
+    }
+
+    // ===== SETUP LISTENERS =====
     private fun setupListeners() {
 
         binding.frameQrScanner.setOnClickListener { bukaQrScanner() }
@@ -85,13 +155,18 @@ class SetoranFragment : Fragment() {
         binding.btnCekNasabah.setOnClickListener {
             val inputId = binding.etIdNasabah.text.toString().trim()
             if (inputId.isEmpty()) {
-                Toast.makeText(requireContext(), "Masukkan ID nasabah terlebih dahulu", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    requireContext(),
+                    "Masukkan ID nasabah terlebih dahulu",
+                    Toast.LENGTH_SHORT
+                ).show()
                 return@setOnClickListener
             }
-            if (inputId.length == 36) {
-                cekNasabahByUuid(inputId)
+            // Cek apakah input adalah UUID penuh (36 karakter dengan format uuid)
+            if (inputId.length == 36 && inputId.contains("-")) {
+                cekUserByUuid(inputId)
             } else {
-                cekNasabahManual(inputId)
+                cekUserManual(inputId)
             }
         }
 
@@ -100,15 +175,25 @@ class SetoranFragment : Fragment() {
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
             override fun afterTextChanged(s: Editable?) {
                 val berat = s.toString().toDoubleOrNull()
-                if (berat != null && berat > 0) {
-                    val formatted = formatRupiah(berat * hargaPerKg)
-                    binding.tvEstimasiRupiah.text      = formatted
-                    binding.tvSaldoNilai.text           = formatted
-                    binding.layoutKalkulasi.visibility = View.VISIBLE
-                } else {
-                    binding.tvEstimasiRupiah.text      = "Rp 0"
-                    binding.tvSaldoNilai.text           = "Rp 0"
-                    binding.layoutKalkulasi.visibility = View.GONE
+                val harga = hargaPerKg
+
+                when {
+                    berat != null && berat > 0 && harga != null -> {
+                        val estimasi = formatRupiah(berat * harga)
+                        binding.tvEstimasiRupiah.text      = estimasi
+                        binding.tvSaldoNilai.text           = estimasi
+                        binding.layoutKalkulasi.visibility = View.VISIBLE
+                    }
+                    berat != null && berat > 0 -> {
+                        binding.tvEstimasiRupiah.text      = "Menghitung..."
+                        binding.tvSaldoNilai.text           = "Menghitung..."
+                        binding.layoutKalkulasi.visibility = View.VISIBLE
+                    }
+                    else -> {
+                        binding.tvEstimasiRupiah.text      = "Rp 0"
+                        binding.tvSaldoNilai.text           = "Rp 0"
+                        binding.layoutKalkulasi.visibility = View.GONE
+                    }
                 }
             }
         })
@@ -128,8 +213,10 @@ class SetoranFragment : Fragment() {
         scanQrLauncher.launch(options)
     }
 
-    // ===== CEK NASABAH DARI SCAN QR (UUID penuh - langsung eq) =====
-    private fun cekNasabahByUuid(uuid: String) {
+    // ===== CEK USER DARI SCAN QR (UUID penuh) =====
+    // PERBAIKAN: tidak filter by role — unit_bisnis juga bisa disetor
+    // Satu-satunya batasan: user harus ada di tabel users dan status aktif
+    private fun cekUserByUuid(uuid: String) {
         setTombolCek(loading = true)
         lifecycleScope.launch {
             try {
@@ -138,58 +225,80 @@ class SetoranFragment : Fragment() {
                     .select {
                         filter {
                             eq("id_user", uuid)
-                            eq("role", "nasabah")
+                            eq("status_akun", "aktif")
+                            // Tidak filter role — nasabah & unit_bisnis bisa disetor
                         }
                     }
                     .decodeSingle<User>()
 
-                tampilkanNasabah(user, uuid.take(8))
+                tampilkanUser(user, uuid.take(8))
             } catch (e: Exception) {
-                nasabahTidakDitemukan()
-                Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_LONG).show()
+                userTidakDitemukan()
+                Toast.makeText(
+                    requireContext(),
+                    "User tidak ditemukan: ${e.message}",
+                    Toast.LENGTH_LONG
+                ).show()
             } finally {
                 setTombolCek(loading = false)
             }
         }
     }
 
-    // ===== CEK NASABAH MANUAL (8 digit - filter di Kotlin) =====
-    private fun cekNasabahManual(inputId: String) {
+    // ===== CEK USER MANUAL (prefix 8 karakter) =====
+    // PERBAIKAN: cari dari semua user aktif tanpa filter role
+    // id_nasabah di tabel setoran = id_user, bisa nasabah atau unit_bisnis
+    private fun cekUserManual(inputId: String) {
         setTombolCek(loading = true)
         lifecycleScope.launch {
             try {
-                val semuaNasabah = client.postgrest
+                // Ambil semua user aktif tanpa filter role
+                val semuaUser = client.postgrest
                     .from("users")
-                    .select { filter { eq("role", "nasabah") } }
+                    .select {
+                        filter {
+                            eq("status_akun", "aktif")
+                        }
+                    }
                     .decodeList<User>()
 
-                val user = semuaNasabah.firstOrNull {
+                val user = semuaUser.firstOrNull {
                     it.idUser.startsWith(inputId, ignoreCase = true)
-                } ?: throw Exception("Tidak ditemukan")
+                } ?: throw Exception("User dengan ID $inputId tidak ditemukan.")
 
-                tampilkanNasabah(user, inputId)
+                tampilkanUser(user, inputId)
             } catch (e: Exception) {
-                nasabahTidakDitemukan()
+                userTidakDitemukan()
+                Toast.makeText(requireContext(), "${e.message}", Toast.LENGTH_SHORT).show()
             } finally {
                 setTombolCek(loading = false)
             }
         }
     }
 
-    private fun tampilkanNasabah(user: User, displayId: String) {
+    private fun tampilkanUser(user: User, displayId: String) {
         idNasabahDipilih   = user.idUser
         namaNasabahDipilih = user.namaLengkap
         binding.layoutInfoNasabah.visibility = View.VISIBLE
         binding.tvNamaNasabah.text            = user.namaLengkap
-        binding.tvIdNasabahInfo.text          = "ID: $displayId"
-        Toast.makeText(requireContext(), "Nasabah ditemukan: ${user.namaLengkap}", Toast.LENGTH_SHORT).show()
+        // Tampilkan role sebagai konteks tambahan
+        val labelRole = when (user.role) {
+            "unit_bisnis" -> "Unit Bisnis"
+            "nasabah"     -> "Nasabah"
+            else          -> user.role
+        }
+        binding.tvIdNasabahInfo.text = "ID: $displayId • $labelRole"
+        Toast.makeText(
+            requireContext(),
+            "Ditemukan: ${user.namaLengkap} ($labelRole)",
+            Toast.LENGTH_SHORT
+        ).show()
     }
 
-    private fun nasabahTidakDitemukan() {
+    private fun userTidakDitemukan() {
         idNasabahDipilih   = null
         namaNasabahDipilih = null
         binding.layoutInfoNasabah.visibility = View.GONE
-        Toast.makeText(requireContext(), "Nasabah tidak ditemukan", Toast.LENGTH_SHORT).show()
     }
 
     private fun setTombolCek(loading: Boolean) {
@@ -208,62 +317,71 @@ class SetoranFragment : Fragment() {
         ambilFotoLauncher.launch(fotoUri!!)
     }
 
+    // ===== VALIDASI SEBELUM SUBMIT =====
     private fun validasiDanSubmit() {
-        val beratStr = binding.etJumlah.text.toString().trim()
-        val catatan  = binding.etCatatan.text.toString().trim()
-
-        if (idNasabahDipilih == null) {
-            Toast.makeText(requireContext(), "Scan QR atau masukkan ID nasabah terlebih dahulu", Toast.LENGTH_SHORT).show()
+        if (hargaPerKg == null || komisiPerKg == null) {
+            Toast.makeText(
+                requireContext(),
+                "Data harga belum termuat. Tunggu sebentar atau buka ulang halaman ini.",
+                Toast.LENGTH_SHORT
+            ).show()
             return
         }
+
+        if (idNasabahDipilih == null) {
+            Toast.makeText(
+                requireContext(),
+                "Scan QR atau masukkan ID pengguna terlebih dahulu.",
+                Toast.LENGTH_SHORT
+            ).show()
+            return
+        }
+
+        val beratStr = binding.etJumlah.text.toString().trim()
         if (beratStr.isEmpty()) {
             binding.tilJumlah.error = "Berat minyak tidak boleh kosong"
             return
         }
+
         val berat = beratStr.toDoubleOrNull()
         if (berat == null || berat <= 0) {
             binding.tilJumlah.error = "Berat minyak tidak valid"
             return
         }
+
         binding.tilJumlah.error = null
-        submitSetoran(berat, catatan)
+        submitSetoran(berat, binding.etCatatan.text.toString().trim())
     }
 
-    // ===== SUBMIT — gunakan buildJsonObject agar null tidak error =====
+    // ===== SUBMIT SETORAN =====
+    // PERBAIKAN kode_transaksi: pakai UUID random agar tidak pernah duplikat
+    // meski submit berkali-kali dalam milidetik yang sama
     private fun submitSetoran(beratKg: Double, catatan: String) {
         setLoading(true)
+
+        val harga        = hargaPerKg!!
+        val komisi       = komisiPerKg!!
+        val totalKomisi  = beratKg * komisi
+        val catatanValue = catatan.ifEmpty { null }
 
         lifecycleScope.launch {
             try {
                 val idUnit = client.auth.currentUserOrNull()?.id
-                    ?: throw Exception("Session login tidak ditemukan")
+                    ?: throw Exception("Session login tidak ditemukan, silakan login ulang.")
 
-                val kodeTransaksi  = "TRX-SIM-QR-${System.currentTimeMillis()}"
-                val totalRupiah    = beratKg * hargaPerKg
-                val totalKomisi    = beratKg * komisiPerKg
-                val catatanValue   = catatan.ifEmpty { null }
+                // Gunakan UUID random untuk kode_transaksi
+                // — dijamin unik, tidak bisa duplikat seperti timestamp
+                val kodeTransaksi = "TRX-${UUID.randomUUID().toString().replace("-", "").take(16).uppercase()}"
 
-                // Gunakan buildJsonObject agar null ter-serialize dengan benar
                 val payload = buildJsonObject {
-                    put("kode_transaksi",         kodeTransaksi)
-                    put("id_nasabah",             idNasabahDipilih!!)
-                    put("id_unit",                idUnit)
-                    put("id_batch",               JsonNull)          // null
-                    put("berat_bersih_kg",        beratKg)
-                    put("harga_satuan_snapshot",  hargaSatuanSnapshot)
-                    put("level_bintang_snapshot", 1)
-                    put("komisi_sudah_dibagi",    true)
-                    put("harga_per_kg",           hargaPerKg)
-                    put("total_rupiah_nasabah",   totalRupiah)
-                    put("komisi_per_kg",          komisiPerKg)
-                    put("total_komisi_unit",      totalKomisi)
-                    put("status_setoran",         "menunggu")
-                    put("bukti_foto_minyak",      JsonNull)          // null
-                    if (catatanValue != null) {
-                        put("catatan_unit", catatanValue)
-                    } else {
-                        put("catatan_unit", JsonNull)
-                    }
+                    put("kode_transaksi",    kodeTransaksi)
+                    put("id_nasabah",        idNasabahDipilih!!)
+                    put("id_unit",           idUnit)
+                    put("berat_bersih_kg",   beratKg)
+                    put("status_setoran",    "menunggu")
+                    put("komisi_per_kg",     komisi)
+                    put("total_komisi_unit", totalKomisi)
+                    if (catatanValue != null) put("catatan_unit", catatanValue)
                 }
 
                 client.postgrest.from("setoran").insert(payload)
@@ -271,7 +389,7 @@ class SetoranFragment : Fragment() {
                 setLoading(false)
                 Toast.makeText(
                     requireContext(),
-                    "✓ Setoran berhasil!\nKode: $kodeTransaksi",
+                    "✓ Setoran berhasil!\nKode: $kodeTransaksi\nHarga: ${formatRupiah(harga)}/kg\nMenunggu validasi admin.",
                     Toast.LENGTH_LONG
                 ).show()
 
@@ -279,7 +397,18 @@ class SetoranFragment : Fragment() {
 
             } catch (e: Exception) {
                 setLoading(false)
-                Toast.makeText(requireContext(), "Gagal: ${e.message}", Toast.LENGTH_LONG).show()
+                val pesan = when {
+                    e.message?.contains("Harga tidak ditemukan") == true ->
+                        "Harga minyak wilayah ini belum diatur admin."
+                    e.message?.contains("Unit Bisnis tidak valid") == true ->
+                        "Data unit bisnis belum lengkap, hubungi admin."
+                    e.message?.contains("duplicate key") == true ->
+                        "Transaksi duplikat terdeteksi, coba lagi."
+                    e.message?.contains("row-level security") == true ->
+                        "Akses ditolak. Pastikan Anda sudah login."
+                    else -> "Gagal menyimpan setoran: ${e.message}"
+                }
+                Toast.makeText(requireContext(), pesan, Toast.LENGTH_LONG).show()
             }
         }
     }
@@ -302,13 +431,12 @@ class SetoranFragment : Fragment() {
 
     private fun setLoading(loading: Boolean) {
         binding.btnKonfirmasi.isEnabled = !loading
-        binding.btnKonfirmasi.text = if (loading) "Menyimpan..." else "Konfirmasi Setor"
+        binding.btnKonfirmasi.text      = if (loading) "Menyimpan..." else "Konfirmasi Setor"
     }
 
-    private fun formatRupiah(nominal: Double): String {
-        return NumberFormat.getCurrencyInstance(Locale("id", "ID"))
+    private fun formatRupiah(nominal: Double): String =
+        NumberFormat.getCurrencyInstance(Locale("id", "ID"))
             .format(nominal).replace(",00", "")
-    }
 
     override fun onDestroyView() {
         super.onDestroyView()
