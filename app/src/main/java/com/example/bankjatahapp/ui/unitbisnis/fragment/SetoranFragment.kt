@@ -42,7 +42,6 @@ class SetoranFragment : Fragment() {
     private var fotoUri: Uri? = null
     private var fotoFile: File? = null
 
-    // Dimuat dari DB saat fragment dibuka
     private var hargaPerKg: Double? = null
     private var komisiPerKg: Double? = null
 
@@ -84,10 +83,6 @@ class SetoranFragment : Fragment() {
     }
 
     // ===== LOAD HARGA & KOMISI DARI DB =====
-    // Alur:
-    //   1. unit_bisnis_data → id_wilayah + tipe_unit
-    //   2. harga_minyak     → harga_per_kg aktif berdasarkan id_wilayah
-    //   3. system_config    → bonus_ub_kelurahan / bonus_ub_kabupaten → komisi_per_kg
     private fun muatHargaDanKomisi() {
         setFormEnabled(false)
         binding.btnKonfirmasi.text = "Memuat harga..."
@@ -97,7 +92,6 @@ class SetoranFragment : Fragment() {
                 val idUnit = client.auth.currentUserOrNull()?.id
                     ?: throw Exception("Session tidak ditemukan, silakan login ulang.")
 
-                // 1. Ambil id_wilayah + tipe_unit dari unit_bisnis_data
                 val unitData = client.postgrest
                     .from("unit_bisnis_data")
                     .select { filter { eq("id_unit_bisnis", idUnit) } }
@@ -106,7 +100,6 @@ class SetoranFragment : Fragment() {
                 val idWilayah = unitData.idWilayah
                     ?: throw Exception("Wilayah unit bisnis belum diatur. Hubungi admin.")
 
-                // 2. Ambil harga aktif berdasarkan wilayah
                 val harga = client.postgrest
                     .from("harga_minyak")
                     .select {
@@ -119,7 +112,6 @@ class SetoranFragment : Fragment() {
 
                 hargaPerKg = harga.hargaPerKg
 
-                // 3. Ambil bonus_rate dari system_config berdasarkan tipe_unit
                 val config = client.postgrest
                     .from("system_config")
                     .select { filter { eq("id_config", 1) } }
@@ -217,8 +209,7 @@ class SetoranFragment : Fragment() {
         scanQrLauncher.launch(options)
     }
 
-    // ===== CEK USER DARI SCAN QR (UUID penuh) =====
-    // Tidak filter by role — nasabah & unit_bisnis keduanya bisa disetor
+    // ===== CEK USER DARI SCAN QR =====
     private fun cekUserByUuid(uuid: String) {
         setTombolCek(loading = true)
         lifecycleScope.launch {
@@ -247,8 +238,7 @@ class SetoranFragment : Fragment() {
         }
     }
 
-    // ===== CEK USER MANUAL (prefix 8 karakter) =====
-    // Tidak filter by role — nasabah & unit_bisnis keduanya bisa disetor
+    // ===== CEK USER MANUAL =====
     private fun cekUserManual(inputId: String) {
         setTombolCek(loading = true)
         lifecycleScope.launch {
@@ -349,6 +339,8 @@ class SetoranFragment : Fragment() {
     }
 
     // ===== SUBMIT SETORAN =====
+    // Catatan: auto-assign id_sponsor sudah diurus oleh trigger
+    // fn_before_insert_setoran di DB — tidak perlu lagi dari Android
     private fun submitSetoran(beratKg: Double, catatan: String) {
         setLoading(true)
 
@@ -361,13 +353,6 @@ class SetoranFragment : Fragment() {
             try {
                 val idUnit = client.auth.currentUserOrNull()?.id
                     ?: throw Exception("Session login tidak ditemukan, silakan login ulang.")
-
-                // ===== PENTING: ISI id_sponsor SEBELUM INSERT SETORAN =====
-                // Trigger affiliate_commission_distribution membaca id_sponsor
-                // saat insert setoran terjadi. Kalau diisi setelah insert,
-                // trigger sudah terlanjur jalan tanpa sponsor → komisi tidak
-                // terdistribusi ke unit bisnis sebagai sponsor.
-                cekDanIsiSponsor(idNasabahDipilih!!, idUnit)
 
                 val kodeTransaksi = "TRX-${UUID.randomUUID().toString()
                     .replace("-", "").take(16).uppercase()}"
@@ -412,56 +397,6 @@ class SetoranFragment : Fragment() {
         }
     }
 
-    // ===== AUTO-ASSIGN ID_SPONSOR SAAT SETORAN PERTAMA =====
-    // Kondisi yang harus KEDUANYA terpenuhi:
-    //   1. total_setoran_lifetime == 0  → ini adalah setoran pertama nasabah
-    //   2. id_sponsor IS NULL           → belum ada sponsor dari kode referral saat daftar
-    // Jika terpenuhi → update id_sponsor = id unit bisnis yang menerima setoran ini
-    //
-    // Fungsi ini suspend dan dipanggil sebelum insert setoran agar trigger
-    // afiliasi bisa membaca id_sponsor yang sudah terisi dengan benar.
-    // Silent fail — jika gagal, proses setoran tetap dilanjutkan.
-    private suspend fun cekDanIsiSponsor(idNasabah: String, idUnit: String) {
-        try {
-            val nasabahJson = client.postgrest
-                .from("nasabah_data")
-                .select { filter { eq("id_nasabah", idNasabah) } }
-                .data
-
-            // Parse total_setoran_lifetime dari JSON response
-            val totalSetoran = """"total_setoran_lifetime"\s*:\s*([\d.]+)""".toRegex()
-                .find(nasabahJson)?.groupValues?.get(1)?.toDoubleOrNull() ?: 0.0
-
-            // Cek apakah id_sponsor sudah terisi atau masih null
-            // JSON dari Supabase: "id_sponsor":null atau "id_sponsor": null
-            val sudahAdaSponsor = nasabahJson.contains("\"id_sponsor\"") &&
-                    !nasabahJson.contains("\"id_sponsor\":null") &&
-                    !nasabahJson.contains("\"id_sponsor\": null")
-
-            Log.d("SetoranFragment", "cekDanIsiSponsor: totalSetoran=$totalSetoran, sudahAdaSponsor=$sudahAdaSponsor")
-
-            // Kedua syarat harus terpenuhi untuk auto-assign sponsor
-            if (totalSetoran == 0.0 && !sudahAdaSponsor) {
-                client.postgrest
-                    .from("nasabah_data")
-                    .update(
-                        buildJsonObject { put("id_sponsor", idUnit) }
-                    ) {
-                        filter { eq("id_nasabah", idNasabah) }
-                    }
-
-                Log.d("SetoranFragment", "id_sponsor berhasil diisi: $idUnit untuk nasabah: $idNasabah")
-            } else {
-                Log.d("SetoranFragment", "Tidak perlu update sponsor: sudah ada atau bukan setoran pertama")
-            }
-
-        } catch (e: Exception) {
-            // Silent fail — jangan block proses setoran utama
-            Log.w("SetoranFragment", "cekDanIsiSponsor gagal (diabaikan): ${e.message}")
-        }
-    }
-
-    // ===== RESET FORM =====
     private fun resetForm() {
         idNasabahDipilih   = null
         namaNasabahDipilih = null
