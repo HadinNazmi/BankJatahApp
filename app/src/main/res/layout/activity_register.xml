@@ -102,144 +102,213 @@
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintEnd_toEndOf="parent" />
 
+                    <!-- Nama Lengkap -->
                     <com.google.android.material.textfield.TextInputLayout
                         android:id="@+id/tilNama"
                         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="24dp"
-                        app:boxCornerRadiusTopStart="10dp" app:boxCornerRadiusTopEnd="10dp"
-                        app:boxCornerRadiusBottomStart="10dp" app:boxCornerRadiusBottomEnd="10dp"
-                        app:boxStrokeColor="@color/gray_border" app:hintEnabled="false"
+                        app:boxCornerRadiusTopStart="10dp"
+                        app:boxCornerRadiusTopEnd="10dp"
+                        app:boxCornerRadiusBottomStart="10dp"
+                        app:boxCornerRadiusBottomEnd="10dp"
+                        app:boxStrokeColor="@color/gray_border"
+                        app:hintEnabled="false"
                         app:layout_constraintTop_toBottomOf="@+id/tvSubtitle"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintEnd_toEndOf="parent">
+
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/etNama"
-                            android:layout_width="match_parent" android:layout_height="wrap_content"
-                            android:hint="Nama lengkap" android:textSize="13sp"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:hint="Nama lengkap"
+                            android:textSize="13sp"
                             android:fontFamily="@font/poppins_regular"
                             android:inputType="textPersonName"
-                            android:drawableEnd="@drawable/ic_person" android:drawablePadding="8dp" />
+                            android:drawableEnd="@drawable/ic_person"
+                            android:drawablePadding="8dp" />
+
                     </com.google.android.material.textfield.TextInputLayout>
 
+                    <!-- Email -->
                     <com.google.android.material.textfield.TextInputLayout
                         android:id="@+id/tilEmail"
                         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                        android:layout_width="0dp" android:layout_height="wrap_content"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
                         android:layout_marginTop="12dp"
-                        app:boxCornerRadiusTopStart="10dp" app:boxCornerRadiusTopEnd="10dp"
-                        app:boxCornerRadiusBottomStart="10dp" app:boxCornerRadiusBottomEnd="10dp"
-                        app:boxStrokeColor="@color/gray_border" app:hintEnabled="false"
+                        app:boxCornerRadiusTopStart="10dp"
+                        app:boxCornerRadiusTopEnd="10dp"
+                        app:boxCornerRadiusBottomStart="10dp"
+                        app:boxCornerRadiusBottomEnd="10dp"
+                        app:boxStrokeColor="@color/gray_border"
+                        app:hintEnabled="false"
                         app:layout_constraintTop_toBottomOf="@+id/tilNama"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintEnd_toEndOf="parent">
+
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/etEmail"
-                            android:layout_width="match_parent" android:layout_height="wrap_content"
-                            android:hint="Email" android:textSize="13sp"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:hint="Email"
+                            android:textSize="13sp"
                             android:fontFamily="@font/poppins_regular"
                             android:inputType="textEmailAddress"
-                            android:drawableEnd="@drawable/ic_email" android:drawablePadding="8dp" />
+                            android:drawableEnd="@drawable/ic_email"
+                            android:drawablePadding="8dp" />
+
                     </com.google.android.material.textfield.TextInputLayout>
 
+                    <!-- Nomor Telepon — TANPA prefixText +62 agar tidak ambigu -->
                     <com.google.android.material.textfield.TextInputLayout
                         android:id="@+id/tilNoTelp"
                         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                        android:layout_width="0dp" android:layout_height="wrap_content"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
                         android:layout_marginTop="12dp"
-                        app:boxCornerRadiusTopStart="10dp" app:boxCornerRadiusTopEnd="10dp"
-                        app:boxCornerRadiusBottomStart="10dp" app:boxCornerRadiusBottomEnd="10dp"
-                        app:boxStrokeColor="@color/gray_border" app:hintEnabled="false"
-                        app:prefixText="+62 " app:prefixTextColor="@color/gray_text"
+                        app:boxCornerRadiusTopStart="10dp"
+                        app:boxCornerRadiusTopEnd="10dp"
+                        app:boxCornerRadiusBottomStart="10dp"
+                        app:boxCornerRadiusBottomEnd="10dp"
+                        app:boxStrokeColor="@color/gray_border"
+                        app:hintEnabled="false"
                         app:layout_constraintTop_toBottomOf="@+id/tilEmail"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintEnd_toEndOf="parent">
+
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/etNoTelp"
-                            android:layout_width="match_parent" android:layout_height="wrap_content"
-                            android:hint="Nomor telepon" android:textSize="13sp"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:hint="Contoh: 082283884373"
+                            android:textSize="13sp"
                             android:fontFamily="@font/poppins_regular"
-                            android:inputType="phone" android:maxLength="13" />
+                            android:inputType="phone"
+                            android:maxLength="15" />
+
                     </com.google.android.material.textfield.TextInputLayout>
 
+                    <!-- Password -->
                     <com.google.android.material.textfield.TextInputLayout
                         android:id="@+id/tilPassword"
                         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                        android:layout_width="0dp" android:layout_height="wrap_content"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
                         android:layout_marginTop="12dp"
-                        app:boxCornerRadiusTopStart="10dp" app:boxCornerRadiusTopEnd="10dp"
-                        app:boxCornerRadiusBottomStart="10dp" app:boxCornerRadiusBottomEnd="10dp"
-                        app:boxStrokeColor="@color/gray_border" app:hintEnabled="false"
+                        app:boxCornerRadiusTopStart="10dp"
+                        app:boxCornerRadiusTopEnd="10dp"
+                        app:boxCornerRadiusBottomStart="10dp"
+                        app:boxCornerRadiusBottomEnd="10dp"
+                        app:boxStrokeColor="@color/gray_border"
+                        app:hintEnabled="false"
                         app:passwordToggleEnabled="true"
                         app:layout_constraintTop_toBottomOf="@+id/tilNoTelp"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintEnd_toEndOf="parent">
+
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/etPassword"
-                            android:layout_width="match_parent" android:layout_height="wrap_content"
-                            android:hint="Buat password" android:textSize="13sp"
-                            android:fontFamily="@font/poppins_regular" android:inputType="textPassword" />
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:hint="Buat password"
+                            android:textSize="13sp"
+                            android:fontFamily="@font/poppins_regular"
+                            android:inputType="textPassword" />
+
                     </com.google.android.material.textfield.TextInputLayout>
 
+                    <!-- Konfirmasi Password -->
                     <com.google.android.material.textfield.TextInputLayout
                         android:id="@+id/tilKonfirmasiPassword"
                         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                        android:layout_width="0dp" android:layout_height="wrap_content"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
                         android:layout_marginTop="12dp"
-                        app:boxCornerRadiusTopStart="10dp" app:boxCornerRadiusTopEnd="10dp"
-                        app:boxCornerRadiusBottomStart="10dp" app:boxCornerRadiusBottomEnd="10dp"
-                        app:boxStrokeColor="@color/gray_border" app:hintEnabled="false"
+                        app:boxCornerRadiusTopStart="10dp"
+                        app:boxCornerRadiusTopEnd="10dp"
+                        app:boxCornerRadiusBottomStart="10dp"
+                        app:boxCornerRadiusBottomEnd="10dp"
+                        app:boxStrokeColor="@color/gray_border"
+                        app:hintEnabled="false"
                         app:passwordToggleEnabled="true"
                         app:layout_constraintTop_toBottomOf="@+id/tilPassword"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintEnd_toEndOf="parent">
+
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/etKonfirmasiPassword"
-                            android:layout_width="match_parent" android:layout_height="wrap_content"
-                            android:hint="Konfirmasi password" android:textSize="13sp"
-                            android:fontFamily="@font/poppins_regular" android:inputType="textPassword" />
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:hint="Konfirmasi password"
+                            android:textSize="13sp"
+                            android:fontFamily="@font/poppins_regular"
+                            android:inputType="textPassword" />
+
                     </com.google.android.material.textfield.TextInputLayout>
 
+                    <!-- NIK -->
                     <com.google.android.material.textfield.TextInputLayout
                         android:id="@+id/tilNik"
                         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                        android:layout_width="0dp" android:layout_height="wrap_content"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
                         android:layout_marginTop="12dp"
-                        app:boxCornerRadiusTopStart="10dp" app:boxCornerRadiusTopEnd="10dp"
-                        app:boxCornerRadiusBottomStart="10dp" app:boxCornerRadiusBottomEnd="10dp"
-                        app:boxStrokeColor="@color/gray_border" app:hintEnabled="false"
+                        app:boxCornerRadiusTopStart="10dp"
+                        app:boxCornerRadiusTopEnd="10dp"
+                        app:boxCornerRadiusBottomStart="10dp"
+                        app:boxCornerRadiusBottomEnd="10dp"
+                        app:boxStrokeColor="@color/gray_border"
+                        app:hintEnabled="false"
                         app:layout_constraintTop_toBottomOf="@+id/tilKonfirmasiPassword"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintEnd_toEndOf="parent">
+
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/etNik"
-                            android:layout_width="match_parent" android:layout_height="wrap_content"
-                            android:hint="NIK (16 digit)" android:textSize="13sp"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:hint="NIK (16 digit)"
+                            android:textSize="13sp"
                             android:fontFamily="@font/poppins_regular"
-                            android:inputType="number" android:maxLength="16" />
+                            android:inputType="number"
+                            android:maxLength="16" />
+
                     </com.google.android.material.textfield.TextInputLayout>
 
+                    <!-- Kode Referral (Opsional) -->
                     <com.google.android.material.textfield.TextInputLayout
                         android:id="@+id/tilReferal"
                         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                        android:layout_width="0dp" android:layout_height="wrap_content"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
                         android:layout_marginTop="12dp"
-                        app:boxCornerRadiusTopStart="10dp" app:boxCornerRadiusTopEnd="10dp"
-                        app:boxCornerRadiusBottomStart="10dp" app:boxCornerRadiusBottomEnd="10dp"
-                        app:boxStrokeColor="@color/gray_border" app:hintEnabled="false"
-                        app:helperText="Opsional" app:helperTextTextColor="@color/gray_text"
+                        app:boxCornerRadiusTopStart="10dp"
+                        app:boxCornerRadiusTopEnd="10dp"
+                        app:boxCornerRadiusBottomStart="10dp"
+                        app:boxCornerRadiusBottomEnd="10dp"
+                        app:boxStrokeColor="@color/gray_border"
+                        app:hintEnabled="false"
+                        app:helperText="Opsional"
+                        app:helperTextTextColor="@color/gray_text"
                         app:layout_constraintTop_toBottomOf="@+id/tilNik"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintEnd_toEndOf="parent">
+
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/etReferal"
-                            android:layout_width="match_parent" android:layout_height="wrap_content"
-                            android:hint="Kode referal" android:textSize="13sp"
-                            android:fontFamily="@font/poppins_regular" android:inputType="text" />
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:hint="Kode referal"
+                            android:textSize="13sp"
+                            android:fontFamily="@font/poppins_regular"
+                            android:inputType="text" />
+
                     </com.google.android.material.textfield.TextInputLayout>
 
-                    <!-- Checkbox Syarat — sekarang dengan link baca akad -->
+                    <!-- Checkbox Syarat & Ketentuan -->
                     <LinearLayout
                         android:id="@+id/layoutSyarat"
                         android:layout_width="0dp"
@@ -279,6 +348,7 @@
                             android:fontFamily="@font/poppins_semibold"
                             android:clickable="true"
                             android:focusable="true" />
+
                     </LinearLayout>
 
                 </androidx.constraintlayout.widget.ConstraintLayout>
