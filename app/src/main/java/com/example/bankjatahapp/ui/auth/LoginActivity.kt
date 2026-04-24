@@ -151,19 +151,12 @@ class LoginActivity : AppCompatActivity() {
         }
     }
 
-    // ===== LOGIN DENGAN NO HP — FIXED =====
-    // Masalah sebelumnya: input dikonversi ke +62xxx tapi DB simpan format 08xxx
-    // Solusi: normalisasi input ke format 08xxx agar cocok dengan data di DB
-    // Tapi karena format di DB bisa bermacam-macam, kita cari semua user
-    // lalu cocokkan secara lokal dengan membandingkan digit akhirnya
     private fun doLoginNoHp(noHp: String, password: String) {
         setLoading(true)
         lifecycleScope.launch {
             try {
-                // Bersihkan input — hapus spasi, tanda strip, dll
                 val inputBersih = noHp.replace(Regex("[\\s\\-()]"), "")
 
-                // Normalisasi input ke format 08xxx (format yang dipakai di DB)
                 val formatLokal = when {
                     inputBersih.startsWith("+62") -> "0" + inputBersih.removePrefix("+62")
                     inputBersih.startsWith("62")  -> "0" + inputBersih.removePrefix("62")
@@ -171,14 +164,10 @@ class LoginActivity : AppCompatActivity() {
                     else                          -> "0$inputBersih"
                 }
 
-                // Juga siapkan format +62 untuk jaga-jaga jika ada data lama
                 val formatInternasional = "+62" + formatLokal.removePrefix("0")
 
-                // Cari di DB dengan format lokal (08xxx) dulu
-                // Jika tidak ketemu, coba format internasional (+62xxx)
                 var emailDitemukan: String? = null
 
-                // Coba format 08xxx
                 val hasil08 = client.postgrest
                     .from("users")
                     .select { filter { eq("no_telp", formatLokal) } }
@@ -186,7 +175,6 @@ class LoginActivity : AppCompatActivity() {
 
                 emailDitemukan = extractEmail(hasil08)
 
-                // Jika tidak ditemukan, coba format +62xxx
                 if (emailDitemukan == null) {
                     val hasil62 = client.postgrest
                         .from("users")
@@ -199,7 +187,6 @@ class LoginActivity : AppCompatActivity() {
                     throw Exception("Nomor HP tidak terdaftar")
                 }
 
-                // Login pakai email yang ditemukan
                 client.auth.signInWith(Email) {
                     this.email    = emailDitemukan
                     this.password = password
@@ -219,6 +206,9 @@ class LoginActivity : AppCompatActivity() {
         }
     }
 
+    // ===== NAVIGASI SETELAH LOGIN =====
+    // Cek status_akun dulu sebelum navigasi
+    // Jika tidak aktif → logout paksa + tampilkan pesan error
     private suspend fun navigasiSetelahLogin() {
         try {
             val userId = client.auth.currentUserOrNull()?.id
@@ -229,6 +219,26 @@ class LoginActivity : AppCompatActivity() {
                 .select { filter { eq("id_user", userId) } }
                 .decodeSingle<User>()
 
+            // ===== CEK STATUS AKUN =====
+            if (user.statusAkun != "aktif") {
+                // Logout paksa agar session tidak tersimpan di device
+                try { client.auth.signOut() } catch (_: Exception) {}
+
+                setLoading(false)
+
+                val pesan = when (user.statusAkun) {
+                    "dibekukan"           ->
+                        "Akun Anda dibekukan.\nSilakan hubungi admin untuk informasi lebih lanjut."
+                    "menunggu_verifikasi" ->
+                        "Akun Anda belum diverifikasi.\nSilakan hubungi admin untuk aktivasi akun."
+                    else                  ->
+                        "Akun Anda tidak aktif (${user.statusAkun}).\nSilakan hubungi admin."
+                }
+                showError(pesan)
+                return
+            }
+
+            // Status aktif → navigasi ke halaman sesuai role
             setLoading(false)
             when (user.role) {
                 "nasabah" -> {
@@ -241,6 +251,7 @@ class LoginActivity : AppCompatActivity() {
                 }
                 else -> showError("Role tidak dikenali: ${user.role}")
             }
+
         } catch (e: Exception) {
             setLoading(false)
             showError(terjemahkanError(e.message))
@@ -249,7 +260,6 @@ class LoginActivity : AppCompatActivity() {
 
     private fun extractEmail(json: String): String? {
         return try {
-            // Cek dulu apakah hasilnya array kosong
             if (json.trim() == "[]") return null
             """"email"\s*:\s*"([^"]+)"""".toRegex().find(json)?.groupValues?.get(1)
         } catch (e: Exception) { null }
