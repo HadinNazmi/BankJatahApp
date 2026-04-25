@@ -75,7 +75,7 @@
                     android:fontFamily="@font/poppins_semibold"
                     android:layout_marginBottom="12dp" />
 
-                <!-- Opsi Saldo Tabungan -->
+                <!-- Opsi 1: Saldo Tabungan -->
                 <LinearLayout
                     android:id="@+id/optionTabungan"
                     android:layout_width="match_parent"
@@ -131,7 +131,7 @@
                         android:fontFamily="@font/poppins_bold" />
                 </LinearLayout>
 
-                <!-- Opsi Saldo Komisi -->
+                <!-- Opsi 2: Saldo Komisi -->
                 <LinearLayout
                     android:id="@+id/optionKomisi"
                     android:layout_width="match_parent"
@@ -140,6 +140,7 @@
                     android:gravity="center_vertical"
                     android:background="@drawable/ic_bg_tab_inactive"
                     android:padding="14dp"
+                    android:layout_marginBottom="8dp"
                     android:clickable="true"
                     android:focusable="true">
 
@@ -177,6 +178,61 @@
 
                     <TextView
                         android:id="@+id/tvSaldoKomisiNilai"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Rp 0"
+                        android:textSize="13sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/black"
+                        android:fontFamily="@font/poppins_bold" />
+                </LinearLayout>
+
+                <!-- Opsi 3: Saldo Bonus Afiliasi -->
+                <LinearLayout
+                    android:id="@+id/optionAfiliasi"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:background="@drawable/ic_bg_tab_inactive"
+                    android:padding="14dp"
+                    android:clickable="true"
+                    android:focusable="true">
+
+                    <RadioButton
+                        android:id="@+id/radioAfiliasi"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:checked="false"
+                        android:buttonTint="@color/orange_primary" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical"
+                        android:layout_marginStart="10dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Saldo Bonus Afiliasi"
+                            android:textSize="13sp"
+                            android:textStyle="bold"
+                            android:textColor="@color/black"
+                            android:fontFamily="@font/poppins_semibold" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Dari komisi afiliasi jaringan · Butuh min. Bintang 3"
+                            android:textSize="11sp"
+                            android:textColor="@color/gray_text"
+                            android:fontFamily="@font/poppins_regular" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/tvSaldoAfiliasiNilai"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Rp 0"
