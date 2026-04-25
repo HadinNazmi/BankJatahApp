@@ -13,13 +13,6 @@
         android:paddingBottom="32dp">
 
         <!-- ===== HEADER ===== -->
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:layout_marginTop="16dp"
-            android:layout_marginBottom="16dp"
-            android:background="@color/gray_border" />
-
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -160,154 +153,248 @@
                     android:textColor="@color/black"
                     android:fontFamily="@font/poppins_semibold" />
 
-                <!-- Card area scan QR -->
+                <!-- ===== AREA QR SCANNER PROFESIONAL ===== -->
                 <androidx.cardview.widget.CardView
-                    android:id="@+id/cardScanQr"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    app:cardCornerRadius="12dp"
+                    app:cardCornerRadius="16dp"
                     app:cardElevation="0dp"
-                    app:cardBackgroundColor="#F0F4FF">
+                    app:cardBackgroundColor="@color/black">
 
-                    <LinearLayout
+                    <FrameLayout
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:padding="16dp"
-                        android:gravity="center">
+                        android:layout_height="260dp">
 
-                        <!-- Tombol Scan QR yang bisa diklik -->
-                        <FrameLayout
+                        <!-- Live camera preview CameraX -->
+                        <androidx.camera.view.PreviewView
+                            android:id="@+id/cameraPreview"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:visibility="gone" />
+
+                        <!-- Custom overlay bingkai oranye -->
+                        <com.example.bankjatahapp.ui.component.QrScannerOverlayView
+                            android:id="@+id/qrOverlay"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:visibility="gone" />
+
+                        <!-- Placeholder sebelum scan dibuka (tap untuk buka kamera) -->
+                        <LinearLayout
                             android:id="@+id/frameQrScanner"
                             android:layout_width="match_parent"
-                            android:layout_height="160dp"
-                            android:background="@drawable/ic_bg_upload_area"
+                            android:layout_height="match_parent"
+                            android:orientation="vertical"
+                            android:gravity="center"
+                            android:background="@color/black"
                             android:clickable="true"
                             android:focusable="true"
                             android:foreground="?attr/selectableItemBackground">
 
-                            <LinearLayout
-                                android:layout_width="match_parent"
-                                android:layout_height="match_parent"
-                                android:orientation="vertical"
-                                android:gravity="center">
+                            <!-- Bingkai QR dekoratif oranye -->
+                            <FrameLayout
+                                android:layout_width="160dp"
+                                android:layout_height="160dp">
 
-                                <!-- Icon QR besar -->
+                                <!-- Sudut kiri atas — horizontal -->
+                                <View
+                                    android:layout_width="40dp"
+                                    android:layout_height="4dp"
+                                    android:background="@color/orange_primary"
+                                    android:layout_gravity="top|start" />
+                                <!-- Sudut kiri atas — vertikal -->
+                                <View
+                                    android:layout_width="4dp"
+                                    android:layout_height="40dp"
+                                    android:background="@color/orange_primary"
+                                    android:layout_gravity="top|start" />
+
+                                <!-- Sudut kanan atas — horizontal -->
+                                <View
+                                    android:layout_width="40dp"
+                                    android:layout_height="4dp"
+                                    android:background="@color/orange_primary"
+                                    android:layout_gravity="top|end" />
+                                <!-- Sudut kanan atas — vertikal -->
+                                <View
+                                    android:layout_width="4dp"
+                                    android:layout_height="40dp"
+                                    android:background="@color/orange_primary"
+                                    android:layout_gravity="top|end" />
+
+                                <!-- Sudut kiri bawah — horizontal -->
+                                <View
+                                    android:layout_width="40dp"
+                                    android:layout_height="4dp"
+                                    android:background="@color/orange_primary"
+                                    android:layout_gravity="bottom|start" />
+                                <!-- Sudut kiri bawah — vertikal -->
+                                <View
+                                    android:layout_width="4dp"
+                                    android:layout_height="40dp"
+                                    android:background="@color/orange_primary"
+                                    android:layout_gravity="bottom|start" />
+
+                                <!-- Sudut kanan bawah — horizontal -->
+                                <View
+                                    android:layout_width="40dp"
+                                    android:layout_height="4dp"
+                                    android:background="@color/orange_primary"
+                                    android:layout_gravity="bottom|end" />
+                                <!-- Sudut kanan bawah — vertikal -->
+                                <View
+                                    android:layout_width="4dp"
+                                    android:layout_height="40dp"
+                                    android:background="@color/orange_primary"
+                                    android:layout_gravity="bottom|end" />
+
+                                <!-- Icon kamera di tengah bingkai -->
                                 <ImageView
-                                    android:layout_width="56dp"
-                                    android:layout_height="56dp"
+                                    android:layout_width="44dp"
+                                    android:layout_height="44dp"
                                     android:src="@android:drawable/ic_menu_camera"
-                                    android:background="#1A2196F3"
-                                    android:padding="12dp"
-                                    android:scaleType="centerInside" />
+                                    app:tint="#80FFFFFF"
+                                    android:layout_gravity="center" />
 
-                                <TextView
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:text="Tap untuk Scan QR Nasabah"
-                                    android:textSize="14sp"
-                                    android:textStyle="bold"
-                                    android:textColor="@color/black"
-                                    android:fontFamily="@font/poppins_semibold"
-                                    android:layout_marginTop="12dp" />
-
-                                <TextView
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:text="Arahkan kamera ke QR identitas nasabah"
-                                    android:textSize="12sp"
-                                    android:textColor="@color/gray_text"
-                                    android:fontFamily="@font/poppins_regular"
-                                    android:layout_marginTop="4dp" />
-
-                            </LinearLayout>
-                        </FrameLayout>
-
-                        <!-- Divider atau -->
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:orientation="horizontal"
-                            android:gravity="center_vertical"
-                            android:layout_marginTop="14dp">
-
-                            <View
-                                android:layout_width="0dp"
-                                android:layout_height="1dp"
-                                android:layout_weight="1"
-                                android:background="@color/gray_border" />
+                            </FrameLayout>
 
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="  atau masukkan ID manual  "
-                                android:textSize="11sp"
-                                android:textColor="@color/gray_text"
-                                android:fontFamily="@font/poppins_regular" />
+                                android:text="Tap untuk Scan QR Nasabah"
+                                android:textSize="14sp"
+                                android:textStyle="bold"
+                                android:textColor="@color/white"
+                                android:fontFamily="@font/poppins_semibold"
+                                android:layout_marginTop="16dp" />
 
-                            <View
-                                android:layout_width="0dp"
-                                android:layout_height="1dp"
-                                android:layout_weight="1"
-                                android:background="@color/gray_border" />
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Arahkan kamera ke QR identitas nasabah"
+                                android:textSize="12sp"
+                                android:textColor="#80FFFFFF"
+                                android:fontFamily="@font/poppins_regular"
+                                android:layout_marginTop="4dp" />
 
                         </LinearLayout>
 
-                        <!-- Input manual ID + tombol Cek -->
-                        <androidx.constraintlayout.widget.ConstraintLayout
+                        <!-- Label instruksi saat scan aktif -->
+                        <TextView
+                            android:id="@+id/tvScanInstruksi"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="10dp">
+                            android:text="Arahkan QR ke dalam bingkai"
+                            android:textSize="12sp"
+                            android:textColor="@color/white"
+                            android:fontFamily="@font/poppins_regular"
+                            android:gravity="center"
+                            android:background="#88000000"
+                            android:padding="8dp"
+                            android:layout_gravity="bottom"
+                            android:visibility="gone" />
 
-                            <com.google.android.material.textfield.TextInputLayout
-                                android:id="@+id/tilIdNasabah"
-                                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                app:boxCornerRadiusTopStart="10dp"
-                                app:boxCornerRadiusTopEnd="10dp"
-                                app:boxCornerRadiusBottomStart="10dp"
-                                app:boxCornerRadiusBottomEnd="10dp"
-                                app:boxStrokeColor="@color/gray_border"
-                                app:hintEnabled="false"
-                                app:layout_constraintStart_toStartOf="parent"
-                                app:layout_constraintEnd_toStartOf="@+id/btnCekNasabah"
-                                app:layout_constraintTop_toTopOf="parent"
-                                app:layout_constraintBottom_toBottomOf="parent">
+                        <!-- Tombol tutup kamera (X) -->
+                        <ImageView
+                            android:id="@+id/btnTutupKamera"
+                            android:layout_width="36dp"
+                            android:layout_height="36dp"
+                            android:src="@android:drawable/ic_menu_close_clear_cancel"
+                            android:background="#88000000"
+                            android:padding="8dp"
+                            android:layout_gravity="top|end"
+                            android:layout_margin="10dp"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:foreground="?attr/selectableItemBackground"
+                            android:visibility="gone" />
 
-                                <com.google.android.material.textfield.TextInputEditText
-                                    android:id="@+id/etIdNasabah"
-                                    android:layout_width="match_parent"
-                                    android:layout_height="wrap_content"
-                                    android:hint="Masukkan 8 digit ID nasabah..."
-                                    android:textSize="13sp"
-                                    android:fontFamily="@font/poppins_regular"
-                                    android:textColor="@color/black"
-                                    android:inputType="text"
-                                    android:maxLength="8" />
+                    </FrameLayout>
 
-                            </com.google.android.material.textfield.TextInputLayout>
-
-                            <Button
-                                android:id="@+id/btnCekNasabah"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Cek"
-                                android:textSize="13sp"
-                                android:textColor="@color/white"
-                                android:backgroundTint="@color/black"
-                                android:fontFamily="@font/poppins_semibold"
-                                android:layout_marginStart="8dp"
-                                app:cornerRadius="10dp"
-                                app:layout_constraintEnd_toEndOf="parent"
-                                app:layout_constraintTop_toTopOf="parent"
-                                app:layout_constraintBottom_toBottomOf="parent" />
-
-                        </androidx.constraintlayout.widget.ConstraintLayout>
-
-                    </LinearLayout>
                 </androidx.cardview.widget.CardView>
+
+                <!-- Divider atau -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginTop="14dp">
+
+                    <View
+                        android:layout_width="0dp"
+                        android:layout_height="1dp"
+                        android:layout_weight="1"
+                        android:background="@color/gray_border" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="  atau masukkan ID manual  "
+                        android:textSize="11sp"
+                        android:textColor="@color/gray_text"
+                        android:fontFamily="@font/poppins_regular" />
+
+                    <View
+                        android:layout_width="0dp"
+                        android:layout_height="1dp"
+                        android:layout_weight="1"
+                        android:background="@color/gray_border" />
+
+                </LinearLayout>
+
+                <!-- Input manual ID + tombol Cek -->
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp">
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/tilIdNasabah"
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        app:boxCornerRadiusTopStart="10dp"
+                        app:boxCornerRadiusTopEnd="10dp"
+                        app:boxCornerRadiusBottomStart="10dp"
+                        app:boxCornerRadiusBottomEnd="10dp"
+                        app:boxStrokeColor="@color/gray_border"
+                        app:hintEnabled="false"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintEnd_toStartOf="@+id/btnCekNasabah"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintBottom_toBottomOf="parent">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/etIdNasabah"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:hint="Masukkan 8 digit ID..."
+                            android:textSize="13sp"
+                            android:fontFamily="@font/poppins_regular"
+                            android:textColor="@color/black"
+                            android:inputType="text"
+                            android:maxLength="8" />
+
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <Button
+                        android:id="@+id/btnCekNasabah"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Cek"
+                        android:textSize="13sp"
+                        android:textColor="@color/white"
+                        android:backgroundTint="@color/black"
+                        android:fontFamily="@font/poppins_semibold"
+                        android:layout_marginStart="8dp"
+                        app:cornerRadius="10dp"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintBottom_toBottomOf="parent" />
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
 
                 <!-- Info nama nasabah setelah cek/scan -->
                 <androidx.constraintlayout.widget.ConstraintLayout
@@ -357,8 +444,6 @@
 
                 </androidx.constraintlayout.widget.ConstraintLayout>
 
-                <!-- Divider -->
-
                 <!-- ===== BERAT BERSIH ===== -->
                 <TextView
                     android:layout_width="wrap_content"
@@ -367,7 +452,8 @@
                     android:textSize="13sp"
                     android:textStyle="bold"
                     android:textColor="@color/black"
-                    android:fontFamily="@font/poppins_semibold" />
+                    android:fontFamily="@font/poppins_semibold"
+                    android:layout_marginTop="16dp" />
 
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/tilJumlah"
@@ -610,45 +696,64 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="14dp">
 
-                    <ImageView android:id="@+id/ivIconWallet"
-                        android:layout_width="32dp" android:layout_height="32dp"
+                    <ImageView
+                        android:id="@+id/ivIconWallet"
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
                         android:src="@drawable/ic_request"
                         android:background="@drawable/ic_bg_aktivitas_orange"
-                        android:padding="7dp" android:scaleType="centerInside"
+                        android:padding="7dp"
+                        android:scaleType="centerInside"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toTopOf="parent"
                         app:layout_constraintBottom_toBottomOf="parent" />
 
-                    <TextView android:id="@+id/tvSaldoLabel"
-                        android:layout_width="0dp" android:layout_height="wrap_content"
-                        android:text="Total Rupiah Nasabah" android:textSize="13sp"
-                        android:textColor="@color/black" android:fontFamily="@font/poppins_regular"
+                    <TextView
+                        android:id="@+id/tvSaldoLabel"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:text="Total Rupiah Nasabah"
+                        android:textSize="13sp"
+                        android:textColor="@color/black"
+                        android:fontFamily="@font/poppins_regular"
                         android:layout_marginStart="12dp"
                         app:layout_constraintStart_toEndOf="@+id/ivIconWallet"
                         app:layout_constraintEnd_toStartOf="@+id/tvSaldoNilai"
                         app:layout_constraintTop_toTopOf="parent" />
 
-                    <TextView android:id="@+id/tvSaldoSubLabel"
-                        android:layout_width="0dp" android:layout_height="wrap_content"
-                        android:text="Akan didapat nasabah" android:textSize="11sp"
-                        android:textColor="@color/gray_text" android:fontFamily="@font/poppins_regular"
+                    <TextView
+                        android:id="@+id/tvSaldoSubLabel"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:text="Akan didapat nasabah"
+                        android:textSize="11sp"
+                        android:textColor="@color/gray_text"
+                        android:fontFamily="@font/poppins_regular"
                         android:layout_marginStart="12dp"
                         app:layout_constraintStart_toEndOf="@+id/ivIconWallet"
                         app:layout_constraintEnd_toStartOf="@+id/tvSaldoNilai"
                         app:layout_constraintTop_toBottomOf="@+id/tvSaldoLabel" />
 
-                    <TextView android:id="@+id/tvSaldoNilai"
-                        android:layout_width="wrap_content" android:layout_height="wrap_content"
-                        android:text="Rp 0" android:textSize="14sp" android:textStyle="bold"
-                        android:textColor="@color/black" android:fontFamily="@font/poppins_bold"
+                    <TextView
+                        android:id="@+id/tvSaldoNilai"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Rp 0"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/black"
+                        android:fontFamily="@font/poppins_bold"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintTop_toTopOf="parent"
                         app:layout_constraintBottom_toBottomOf="parent" />
 
                 </androidx.constraintlayout.widget.ConstraintLayout>
 
-                <View android:layout_width="match_parent" android:layout_height="1dp"
-                    android:background="@color/gray_border" android:layout_marginTop="12dp" />
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="@color/gray_border"
+                    android:layout_marginTop="12dp" />
 
                 <!-- Harga per Kg -->
                 <androidx.constraintlayout.widget.ConstraintLayout
@@ -656,45 +761,64 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp">
 
-                    <ImageView android:id="@+id/ivIconPoin"
-                        android:layout_width="32dp" android:layout_height="32dp"
+                    <ImageView
+                        android:id="@+id/ivIconPoin"
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
                         android:src="@drawable/ic_bintang"
                         android:background="@drawable/ic_bg_aktivitas_orange"
-                        android:padding="7dp" android:scaleType="centerInside"
+                        android:padding="7dp"
+                        android:scaleType="centerInside"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toTopOf="parent"
                         app:layout_constraintBottom_toBottomOf="parent" />
 
-                    <TextView android:id="@+id/tvPoinLabel"
-                        android:layout_width="0dp" android:layout_height="wrap_content"
-                        android:text="Harga per Kg" android:textSize="13sp"
-                        android:textColor="@color/black" android:fontFamily="@font/poppins_regular"
+                    <TextView
+                        android:id="@+id/tvPoinLabel"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:text="Harga per Kg"
+                        android:textSize="13sp"
+                        android:textColor="@color/black"
+                        android:fontFamily="@font/poppins_regular"
                         android:layout_marginStart="12dp"
                         app:layout_constraintStart_toEndOf="@+id/ivIconPoin"
                         app:layout_constraintEnd_toStartOf="@+id/tvPoinNilai"
                         app:layout_constraintTop_toTopOf="parent" />
 
-                    <TextView android:id="@+id/tvPoinSubLabel"
-                        android:layout_width="0dp" android:layout_height="wrap_content"
-                        android:text="Harga sementara" android:textSize="11sp"
-                        android:textColor="@color/gray_text" android:fontFamily="@font/poppins_regular"
+                    <TextView
+                        android:id="@+id/tvPoinSubLabel"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:text="Harga sementara"
+                        android:textSize="11sp"
+                        android:textColor="@color/gray_text"
+                        android:fontFamily="@font/poppins_regular"
                         android:layout_marginStart="12dp"
                         app:layout_constraintStart_toEndOf="@+id/ivIconPoin"
                         app:layout_constraintEnd_toStartOf="@+id/tvPoinNilai"
                         app:layout_constraintTop_toBottomOf="@+id/tvPoinLabel" />
 
-                    <TextView android:id="@+id/tvPoinNilai"
-                        android:layout_width="wrap_content" android:layout_height="wrap_content"
-                        android:text="Rp 90/Kg" android:textSize="14sp" android:textStyle="bold"
-                        android:textColor="@color/orange_primary" android:fontFamily="@font/poppins_bold"
+                    <TextView
+                        android:id="@+id/tvPoinNilai"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Rp 90/Kg"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/orange_primary"
+                        android:fontFamily="@font/poppins_bold"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintTop_toTopOf="parent"
                         app:layout_constraintBottom_toBottomOf="parent" />
 
                 </androidx.constraintlayout.widget.ConstraintLayout>
 
-                <View android:layout_width="match_parent" android:layout_height="1dp"
-                    android:background="@color/gray_border" android:layout_marginTop="12dp" />
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="@color/gray_border"
+                    android:layout_marginTop="12dp" />
 
                 <!-- Estimasi Validasi -->
                 <androidx.constraintlayout.widget.ConstraintLayout
@@ -702,37 +826,53 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp">
 
-                    <ImageView android:id="@+id/ivIconValidasi"
-                        android:layout_width="32dp" android:layout_height="32dp"
+                    <ImageView
+                        android:id="@+id/ivIconValidasi"
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
                         android:src="@drawable/ic_riwayat"
                         android:background="@drawable/ic_bg_aktivitas_orange"
-                        android:padding="7dp" android:scaleType="centerInside"
+                        android:padding="7dp"
+                        android:scaleType="centerInside"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toTopOf="parent"
                         app:layout_constraintBottom_toBottomOf="parent" />
 
-                    <TextView android:id="@+id/tvValidasiLabel"
-                        android:layout_width="0dp" android:layout_height="wrap_content"
-                        android:text="Estimasi Validasi" android:textSize="13sp"
-                        android:textColor="@color/black" android:fontFamily="@font/poppins_regular"
+                    <TextView
+                        android:id="@+id/tvValidasiLabel"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:text="Estimasi Validasi"
+                        android:textSize="13sp"
+                        android:textColor="@color/black"
+                        android:fontFamily="@font/poppins_regular"
                         android:layout_marginStart="12dp"
                         app:layout_constraintStart_toEndOf="@+id/ivIconValidasi"
                         app:layout_constraintEnd_toStartOf="@+id/tvValidasiNilai"
                         app:layout_constraintTop_toTopOf="parent" />
 
-                    <TextView android:id="@+id/tvValidasiSubLabel"
-                        android:layout_width="0dp" android:layout_height="wrap_content"
-                        android:text="Waktu proses" android:textSize="11sp"
-                        android:textColor="@color/gray_text" android:fontFamily="@font/poppins_regular"
+                    <TextView
+                        android:id="@+id/tvValidasiSubLabel"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:text="Waktu proses"
+                        android:textSize="11sp"
+                        android:textColor="@color/gray_text"
+                        android:fontFamily="@font/poppins_regular"
                         android:layout_marginStart="12dp"
                         app:layout_constraintStart_toEndOf="@+id/ivIconValidasi"
                         app:layout_constraintEnd_toStartOf="@+id/tvValidasiNilai"
                         app:layout_constraintTop_toBottomOf="@+id/tvValidasiLabel" />
 
-                    <TextView android:id="@+id/tvValidasiNilai"
-                        android:layout_width="wrap_content" android:layout_height="wrap_content"
-                        android:text="1-2 Jam" android:textSize="14sp" android:textStyle="bold"
-                        android:textColor="@color/black" android:fontFamily="@font/poppins_bold"
+                    <TextView
+                        android:id="@+id/tvValidasiNilai"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="1-2 Jam"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/black"
+                        android:fontFamily="@font/poppins_bold"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintTop_toTopOf="parent"
                         app:layout_constraintBottom_toBottomOf="parent" />

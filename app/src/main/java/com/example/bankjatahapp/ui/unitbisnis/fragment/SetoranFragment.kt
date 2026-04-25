@@ -1,15 +1,21 @@
 package com.example.bankjatahapp.ui.unitbisnis.fragment
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.camera.core.CameraSelector
+import androidx.camera.core.ImageAnalysis
+import androidx.camera.core.Preview
+import androidx.camera.lifecycle.ProcessCameraProvider
+import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
@@ -19,9 +25,9 @@ import com.example.bankjatahapp.data.model.UnitBisnisData
 import com.example.bankjatahapp.data.model.User
 import com.example.bankjatahapp.data.remote.SupabaseClient.client
 import com.example.bankjatahapp.databinding.FragmentSetoranBinding
-import com.journeyapps.barcodescanner.ScanContract
-import com.journeyapps.barcodescanner.ScanIntentResult
-import com.journeyapps.barcodescanner.ScanOptions
+import com.google.mlkit.vision.barcode.BarcodeScanning
+import com.google.mlkit.vision.barcode.common.Barcode
+import com.google.mlkit.vision.common.InputImage
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.postgrest.postgrest
 import kotlinx.coroutines.launch
@@ -31,6 +37,8 @@ import java.io.File
 import java.text.NumberFormat
 import java.util.Locale
 import java.util.UUID
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
 
 class SetoranFragment : Fragment() {
 
@@ -45,16 +53,11 @@ class SetoranFragment : Fragment() {
     private var hargaPerKg: Double? = null
     private var komisiPerKg: Double? = null
 
-    // ===== SCAN QR =====
-    private val scanQrLauncher = registerForActivityResult(ScanContract()) { result: ScanIntentResult ->
-        if (result.contents != null) {
-            val uuid = result.contents.trim()
-            binding.etIdNasabah.setText(uuid.take(8) + "...")
-            cekUserByUuid(uuid)
-        } else {
-            Toast.makeText(requireContext(), "Scan dibatalkan", Toast.LENGTH_SHORT).show()
-        }
-    }
+    // CameraX
+    private var cameraProvider: ProcessCameraProvider? = null
+    private lateinit var cameraExecutor: ExecutorService
+    private var isScannerActive = false
+    private var sudahDipindai = false
 
     // ===== KAMERA FOTO =====
     private val ambilFotoLauncher = registerForActivityResult(
@@ -64,6 +67,21 @@ class SetoranFragment : Fragment() {
             binding.ivPreviewFoto.setImageURI(fotoUri)
             binding.ivPreviewFoto.visibility         = View.VISIBLE
             binding.layoutPlaceholderFoto.visibility = View.GONE
+        }
+    }
+
+    // ===== PERMISSION KAMERA =====
+    private val requestKameraPermission = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (granted) {
+            bukaScanner()
+        } else {
+            Toast.makeText(
+                requireContext(),
+                "Izin kamera diperlukan untuk scan QR",
+                Toast.LENGTH_LONG
+            ).show()
         }
     }
 
@@ -78,11 +96,11 @@ class SetoranFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        cameraExecutor = Executors.newSingleThreadExecutor()
         muatHargaDanKomisi()
         setupListeners()
     }
 
-    // ===== LOAD HARGA & KOMISI DARI DB =====
     private fun muatHargaDanKomisi() {
         setFormEnabled(false)
         binding.btnKonfirmasi.text = "Memuat harga..."
@@ -144,10 +162,17 @@ class SetoranFragment : Fragment() {
         binding.btnCekNasabah.isEnabled  = enabled
     }
 
-    // ===== SETUP LISTENERS =====
     private fun setupListeners() {
 
-        binding.frameQrScanner.setOnClickListener { bukaQrScanner() }
+        // Tap placeholder hitam → buka scanner
+        binding.frameQrScanner.setOnClickListener {
+            mintaIzinDanScan()
+        }
+
+        // Tombol X tutup scanner
+        binding.btnTutupKamera.setOnClickListener {
+            tutupScanner()
+        }
 
         binding.btnCekNasabah.setOnClickListener {
             val inputId = binding.etIdNasabah.text.toString().trim()
@@ -172,7 +197,6 @@ class SetoranFragment : Fragment() {
             override fun afterTextChanged(s: Editable?) {
                 val berat = s.toString().toDoubleOrNull()
                 val harga = hargaPerKg
-
                 when {
                     berat != null && berat > 0 && harga != null -> {
                         val estimasi = formatRupiah(berat * harga)
@@ -198,18 +222,115 @@ class SetoranFragment : Fragment() {
         binding.btnKonfirmasi.setOnClickListener { validasiDanSubmit() }
     }
 
-    private fun bukaQrScanner() {
-        val options = ScanOptions().apply {
-            setDesiredBarcodeFormats(ScanOptions.QR_CODE)
-            setPrompt("Arahkan ke QR Identitas Nasabah")
-            setCameraId(0)
-            setBeepEnabled(true)
-            setOrientationLocked(false)
+    // ===== QR SCANNER =====
+    private fun mintaIzinDanScan() {
+        if (ContextCompat.checkSelfPermission(
+                requireContext(), Manifest.permission.CAMERA
+            ) == PackageManager.PERMISSION_GRANTED
+        ) {
+            bukaScanner()
+        } else {
+            requestKameraPermission.launch(Manifest.permission.CAMERA)
         }
-        scanQrLauncher.launch(options)
     }
 
-    // ===== CEK USER DARI SCAN QR =====
+    private fun bukaScanner() {
+        if (isScannerActive) return
+        isScannerActive = true
+        sudahDipindai   = false
+
+        // Sembunyikan placeholder, tampilkan camera + overlay
+        binding.frameQrScanner.visibility   = View.GONE
+        binding.cameraPreview.visibility    = View.VISIBLE
+        binding.qrOverlay.visibility        = View.VISIBLE
+        binding.tvScanInstruksi.visibility  = View.VISIBLE
+        binding.btnTutupKamera.visibility   = View.VISIBLE
+
+        val cameraProviderFuture = ProcessCameraProvider.getInstance(requireContext())
+        cameraProviderFuture.addListener({
+            cameraProvider = cameraProviderFuture.get()
+
+            val preview = Preview.Builder().build().also {
+                it.setSurfaceProvider(binding.cameraPreview.surfaceProvider)
+            }
+
+            val imageAnalysis = ImageAnalysis.Builder()
+                .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+                .build()
+                .also { analysis ->
+                    analysis.setAnalyzer(cameraExecutor) { imageProxy ->
+                        if (sudahDipindai) {
+                            imageProxy.close()
+                            return@setAnalyzer
+                        }
+
+                        val mediaImage = imageProxy.image
+                        if (mediaImage != null) {
+                            val image = InputImage.fromMediaImage(
+                                mediaImage,
+                                imageProxy.imageInfo.rotationDegrees
+                            )
+                            BarcodeScanning.getClient()
+                                .process(image)
+                                .addOnSuccessListener { barcodes ->
+                                    for (barcode in barcodes) {
+                                        val hasil = barcode.rawValue ?: continue
+                                        if (hasil.isNotEmpty() && !sudahDipindai) {
+                                            sudahDipindai = true
+                                            requireActivity().runOnUiThread {
+                                                onQrTerpindai(hasil.trim())
+                                            }
+                                            break
+                                        }
+                                    }
+                                }
+                                .addOnCompleteListener { imageProxy.close() }
+                        } else {
+                            imageProxy.close()
+                        }
+                    }
+                }
+
+            try {
+                cameraProvider?.unbindAll()
+                cameraProvider?.bindToLifecycle(
+                    viewLifecycleOwner,
+                    CameraSelector.DEFAULT_BACK_CAMERA,
+                    preview,
+                    imageAnalysis
+                )
+            } catch (e: Exception) {
+                Toast.makeText(
+                    requireContext(),
+                    "Gagal membuka kamera: ${e.message}",
+                    Toast.LENGTH_SHORT
+                ).show()
+                tutupScanner()
+            }
+
+        }, ContextCompat.getMainExecutor(requireContext()))
+    }
+
+    private fun tutupScanner() {
+        isScannerActive = false
+        sudahDipindai   = false
+        cameraProvider?.unbindAll()
+
+        // Tampilkan kembali placeholder, sembunyikan camera
+        binding.frameQrScanner.visibility  = View.VISIBLE
+        binding.cameraPreview.visibility   = View.GONE
+        binding.qrOverlay.visibility       = View.GONE
+        binding.tvScanInstruksi.visibility = View.GONE
+        binding.btnTutupKamera.visibility  = View.GONE
+    }
+
+    private fun onQrTerpindai(uuid: String) {
+        tutupScanner()
+        binding.etIdNasabah.setText(uuid.take(8) + "...")
+        cekUserByUuid(uuid)
+    }
+
+    // ===== CEK USER =====
     private fun cekUserByUuid(uuid: String) {
         setTombolCek(loading = true)
         lifecycleScope.launch {
@@ -238,7 +359,6 @@ class SetoranFragment : Fragment() {
         }
     }
 
-    // ===== CEK USER MANUAL =====
     private fun cekUserManual(inputId: String) {
         setTombolCek(loading = true)
         lifecycleScope.launch {
@@ -302,7 +422,6 @@ class SetoranFragment : Fragment() {
         ambilFotoLauncher.launch(fotoUri!!)
     }
 
-    // ===== VALIDASI SEBELUM SUBMIT =====
     private fun validasiDanSubmit() {
         if (hargaPerKg == null || komisiPerKg == null) {
             Toast.makeText(
@@ -312,7 +431,6 @@ class SetoranFragment : Fragment() {
             ).show()
             return
         }
-
         if (idNasabahDipilih == null) {
             Toast.makeText(
                 requireContext(),
@@ -321,26 +439,20 @@ class SetoranFragment : Fragment() {
             ).show()
             return
         }
-
         val beratStr = binding.etJumlah.text.toString().trim()
         if (beratStr.isEmpty()) {
             binding.tilJumlah.error = "Berat minyak tidak boleh kosong"
             return
         }
-
         val berat = beratStr.toDoubleOrNull()
         if (berat == null || berat <= 0) {
             binding.tilJumlah.error = "Berat minyak tidak valid"
             return
         }
-
         binding.tilJumlah.error = null
         submitSetoran(berat, binding.etCatatan.text.toString().trim())
     }
 
-    // ===== SUBMIT SETORAN =====
-    // Catatan: auto-assign id_sponsor sudah diurus oleh trigger
-    // fn_before_insert_setoran di DB — tidak perlu lagi dari Android
     private fun submitSetoran(beratKg: Double, catatan: String) {
         setLoading(true)
 
@@ -411,6 +523,9 @@ class SetoranFragment : Fragment() {
         binding.layoutPlaceholderFoto.visibility = View.VISIBLE
         binding.tvSaldoNilai.text                = "Rp 0"
         binding.tvEstimasiRupiah.text            = "Rp 0"
+
+        // Pastikan scanner tertutup saat form direset
+        if (isScannerActive) tutupScanner()
     }
 
     private fun setLoading(loading: Boolean) {
@@ -422,8 +537,15 @@ class SetoranFragment : Fragment() {
         NumberFormat.getCurrencyInstance(Locale("id", "ID"))
             .format(nominal).replace(",00", "")
 
+    override fun onPause() {
+        super.onPause()
+        if (isScannerActive) tutupScanner()
+    }
+
     override fun onDestroyView() {
         super.onDestroyView()
+        cameraExecutor.shutdown()
+        cameraProvider?.unbindAll()
         _binding = null
     }
 }
