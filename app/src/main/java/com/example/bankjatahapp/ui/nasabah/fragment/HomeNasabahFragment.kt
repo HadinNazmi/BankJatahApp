@@ -11,6 +11,7 @@ import com.example.bankjatahapp.R
 import com.example.bankjatahapp.data.model.DompetUser
 import com.example.bankjatahapp.data.model.NasabahData
 import com.example.bankjatahapp.data.model.ProdukReward
+import com.example.bankjatahapp.data.model.SystemConfig
 import com.example.bankjatahapp.data.model.User
 import com.example.bankjatahapp.data.remote.SupabaseClient.client
 import com.example.bankjatahapp.databinding.FragmentHomeNasabahBinding
@@ -25,6 +26,10 @@ class HomeNasabahFragment : Fragment() {
 
     private var _binding: FragmentHomeNasabahBinding? = null
     private val binding get() = _binding!!
+
+    // Simpan data yang diperlukan untuk cek syarat UB
+    private var nasabahData: NasabahData? = null
+    private var systemConfig: SystemConfig? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -59,19 +64,25 @@ class HomeNasabahFragment : Fragment() {
                     .decodeSingle<DompetUser>()
 
                 // 3. Data nasabah_data → level + total setoran
-                val nasabah = client.postgrest
+                nasabahData = client.postgrest
                     .from("nasabah_data")
                     .select { filter { eq("id_nasabah", idUser) } }
                     .decodeSingle<NasabahData>()
 
-                // 4. Produk reward aktif
+                // 4. System config — untuk ambil min_bintang_kemitraan secara dinamis
+                systemConfig = client.postgrest
+                    .from("system_config")
+                    .select { filter { eq("id_config", 1) } }
+                    .decodeSingle<SystemConfig>()
+
+                // 5. Produk reward aktif
                 val produkList = client.postgrest
                     .from("produk_reward")
                     .select { filter { eq("status_produk", "aktif") } }
                     .decodeList<ProdukReward>()
                 val rewardTersedia = produkList.count { it.stok > 0 }
 
-                tampilkanData(user, dompet, nasabah, rewardTersedia)
+                tampilkanData(user, dompet, nasabahData!!, rewardTersedia)
 
             } catch (e: Exception) {
                 Toast.makeText(requireContext(), "Gagal memuat data: ${e.message}", Toast.LENGTH_LONG).show()
@@ -93,11 +104,11 @@ class HomeNasabahFragment : Fragment() {
             else          -> user.role
         }
 
-        // Card orange: Saldo Tabungan (saldo_nasabah) + Saldo Bonus (saldo_afiliasi)
+        // Card orange: Saldo Tabungan + Saldo Bonus
         binding.tvSaldoTabungan.text = formatRupiah(dompet.saldoNasabah)
         binding.tvSaldoBonus.text    = formatRupiah(dompet.saldoAfiliasi)
 
-        // Card poin reward (tetap tampil di card bawah)
+        // Card poin reward
         binding.tvTotalPoin.text      = dompet.poinReward.toString()
         binding.tvRewardTersedia.text = rewardTersedia.toString()
         binding.tvInfoReward.text     = "Ada $rewardTersedia reward yang bisa kamu tukar sekarang!"
@@ -158,7 +169,80 @@ class HomeNasabahFragment : Fragment() {
         }
         binding.tvLihatSemua.setOnClickListener { }
         binding.ivNotifikasi.setOnClickListener { }
+
+        // ===== TOMBOL DAFTAR UNIT BISNIS =====
+        // Cek syarat bintang dari system_config sebelum buka form registrasi
         binding.btnDaftarUnitBisnis.setOnClickListener {
+            cekSyaratDanBukaRegistrasiUB()
+        }
+    }
+
+    // ===== CEK SYARAT LEVEL BINTANG UNTUK DAFTAR UB =====
+    // Syarat diambil dari system_config.min_bintang_kemitraan (dinamis, diatur admin)
+    // Default fallback = 3 jika config belum dimuat
+    private fun cekSyaratDanBukaRegistrasiUB() {
+        val nasabah = nasabahData
+        val config  = systemConfig
+
+        // Jika data belum dimuat, load dulu
+        if (nasabah == null || config == null) {
+            lifecycleScope.launch {
+                try {
+                    val idUser = client.auth.currentUserOrNull()?.id ?: return@launch
+
+                    if (nasabahData == null) {
+                        nasabahData = client.postgrest
+                            .from("nasabah_data")
+                            .select { filter { eq("id_nasabah", idUser) } }
+                            .decodeSingle<NasabahData>()
+                    }
+
+                    if (systemConfig == null) {
+                        systemConfig = client.postgrest
+                            .from("system_config")
+                            .select { filter { eq("id_config", 1) } }
+                            .decodeSingle<SystemConfig>()
+                    }
+
+                    // Setelah data dimuat, cek lagi
+                    prosesKlikDaftarUB()
+
+                } catch (e: Exception) {
+                    Toast.makeText(
+                        requireContext(),
+                        "Gagal memuat data: ${e.message}",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+            }
+        } else {
+            prosesKlikDaftarUB()
+        }
+    }
+
+    private fun prosesKlikDaftarUB() {
+        val nasabah       = nasabahData ?: return
+        val config        = systemConfig
+        val levelSaatIni  = nasabah.levelBintang ?: 1
+
+        // Ambil syarat minimum bintang dari config Supabase
+        // Fallback ke 3 jika config belum ada (sesuai default DB)
+        val minBintang = config?.minBintangKemitraan ?: 3
+
+        if (levelSaatIni < minBintang) {
+            // Belum memenuhi syarat — tampilkan pesan jelas
+            val sisa = minBintang - levelSaatIni
+            Toast.makeText(
+                requireContext(),
+                "⚠ Belum memenuhi syarat!\n\n" +
+                        "Untuk mendaftar sebagai Unit Bisnis, Anda perlu minimal Bintang $minBintang.\n\n" +
+                        "Level Anda saat ini: Bintang $levelSaatIni\n" +
+                        "Kurang $sisa tingkat lagi.\n\n" +
+                        "Terus setor minyak untuk naik level!",
+                Toast.LENGTH_LONG
+            ).show()
+        } else {
+            // Sudah memenuhi syarat — buka form registrasi UB
             parentFragmentManager.beginTransaction()
                 .replace(R.id.fragmentContainer, RegistrasiUnitBisnisFragment())
                 .addToBackStack(null)

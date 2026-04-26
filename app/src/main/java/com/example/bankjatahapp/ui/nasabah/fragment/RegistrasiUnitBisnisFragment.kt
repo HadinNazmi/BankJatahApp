@@ -2,14 +2,11 @@ package com.example.bankjatahapp.ui.nasabah.fragment
 
 import android.Manifest
 import android.content.pm.PackageManager
-import android.graphics.Canvas
 import android.graphics.Color
-import android.graphics.Paint
-import android.graphics.Point
 import android.location.Location
+import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
-import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
@@ -24,6 +21,7 @@ import com.example.bankjatahapp.databinding.FragmentRegistrasiUnitBisnisBinding
 import com.google.android.gms.location.LocationServices
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.postgrest.postgrest
+import io.github.jan.supabase.storage.storage
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
@@ -31,10 +29,12 @@ import org.osmdroid.config.Configuration
 import org.osmdroid.events.MapEventsReceiver
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
-import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.MapEventsOverlay
 import org.osmdroid.views.overlay.Marker
-import org.osmdroid.views.overlay.Overlay
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+import java.util.UUID
 
 class RegistrasiUnitBisnisFragment : Fragment() {
 
@@ -43,18 +43,35 @@ class RegistrasiUnitBisnisFragment : Fragment() {
 
     private val listWilayah = mutableListOf<MasterWilayah>()
 
-    // Koordinat yang dipilih dari peta
+    // Koordinat dari peta
     private var latDipilih: Double? = null
     private var lonDipilih: Double? = null
-
-    // Marker di peta
     private var markerLokasi: Marker? = null
 
-    // Default center peta: Pekanbaru, Riau
+    // Default center: Pekanbaru, Riau
     private val defaultLat = 0.5071
     private val defaultLon = 101.4478
 
-    // Permission launcher untuk lokasi
+    // URI foto bukti bayar yang dipilih user
+    private var uriBuktiBayar: Uri? = null
+
+    // ===== LAUNCHER: Pilih Foto dari Galeri =====
+    private val pickImageLauncher = registerForActivityResult(
+        ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        if (uri != null) {
+            uriBuktiBayar = uri
+            // Tampilkan preview foto yang dipilih
+            binding.ivPreviewBuktiBayar.setImageURI(uri)
+            binding.ivPreviewBuktiBayar.visibility = View.VISIBLE
+            binding.tvBuktiBayarStatus.text = "✓ Foto bukti pembayaran dipilih"
+            binding.tvBuktiBayarStatus.setTextColor(
+                ContextCompat.getColor(requireContext(), com.example.bankjatahapp.R.color.orange_primary)
+            )
+        }
+    }
+
+    // ===== LAUNCHER: Izin Lokasi =====
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
@@ -76,7 +93,6 @@ class RegistrasiUnitBisnisFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        // Wajib set userAgentValue sebelum pakai OSMDroid
         Configuration.getInstance().userAgentValue = requireContext().packageName
         _binding = FragmentRegistrasiUnitBisnisBinding.inflate(inflater, container, false)
         return binding.root
@@ -92,13 +108,12 @@ class RegistrasiUnitBisnisFragment : Fragment() {
     // ===== SETUP MAP =====
     private fun setupMap() {
         binding.mapView.apply {
-            setTileSource(TileSourceFactory.MAPNIK) // OpenStreetMap
+            setTileSource(TileSourceFactory.MAPNIK)
             setMultiTouchControls(true)
             controller.setZoom(13.0)
             controller.setCenter(GeoPoint(defaultLat, defaultLon))
         }
 
-        // Overlay untuk tangkap tap di peta
         val mapEventsReceiver = object : MapEventsReceiver {
             override fun singleTapConfirmedHelper(p: GeoPoint): Boolean {
                 pindahkanMarker(p.latitude, p.longitude)
@@ -109,29 +124,22 @@ class RegistrasiUnitBisnisFragment : Fragment() {
         binding.mapView.overlays.add(MapEventsOverlay(mapEventsReceiver))
     }
 
-    // ===== PINDAHKAN / SET MARKER =====
+    // ===== MARKER PETA =====
     private fun pindahkanMarker(lat: Double, lon: Double) {
         latDipilih = lat
         lonDipilih = lon
 
         val geoPoint = GeoPoint(lat, lon)
-
-        // Hapus marker lama jika ada
         markerLokasi?.let { binding.mapView.overlays.remove(it) }
-
-        // Buat marker baru
         markerLokasi = Marker(binding.mapView).apply {
             position  = geoPoint
             title     = "Lokasi Unit Bisnis"
             setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
         }
         binding.mapView.overlays.add(markerLokasi)
-
-        // Geser peta ke titik yang dipilih
         binding.mapView.controller.animateTo(geoPoint)
         binding.mapView.invalidate()
 
-        // Update field teks
         val latStr = String.format("%.6f", lat)
         val lonStr = String.format("%.6f", lon)
         binding.etLatitude.setText(latStr)
@@ -142,26 +150,19 @@ class RegistrasiUnitBisnisFragment : Fragment() {
         )
     }
 
-    // ===== GUNAKAN LOKASI GPS =====
+    // ===== LOKASI GPS =====
     private fun mintaIzinLokasi() {
         val fineGranted = ContextCompat.checkSelfPermission(
             requireContext(), Manifest.permission.ACCESS_FINE_LOCATION
         ) == PackageManager.PERMISSION_GRANTED
-
         val coarseGranted = ContextCompat.checkSelfPermission(
             requireContext(), Manifest.permission.ACCESS_COARSE_LOCATION
         ) == PackageManager.PERMISSION_GRANTED
 
-        if (fineGranted || coarseGranted) {
-            gunakanLokasiSaya()
-        } else {
-            requestPermissionLauncher.launch(
-                arrayOf(
-                    Manifest.permission.ACCESS_FINE_LOCATION,
-                    Manifest.permission.ACCESS_COARSE_LOCATION
-                )
-            )
-        }
+        if (fineGranted || coarseGranted) gunakanLokasiSaya()
+        else requestPermissionLauncher.launch(
+            arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)
+        )
     }
 
     private fun gunakanLokasiSaya() {
@@ -180,11 +181,7 @@ class RegistrasiUnitBisnisFragment : Fragment() {
                     ).show()
                 }
             }.addOnFailureListener {
-                Toast.makeText(
-                    requireContext(),
-                    "Gagal mengambil lokasi: ${it.message}",
-                    Toast.LENGTH_LONG
-                ).show()
+                Toast.makeText(requireContext(), "Gagal mengambil lokasi: ${it.message}", Toast.LENGTH_LONG).show()
             }
         } catch (e: SecurityException) {
             Toast.makeText(requireContext(), "Izin lokasi belum diberikan.", Toast.LENGTH_SHORT).show()
@@ -203,34 +200,32 @@ class RegistrasiUnitBisnisFragment : Fragment() {
                 listWilayah.clear()
                 listWilayah.addAll(hasil)
 
-                val namaList = listWilayah.map { "${it.kodeWilayah} - ${it.namaWilayah}" }
                 val adapter = ArrayAdapter(
                     requireContext(),
                     android.R.layout.simple_spinner_item,
-                    namaList
+                    listWilayah.map { "${it.kodeWilayah} - ${it.namaWilayah}" }
                 )
                 adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
                 binding.spinnerWilayah.adapter = adapter
 
             } catch (e: Exception) {
-                Toast.makeText(
-                    requireContext(),
-                    "Gagal memuat wilayah: ${e.message}",
-                    Toast.LENGTH_LONG
-                ).show()
+                Toast.makeText(requireContext(), "Gagal memuat wilayah: ${e.message}", Toast.LENGTH_LONG).show()
             }
         }
     }
 
+    // ===== SETUP LISTENERS =====
     private fun setupClickListeners() {
         binding.btnBack.setOnClickListener {
             parentFragmentManager.popBackStack()
         }
-
         binding.btnGunakanLokasiSaya.setOnClickListener {
             mintaIzinLokasi()
         }
-
+        // Tombol pilih foto bukti pembayaran dari galeri
+        binding.btnPilihBuktiBayar.setOnClickListener {
+            pickImageLauncher.launch("image/*")
+        }
         binding.btnAjukanKemitraan.setOnClickListener {
             validasiDanAjukan()
         }
@@ -264,24 +259,33 @@ class RegistrasiUnitBisnisFragment : Fragment() {
         }
         binding.tilAlamat.error = null
 
-        // Validasi koordinat — wajib pilih dari peta
+        // Validasi koordinat peta
         if (latDipilih == null || lonDipilih == null) {
+            binding.tvKoordinatDipilih.text = "⚠ Belum memilih lokasi di peta!"
+            binding.tvKoordinatDipilih.setTextColor(Color.RED)
             Toast.makeText(
                 requireContext(),
                 "Pilih lokasi unit bisnis di peta terlebih dahulu.\nTap di peta atau gunakan tombol 'Lokasi Saya'.",
                 Toast.LENGTH_LONG
             ).show()
-            // Scroll ke peta (tidak bisa otomatis dari fragment, tapi toast sudah cukup)
-            binding.tvKoordinatDipilih.text = "⚠ Belum memilih lokasi di peta!"
-            binding.tvKoordinatDipilih.setTextColor(Color.RED)
             return
         }
 
-        val wilayahDipilih = listWilayah[selectedIndex]
-        ajukanKemitraan(namaUsaha, alamat, latDipilih!!, lonDipilih!!, wilayahDipilih)
+        // Validasi foto bukti pembayaran — WAJIB
+        if (uriBuktiBayar == null) {
+            Toast.makeText(
+                requireContext(),
+                "⚠ Foto bukti pembayaran biaya pendaftaran wajib dilampirkan.\n" +
+                        "Silakan pilih foto bukti transfer dari galeri.",
+                Toast.LENGTH_LONG
+            ).show()
+            return
+        }
+
+        ajukanKemitraan(namaUsaha, alamat, latDipilih!!, lonDipilih!!, listWilayah[selectedIndex])
     }
 
-    // ===== SUBMIT =====
+    // ===== SUBMIT PENGAJUAN =====
     private fun ajukanKemitraan(
         namaUsaha: String,
         alamat: String,
@@ -296,7 +300,7 @@ class RegistrasiUnitBisnisFragment : Fragment() {
                 val idUser = client.auth.currentUserOrNull()?.id
                     ?: throw Exception("Session tidak ditemukan, silakan login ulang")
 
-                // Cek apakah sudah pernah mengajukan
+                // 1. Cek apakah sudah pernah mengajukan
                 val existing = client.postgrest
                     .from("unit_bisnis_data")
                     .select { filter { eq("id_unit_bisnis", idUser) } }
@@ -312,16 +316,38 @@ class RegistrasiUnitBisnisFragment : Fragment() {
                     return@launch
                 }
 
+                // 2. Upload foto bukti pembayaran ke Supabase Storage bucket 'evidence'
+                val uriBukti   = uriBuktiBayar!!
+                val inputStream = requireContext().contentResolver.openInputStream(uriBukti)
+                    ?: throw Exception("Gagal membaca file foto")
+                val fotoBytes  = inputStream.readBytes()
+                inputStream.close()
+
+                // Nama file: bukti-ub/{idUser}/{uuid}.jpg
+                val namaFile   = "bukti-ub/$idUser/${UUID.randomUUID()}.jpg"
+                val bucket     = client.storage.from("evidence")
+                bucket.upload(namaFile, fotoBytes) { upsert = false }
+
+                // Ambil public URL foto
+                val fotoUrl = bucket.publicUrl(namaFile)
+
+                // 3. Catat timestamp pembayaran
+                val sdf      = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX", Locale.getDefault())
+                val tglBayar = sdf.format(Date())
+
+                // 4. Insert ke unit_bisnis_data dengan bukti_bayar_pendaftaran & tgl_bayar_pendaftaran
                 val payload = buildJsonObject {
-                    put("id_unit_bisnis",         idUser)
-                    put("id_wilayah",             wilayah.idWilayah)
-                    put("nama_usaha",             namaUsaha)
-                    put("alamat",                 alamat)
-                    put("lokasi_lat",             lat)
-                    put("lokasi_long",            lon)
-                    put("status_verifikasi_unit", "menunggu")
-                    put("tipe_unit",              "kelurahan")
-                    put("transaksi_harian",       0)
+                    put("id_unit_bisnis",          idUser)
+                    put("id_wilayah",              wilayah.idWilayah)
+                    put("nama_usaha",              namaUsaha)
+                    put("alamat",                  alamat)
+                    put("lokasi_lat",              lat)
+                    put("lokasi_long",             lon)
+                    put("status_verifikasi_unit",  "menunggu")
+                    put("tipe_unit",               "kelurahan")
+                    put("transaksi_harian",        0)
+                    put("bukti_bayar_pendaftaran", fotoUrl)     // URL foto dari Storage
+                    put("tgl_bayar_pendaftaran",   tglBayar)   // Timestamp saat daftar
                 }
 
                 client.postgrest.from("unit_bisnis_data").insert(payload)
@@ -329,7 +355,9 @@ class RegistrasiUnitBisnisFragment : Fragment() {
                 setLoading(false)
                 Toast.makeText(
                     requireContext(),
-                    "✓ Pengajuan kemitraan berhasil dikirim!\nTim kami akan menghubungi Anda segera.",
+                    "✓ Pengajuan kemitraan berhasil dikirim!\n" +
+                            "Tim kami akan menghubungi Anda segera.\n\n" +
+                            "Bukti pembayaran telah tersimpan.",
                     Toast.LENGTH_LONG
                 ).show()
 
@@ -343,6 +371,8 @@ class RegistrasiUnitBisnisFragment : Fragment() {
                         "Anda sudah pernah mengajukan kemitraan."
                     e.message?.contains("row-level security") == true ->
                         "Akses ditolak. Pastikan Anda sudah login."
+                    e.message?.contains("Gagal membaca") == true ->
+                        "Gagal membaca file foto. Coba pilih foto lain."
                     else -> "Gagal mengajukan: ${e.message}"
                 }
                 Toast.makeText(requireContext(), pesan, Toast.LENGTH_LONG).show()
@@ -354,9 +384,9 @@ class RegistrasiUnitBisnisFragment : Fragment() {
         binding.btnAjukanKemitraan.isEnabled = !loading
         binding.btnAjukanKemitraan.text =
             if (loading) "Mengajukan..." else "Ajukan Kemitraan Final"
+        binding.btnPilihBuktiBayar.isEnabled = !loading
     }
 
-    // OSMDroid perlu resume/pause untuk kelola tile cache
     override fun onResume() {
         super.onResume()
         binding.mapView.onResume()
