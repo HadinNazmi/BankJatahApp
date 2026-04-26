@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="24dp"
+    android:layout_marginEnd="24dp"
+    app:cardCornerRadius="20dp"
+    app:cardElevation="8dp"
+    app:cardBackgroundColor="@color/white">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:padding="24dp">
+
+        <!-- Header -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="🎉 Penukaran Berhasil!"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="@color/black"
+            android:fontFamily="@font/poppins_bold"
+            android:gravity="center" />
+
+        <TextView
+            android:id="@+id/tvNamaProduk"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Nama Produk"
+            android:textSize="14sp"
+            android:textColor="@color/orange_primary"
+            android:fontFamily="@font/poppins_semibold"
+            android:gravity="center"
+            android:layout_marginTop="4dp" />
+
+        <TextView
+            android:id="@+id/tvPoinDipakai"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="0 poin"
+            android:textSize="12sp"
+            android:textColor="@color/gray_text"
+            android:fontFamily="@font/poppins_regular"
+            android:layout_marginTop="2dp" />
+
+        <!-- Divider -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/gray_border"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="16dp" />
+
+        <!-- QR Code -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="4dp"
+            app:cardBackgroundColor="@color/white">
+
+            <ImageView
+                android:id="@+id/ivQrCode"
+                android:layout_width="220dp"
+                android:layout_height="220dp"
+                android:scaleType="fitCenter"
+                android:padding="12dp" />
+
+        </androidx.cardview.widget.CardView>
+
+        <!-- Info QR -->
+        <TextView
+            android:id="@+id/tvInfoQr"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Tunjukkan QR ini kepada petugas untuk menukarkan reward Anda."
+            android:textSize="12sp"
+            android:textColor="@color/gray_text"
+            android:fontFamily="@font/poppins_regular"
+            android:gravity="center"
+            android:layout_marginTop="12dp" />
+
+        <!-- Kode & Status -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="#F8F9FA"
+            android:padding="12dp"
+            android:layout_marginTop="12dp">
+
+            <TextView
+                android:id="@+id/tvKodeRedeem"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="ID: -"
+                android:textSize="11sp"
+                android:textColor="@color/black"
+                android:fontFamily="@font/poppins_semibold"
+                android:layout_gravity="center_horizontal" />
+
+            <TextView
+                android:id="@+id/tvStatusRedeem"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Status: Menunggu Verifikasi"
+                android:textSize="11sp"
+                android:textColor="@color/orange_primary"
+                android:fontFamily="@font/poppins_regular"
+                android:layout_marginTop="2dp"
+                android:layout_gravity="center_horizontal" />
+
+        </LinearLayout>
+
+        <!-- Tombol Simpan QR -->
+        <Button
+            android:id="@+id/btnSimpanQr"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:text="💾 Simpan QR ke Galeri"
+            android:textSize="13sp"
+            android:textColor="@color/white"
+            android:fontFamily="@font/poppins_semibold"
+            android:backgroundTint="@color/orange_primary"
+            android:layout_marginTop="16dp"
+            app:cornerRadius="12dp" />
+
+        <!-- Tombol Tutup -->
+        <Button
+            android:id="@+id/btnTutup"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:text="Tutup"
+            android:textSize="13sp"
+            android:textColor="@color/orange_primary"
+            android:fontFamily="@font/poppins_semibold"
+            android:backgroundTint="#FFF3E0"
+            android:layout_marginTop="8dp"
+            app:cornerRadius="12dp" />
+
+    </LinearLayout>
+</androidx.cardview.widget.CardView>
