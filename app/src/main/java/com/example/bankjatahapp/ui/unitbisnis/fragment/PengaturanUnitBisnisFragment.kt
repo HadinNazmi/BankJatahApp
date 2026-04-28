@@ -1,4 +1,4 @@
-package com.example.bankjatahapp.ui.nasabah.fragment
+package com.example.bankjatahapp.ui.unitbisnis.fragment
 
 import android.net.Uri
 import android.os.Bundle
@@ -10,9 +10,10 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.example.bankjatahapp.data.model.NasabahData
+import com.example.bankjatahapp.data.model.UnitBisnisData
 import com.example.bankjatahapp.data.model.User
 import com.example.bankjatahapp.data.remote.SupabaseClient.client
-import com.example.bankjatahapp.databinding.FragmentPengaturanAkunBinding
+import com.example.bankjatahapp.databinding.FragmentPengaturanUnitBisnisBinding
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.storage.storage
@@ -22,16 +23,16 @@ import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import java.io.InputStream
 
-class PengaturanAkunFragment : Fragment() {
+class PengaturanUnitBisnisFragment : Fragment() {
 
-    private var _binding: FragmentPengaturanAkunBinding? = null
+    private var _binding: FragmentPengaturanUnitBisnisBinding? = null
     private val binding get() = _binding!!
 
     private var idUser: String? = null
     private var fotoBaru: Uri? = null
     private var urlFotoLama: String? = null
 
-    // Track apakah sudah ada sponsor — jika sudah, field referral di-disable
+    // Sudah ada sponsor atau belum — kalau sudah, field referral di-disable
     private var sudahAdaSponsor: Boolean = false
 
     // Model decode hasil RPC check_referral_code
@@ -57,7 +58,7 @@ class PengaturanAkunFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentPengaturanAkunBinding.inflate(inflater, container, false)
+        _binding = FragmentPengaturanUnitBisnisBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -67,35 +68,48 @@ class PengaturanAkunFragment : Fragment() {
         setupClickListeners()
     }
 
+    // ===== LOAD DATA DARI 3 TABEL =====
     private fun loadData() {
         setFormLoading(true)
         lifecycleScope.launch {
             try {
                 idUser = client.auth.currentUserOrNull()?.id ?: return@launch
 
+                // 1. Tabel users
                 val user = client.postgrest
                     .from("users")
                     .select { filter { eq("id_user", idUser!!) } }
                     .decodeSingle<User>()
 
-                val nasabah = client.postgrest
-                    .from("nasabah_data")
-                    .select { filter { eq("id_nasabah", idUser!!) } }
-                    .decodeSingle<NasabahData>()
+                // 2. Tabel nasabah_data (unit bisnis juga punya ini)
+                val nasabah = try {
+                    client.postgrest
+                        .from("nasabah_data")
+                        .select { filter { eq("id_nasabah", idUser!!) } }
+                        .decodeSingle<NasabahData>()
+                } catch (_: Exception) { null }
+
+                // 3. Tabel unit_bisnis_data
+                val unit = client.postgrest
+                    .from("unit_bisnis_data")
+                    .select { filter { eq("id_unit_bisnis", idUser!!) } }
+                    .decodeSingle<UnitBisnisData>()
 
                 urlFotoLama = user.urlFotoProfil
 
                 // ===== ISI FIELD YANG BISA DIUBAH =====
+
+                // Dari tabel users
                 binding.etNama.setText(user.namaLengkap)
                 binding.etNoTelp.setText(user.noTelp ?: "")
-                binding.etAlamat.setText(nasabah.alamatRumah ?: "")
 
-                // ===== FIELD KODE REFERRAL SPONSOR =====
-                // Jika id_sponsor sudah terisi → field di-disable, tidak boleh diubah lagi
-                // Jika belum ada sponsor → field aktif, user bisa isi kode referral
-                // TIDAK query nasabah_data lagi untuk tampilkan kode sponsor
-                // karena RLS memblokir query ke row milik user lain
-                sudahAdaSponsor = !nasabah.idSponsor.isNullOrEmpty()
+                // Dari tabel nasabah_data
+                binding.etAlamat.setText(nasabah?.alamatRumah ?: "")
+
+                // Field kode referral sponsor
+                // Jika sudah ada sponsor → disable (tidak boleh diubah lagi)
+                // Jika belum ada → enable, user bisa isi
+                sudahAdaSponsor = !nasabah?.idSponsor.isNullOrEmpty()
                 if (sudahAdaSponsor) {
                     binding.etKodeReferralSponsor.setText("")
                     binding.etKodeReferralSponsor.hint = "Sponsor sudah terdaftar"
@@ -108,29 +122,56 @@ class PengaturanAkunFragment : Fragment() {
                     binding.tilKodeReferralSponsor.helperText = "Opsional — isi jika Anda memiliki sponsor"
                 }
 
+                // Dari tabel unit_bisnis_data — yang bisa diubah
+                binding.etNamaUsaha.setText(unit.namaUsaha ?: "")
+                binding.etJamBuka.setText(unit.jamBuka ?: "")
+                binding.etJamTutup.setText(unit.jamTutup ?: "")
+                binding.etHariOperasional.setText(unit.hariOperasional ?: "")
+
                 // ===== ISI FIELD READ-ONLY =====
-                binding.tvEmailValue.text        = user.email
-                binding.tvNikValue.text          = nasabah.nik ?: "-"
-                binding.tvKodeReferralValue.text = nasabah.kodeReferral ?: "-"
-                binding.tvLevelBintangValue.text = "Bintang ${nasabah.levelBintang ?: 1}"
-                binding.tvKategoriValue.text     = (nasabah.kategoriNasabah ?: "pasif")
+
+                // Dari users
+                binding.tvEmailValue.text      = user.email
+                binding.tvStatusAkunValue.text = user.statusAkun.replaceFirstChar { it.uppercase() }
+                binding.tvRoleValue.text       = "Unit Bisnis"
+
+                // Dari nasabah_data
+                binding.tvNikValue.text          = nasabah?.nik ?: "-"
+                binding.tvKodeReferralValue.text = nasabah?.kodeReferral ?: "-"
+                binding.tvLevelBintangValue.text = "Bintang ${nasabah?.levelBintang ?: 1}"
+                binding.tvKategoriValue.text     = (nasabah?.kategoriNasabah ?: "pasif")
                     .replaceFirstChar { it.uppercase() }
-                binding.tvStatusAkunValue.text   = user.statusAkun.replaceFirstChar { it.uppercase() }
-                binding.tvRoleValue.text         = "Nasabah"
+
+                // Dari unit_bisnis_data — read only
+                binding.tvTipeUnitValue.text = unit.tipeUnit.replaceFirstChar { it.uppercase() }
+                binding.tvStatusVerifikasiValue.text = unit.statusVerifikasiUnit
+                    .replace("_", " ").replaceFirstChar { it.uppercase() }
+                binding.tvLokasiValue.text = if (unit.lokasiLat != 0.0 && unit.lokasiLong != 0.0) {
+                    "${String.format("%.5f", unit.lokasiLat)}, ${String.format("%.5f", unit.lokasiLong)}"
+                } else "-"
 
                 // Warna badge status akun
-                val statusColor = when (user.statusAkun) {
+                val statusAkunColor = when (user.statusAkun) {
                     "aktif"               -> requireContext().getColor(com.example.bankjatahapp.R.color.notif_success_bg)
                     "dibekukan"           -> requireContext().getColor(com.example.bankjatahapp.R.color.notif_error_bg)
                     "menunggu_verifikasi" -> requireContext().getColor(com.example.bankjatahapp.R.color.notif_warning_bg)
                     else                  -> requireContext().getColor(com.example.bankjatahapp.R.color.gray_border)
                 }
-                binding.tvStatusAkunValue.setBackgroundColor(statusColor)
+                binding.tvStatusAkunValue.setBackgroundColor(statusAkunColor)
 
-                // Load foto profil dengan Glide
+                // Warna badge status verifikasi unit bisnis
+                val statusUnitColor = when (unit.statusVerifikasiUnit) {
+                    "disetujui" -> requireContext().getColor(com.example.bankjatahapp.R.color.notif_success_bg)
+                    "ditolak"   -> requireContext().getColor(com.example.bankjatahapp.R.color.notif_error_bg)
+                    "nonaktif"  -> requireContext().getColor(com.example.bankjatahapp.R.color.gray_border)
+                    else        -> requireContext().getColor(com.example.bankjatahapp.R.color.notif_warning_bg)
+                }
+                binding.tvStatusVerifikasiValue.setBackgroundColor(statusUnitColor)
+
+                // Load foto profil
                 if (!urlFotoLama.isNullOrEmpty()) {
                     try {
-                        com.bumptech.glide.Glide.with(this@PengaturanAkunFragment)
+                        com.bumptech.glide.Glide.with(this@PengaturanUnitBisnisFragment)
                             .load(urlFotoLama)
                             .circleCrop()
                             .placeholder(android.R.drawable.ic_menu_myplaces)
@@ -159,11 +200,16 @@ class PengaturanAkunFragment : Fragment() {
         }
     }
 
+    // ===== SIMPAN KE 3 TABEL =====
     private fun simpanPerubahan() {
-        val nama           = binding.etNama.text.toString().trim()
-        val noTelp         = binding.etNoTelp.text.toString().trim()
-        val alamat         = binding.etAlamat.text.toString().trim()
-        val kodeRefSponsor = binding.etKodeReferralSponsor.text.toString().trim()
+        val nama            = binding.etNama.text.toString().trim()
+        val noTelp          = binding.etNoTelp.text.toString().trim()
+        val alamat          = binding.etAlamat.text.toString().trim()
+        val kodeRefSponsor  = binding.etKodeReferralSponsor.text.toString().trim()
+        val namaUsaha       = binding.etNamaUsaha.text.toString().trim()
+        val jamBuka         = binding.etJamBuka.text.toString().trim()
+        val jamTutup        = binding.etJamTutup.text.toString().trim()
+        val hariOperasional = binding.etHariOperasional.text.toString().trim()
 
         if (nama.isEmpty()) {
             binding.tilNama.error = "Nama tidak boleh kosong"
@@ -189,7 +235,7 @@ class PengaturanAkunFragment : Fragment() {
                         inputStream.close()
 
                         val namaFile = "profil_$id.jpg"
-                        // Operator [] — cara benar Supabase SDK v3
+                        // Gunakan operator [] — cara yang benar untuk Supabase SDK v3
                         client.storage["foto-profil"].upload(namaFile, bytes) {
                             upsert = true
                         }
@@ -205,8 +251,8 @@ class PengaturanAkunFragment : Fragment() {
 
                 // ===== RESOLUSI KODE REFERRAL SPONSOR via RPC =====
                 // Pakai check_referral_code (SECURITY DEFINER) — bypass RLS
-                // Sama persis seperti cara RegisterActivity — tidak query langsung nasabah_data
-                // Hanya diproses jika field aktif (belum ada sponsor) dan user mengisi
+                // Sama persis seperti cara RegisterActivity
+                // Hanya diproses jika field aktif (belum ada sponsor) dan diisi
                 var idSponsorBaru: String? = null
                 if (!sudahAdaSponsor && kodeRefSponsor.isNotEmpty()) {
                     try {
@@ -219,7 +265,7 @@ class PengaturanAkunFragment : Fragment() {
                             .decodeList<ReferralResult>()
 
                         if (hasil.isEmpty()) {
-                            // Kode tidak ditemukan — sama dengan perilaku RegisterActivity
+                            // Kode referral tidak ditemukan
                             setLoading(false)
                             Toast.makeText(
                                 requireContext(),
@@ -229,10 +275,10 @@ class PengaturanAkunFragment : Fragment() {
                             return@launch
                         }
 
-                        // Ditemukan — ambil UUID pemilik kode referral
+                        // Ditemukan — ambil UUID pemilik kode
                         idSponsorBaru = hasil[0].id_owner
 
-                        // Cegah user memasukkan kode referral dirinya sendiri
+                        // Pastikan tidak memasukkan kode referral diri sendiri
                         if (idSponsorBaru == id) {
                             setLoading(false)
                             Toast.makeText(
@@ -254,7 +300,7 @@ class PengaturanAkunFragment : Fragment() {
                     }
                 }
 
-                // ===== UPDATE TABEL users =====
+                // ===== 1. UPDATE TABEL users =====
                 client.postgrest.from("users").update(
                     mapOf(
                         "nama_lengkap"    to nama,
@@ -263,9 +309,8 @@ class PengaturanAkunFragment : Fragment() {
                     )
                 ) { filter { eq("id_user", id) } }
 
-                // ===== UPDATE TABEL nasabah_data =====
+                // ===== 2. UPDATE TABEL nasabah_data =====
                 // id_sponsor hanya diupdate jika belum ada sponsor dan kode valid
-                // Jika field disabled (sudah ada sponsor) → tidak sentuh id_sponsor sama sekali
                 if (!sudahAdaSponsor && idSponsorBaru != null) {
                     client.postgrest.from("nasabah_data").update(
                         mapOf(
@@ -274,13 +319,23 @@ class PengaturanAkunFragment : Fragment() {
                         )
                     ) { filter { eq("id_nasabah", id) } }
                 } else {
-                    // Update hanya alamat, id_sponsor tidak disentuh
+                    // Update tanpa ubah id_sponsor
                     client.postgrest.from("nasabah_data").update(
                         mapOf(
                             "alamat_rumah" to alamat.ifEmpty { null }
                         )
                     ) { filter { eq("id_nasabah", id) } }
                 }
+
+                // ===== 3. UPDATE TABEL unit_bisnis_data =====
+                client.postgrest.from("unit_bisnis_data").update(
+                    mapOf(
+                        "nama_usaha"       to namaUsaha.ifEmpty { null },
+                        "jam_buka"         to jamBuka.ifEmpty { null },
+                        "jam_tutup"        to jamTutup.ifEmpty { null },
+                        "hari_operasional" to hariOperasional.ifEmpty { null }
+                    )
+                ) { filter { eq("id_unit_bisnis", id) } }
 
                 setLoading(false)
                 Toast.makeText(

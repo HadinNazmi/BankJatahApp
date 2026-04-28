@@ -129,7 +129,10 @@ class ProfilUnitBisnisFragment : Fragment() {
         }
 
         binding.menuPengaturan.setOnClickListener {
-            Toast.makeText(requireContext(), "Pengaturan Akun", Toast.LENGTH_SHORT).show()
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.fragmentContainer, PengaturanUnitBisnisFragment())
+                .addToBackStack(null)
+                .commit()
         }
 
         binding.menuNotifikasi.setOnClickListener {

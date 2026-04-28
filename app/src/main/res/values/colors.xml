@@ -21,4 +21,10 @@
     <color name="purple_700">#FF3700B3</color>
     <color name="teal_200">#FF03DAC5</color>
     <color name="teal_700">#FF018786</color>
+
+    <!-- Notifikasi popup & badge status akun -->
+    <color name="notif_success_bg">#4CAF50</color>
+    <color name="notif_error_bg">#E53935</color>
+    <color name="notif_warning_bg">#FFA000</color>
+    <color name="notif_info_bg">#2196F3</color>
 </resources>
