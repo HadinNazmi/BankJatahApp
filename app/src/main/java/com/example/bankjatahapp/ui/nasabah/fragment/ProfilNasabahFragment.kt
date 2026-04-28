@@ -68,10 +68,15 @@ class ProfilNasabahFragment : Fragment() {
                     .select { filter { eq("id_nasabah", idUser) } }
                     .decodeSingle<NasabahData>()
 
+                val dompet = client.postgrest
+                    .from("dompet_user")
+                    .select { filter { eq("id_dompet", idUser) } }
+                    .decodeSingle<com.example.bankjatahapp.data.model.DompetUser>()
+
                 // Simpan UUID PENUH untuk QR
                 idNasabah = nasabahData.idNasabah
 
-                tampilkanData(user, nasabahData)
+                tampilkanData(user, nasabahData, dompet)
 
             } catch (e: Exception) {
                 Toast.makeText(requireContext(), "Gagal memuat data: ${e.message}", Toast.LENGTH_LONG).show()
@@ -79,17 +84,26 @@ class ProfilNasabahFragment : Fragment() {
         }
     }
 
-    private fun tampilkanData(user: User, nasabah: NasabahData) {
-        binding.tvNama.text        = user.namaLengkap
-        binding.tvRole.text        = "Nasabah"
+    private fun tampilkanData(
+        user: User,
+        nasabah: NasabahData,
+        dompet: com.example.bankjatahapp.data.model.DompetUser
+    ) {
+        binding.tvNama.text = user.namaLengkap
+        binding.tvRole.text = "Nasabah"
         binding.tvTotalMinyak.text = "${nasabah.totalSetoranLifetime} L"
+
+        // Saldo & poin dari dompet
+        val saldo = dompet.saldoNasabah ?: 0.0
+        val poin = dompet.poinReward ?: 0
+        binding.tvSaldoWallet.text = "Rp ${String.format("%,.0f", saldo)}"
+        binding.tvPoin.text = "$poin pts"
     }
 
-    // QR berisi UUID PENUH — bukan 8 digit
+    // QR berisi UUID PENUH
     private fun generateQrBitmap(uuid: String): Bitmap {
-        val size   = 512
+        val size = 512
         val writer = QRCodeWriter()
-        // Encode UUID lengkap: "976d0340-c2e1-4c79-a4a4-5ebe0a3883f5"
         val matrix = writer.encode(uuid, BarcodeFormat.QR_CODE, size, size)
         val bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.RGB_565)
         for (x in 0 until size) {
@@ -112,14 +126,12 @@ class ProfilNasabahFragment : Fragment() {
         dialog.setContentView(R.layout.dialog_qr_nasabah)
         dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
 
-        val ivQr     = dialog.findViewById<ImageView>(R.id.ivQrCode)
+        val ivQr = dialog.findViewById<ImageView>(R.id.ivQrCode)
         val tvKodeId = dialog.findViewById<TextView>(R.id.tvKodeId)
         val tvNamaQr = dialog.findViewById<TextView>(R.id.tvNamaQr)
         val btnTutup = dialog.findViewById<TextView>(R.id.btnTutupQr)
 
-        // Generate QR dengan UUID penuh
         ivQr.setImageBitmap(generateQrBitmap(id))
-        // Tampilkan hanya 8 digit di UI agar mudah dibaca manusia
         tvKodeId.text = "ID: ${id.take(8)}..."
         tvNamaQr.text = binding.tvNama.text
 
@@ -128,8 +140,13 @@ class ProfilNasabahFragment : Fragment() {
     }
 
     private fun setupClickListeners() {
+
         binding.btnTampilkanQr.setOnClickListener {
             tampilkanDialogQr()
+        }
+
+        binding.ivEdit.setOnClickListener {
+            Toast.makeText(requireContext(), "Edit Profil", Toast.LENGTH_SHORT).show()
         }
 
         binding.menuPengaturan.setOnClickListener {
@@ -139,8 +156,9 @@ class ProfilNasabahFragment : Fragment() {
                 .commit()
         }
 
+        // Tombol Ajukan Berhenti — menggantikan menu Notifikasi
         binding.menuNotifikasi.setOnClickListener {
-            Toast.makeText(requireContext(), "Notifikasi", Toast.LENGTH_SHORT).show()
+            bukaFormAjukanBerhenti()
         }
 
         binding.menuBantuan.setOnClickListener {
@@ -152,10 +170,22 @@ class ProfilNasabahFragment : Fragment() {
         }
 
         binding.menuLogout.setOnClickListener {
+            lifecycleScope.launch {
+                try {
+                    client.auth.signOut()
+                } catch (_: Exception) {}
+            }
             val intent = Intent(requireContext(), LoginActivity::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
             startActivity(intent)
         }
+    }
+
+    private fun bukaFormAjukanBerhenti() {
+        parentFragmentManager.beginTransaction()
+            .replace(R.id.fragmentContainer, AjukanBerhentiNasabahFragment())
+            .addToBackStack(null)
+            .commit()
     }
 
     override fun onDestroyView() {

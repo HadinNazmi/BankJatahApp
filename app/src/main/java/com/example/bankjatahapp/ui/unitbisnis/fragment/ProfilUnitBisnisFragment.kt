@@ -48,6 +48,11 @@ class ProfilUnitBisnisFragment : Fragment() {
         setupClickListeners()
     }
 
+    override fun onResume() {
+        super.onResume()
+        loadData()
+    }
+
     private fun loadData() {
         lifecycleScope.launch {
             try {
@@ -63,10 +68,15 @@ class ProfilUnitBisnisFragment : Fragment() {
                     .select { filter { eq("id_unit_bisnis", idUser) } }
                     .decodeSingle<UnitBisnisData>()
 
+                val dompet = client.postgrest
+                    .from("dompet_user")
+                    .select { filter { eq("id_dompet", idUser) } }
+                    .decodeSingle<com.example.bankjatahapp.data.model.DompetUser>()
+
                 // Simpan UUID PENUH
                 idUnitBisnis = unitData.idUnitBisnis
 
-                tampilkanData(user, unitData)
+                tampilkanData(user, unitData, dompet)
 
             } catch (e: Exception) {
                 Toast.makeText(requireContext(), "Gagal memuat data: ${e.message}", Toast.LENGTH_LONG).show()
@@ -74,15 +84,25 @@ class ProfilUnitBisnisFragment : Fragment() {
         }
     }
 
-    private fun tampilkanData(user: User, unit: UnitBisnisData) {
-        binding.tvNama.text        = user.namaLengkap
-        binding.tvRole.text        = if (!unit.namaUsaha.isNullOrEmpty()) unit.namaUsaha!! else "Unit Bisnis"
+    private fun tampilkanData(
+        user: User,
+        unit: UnitBisnisData,
+        dompet: com.example.bankjatahapp.data.model.DompetUser
+    ) {
+        binding.tvNama.text = user.namaLengkap
+        binding.tvRole.text = if (!unit.namaUsaha.isNullOrEmpty()) unit.namaUsaha!! else "Unit Bisnis"
         binding.tvTotalMinyak.text = "${unit.transaksiHarian} L"
+
+        // Bonus (saldo_unit) & poin dari dompet
+        val bonus = dompet.saldoUnit ?: 0.0
+        val poin = dompet.poinReward ?: 0
+        binding.tvBonus.text = "Rp ${String.format("%,.0f", bonus)}"
+        binding.tvPoin.text = "$poin pts"
     }
 
     // QR berisi UUID PENUH
     private fun generateQrBitmap(uuid: String): Bitmap {
-        val size   = 512
+        val size = 512
         val writer = QRCodeWriter()
         val matrix = writer.encode(uuid, BarcodeFormat.QR_CODE, size, size)
         val bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.RGB_565)
@@ -106,7 +126,7 @@ class ProfilUnitBisnisFragment : Fragment() {
         dialog.setContentView(R.layout.dialog_qr_nasabah)
         dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
 
-        val ivQr     = dialog.findViewById<ImageView>(R.id.ivQrCode)
+        val ivQr = dialog.findViewById<ImageView>(R.id.ivQrCode)
         val tvKodeId = dialog.findViewById<TextView>(R.id.tvKodeId)
         val tvNamaQr = dialog.findViewById<TextView>(R.id.tvNamaQr)
         val btnTutup = dialog.findViewById<TextView>(R.id.btnTutupQr)
@@ -120,6 +140,7 @@ class ProfilUnitBisnisFragment : Fragment() {
     }
 
     private fun setupClickListeners() {
+
         binding.btnTampilkanQr.setOnClickListener {
             tampilkanDialogQr()
         }
@@ -135,8 +156,9 @@ class ProfilUnitBisnisFragment : Fragment() {
                 .commit()
         }
 
+        // Tombol Ajukan Berhenti — menggantikan menu Notifikasi
         binding.menuNotifikasi.setOnClickListener {
-            Toast.makeText(requireContext(), "Notifikasi", Toast.LENGTH_SHORT).show()
+            bukaFormAjukanBerhenti()
         }
 
         binding.menuBantuan.setOnClickListener {
@@ -148,10 +170,22 @@ class ProfilUnitBisnisFragment : Fragment() {
         }
 
         binding.menuLogout.setOnClickListener {
+            lifecycleScope.launch {
+                try {
+                    client.auth.signOut()
+                } catch (_: Exception) {}
+            }
             val intent = Intent(requireContext(), LoginActivity::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
             startActivity(intent)
         }
+    }
+
+    private fun bukaFormAjukanBerhenti() {
+        parentFragmentManager.beginTransaction()
+            .replace(R.id.fragmentContainer, AjukanBerhentiUnitBisnisFragment())
+            .addToBackStack(null)
+            .commit()
     }
 
     override fun onDestroyView() {
