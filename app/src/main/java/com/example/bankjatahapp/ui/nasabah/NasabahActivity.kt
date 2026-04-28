@@ -25,7 +25,7 @@ class NasabahActivity : AppCompatActivity() {
         binding.bottomNav.setOnItemSelectedListener { item ->
             when (item.itemId) {
                 R.id.nav_home   -> loadFragment(HomeNasabahFragment())
-                R.id.nav_setor  -> loadFragment(RiwayatFragment())
+                R.id.nav_riwayat  -> loadFragment(RiwayatFragment())
                 R.id.nav_reward -> loadFragment(RewardFragment())
                 R.id.nav_profil -> loadFragment(ProfilNasabahFragment())
             }

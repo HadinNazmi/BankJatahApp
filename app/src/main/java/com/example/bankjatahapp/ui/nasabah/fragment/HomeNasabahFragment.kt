@@ -153,7 +153,7 @@ class HomeNasabahFragment : Fragment() {
 
     private fun setupClickListeners() {
         binding.btnSetorMinyak.setOnClickListener {
-            (activity as? NasabahActivity)?.navigateTo(R.id.nav_setor)
+            (activity as? NasabahActivity)?.navigateTo(R.id.nav_riwayat)
         }
         binding.btnReward.setOnClickListener {
             (activity as? NasabahActivity)?.navigateTo(R.id.nav_reward)

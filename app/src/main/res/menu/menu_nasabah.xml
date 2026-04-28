@@ -7,9 +7,9 @@
         android:title="Home" />
 
     <item
-        android:id="@+id/nav_setor"
-        android:icon="@drawable/ic_nav_setor"
-        android:title="Setor" />
+        android:id="@+id/nav_riwayat"
+        android:icon="@drawable/ic_riwayat"
+        android:title="Riwayat" />
 
     <item
         android:id="@+id/nav_reward"
