@@ -20,6 +20,7 @@ import com.example.bankjatahapp.data.model.User
 import com.example.bankjatahapp.data.remote.SupabaseClient.client
 import com.example.bankjatahapp.databinding.FragmentProfilNasabahBinding
 import com.example.bankjatahapp.ui.auth.LoginActivity
+import com.example.bankjatahapp.ui.component.AvatarUtils
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.qrcode.QRCodeWriter
 import io.github.jan.supabase.auth.auth
@@ -99,13 +100,13 @@ class ProfilNasabahFragment : Fragment() {
         binding.tvNama.text = user.namaLengkap
         binding.tvRole.text = "Nasabah"
 
-        // Saldo & poin dari dompet
+        // ===== AVATAR INISIAL — tidak pakai storage/foto =====
+        AvatarUtils.pasangKeImageView(binding.ivFotoProfil, user.namaLengkap, 300)
+
         val saldo = dompet.saldoNasabah ?: 0.0
         val poin = dompet.poinReward ?: 0
         binding.tvSaldoWallet.text = "Rp ${String.format("%,.0f", saldo)}"
         binding.tvPoin.text = "$poin pts"
-
-        // Jumlah afiliasi di card
         binding.tvJumlahAfiliasi.text = "$jumlahAfiliasi orang"
     }
 

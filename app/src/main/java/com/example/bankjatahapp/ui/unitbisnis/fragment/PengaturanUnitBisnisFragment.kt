@@ -1,12 +1,10 @@
 package com.example.bankjatahapp.ui.unitbisnis.fragment
 
-import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.example.bankjatahapp.data.model.NasabahData
@@ -14,14 +12,13 @@ import com.example.bankjatahapp.data.model.UnitBisnisData
 import com.example.bankjatahapp.data.model.User
 import com.example.bankjatahapp.data.remote.SupabaseClient.client
 import com.example.bankjatahapp.databinding.FragmentPengaturanUnitBisnisBinding
+import com.example.bankjatahapp.ui.component.AvatarUtils
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.postgrest.postgrest
-import io.github.jan.supabase.storage.storage
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
-import java.io.InputStream
 
 class PengaturanUnitBisnisFragment : Fragment() {
 
@@ -29,8 +26,6 @@ class PengaturanUnitBisnisFragment : Fragment() {
     private val binding get() = _binding!!
 
     private var idUser: String? = null
-    private var fotoBaru: Uri? = null
-    private var urlFotoLama: String? = null
 
     // Sudah ada sponsor atau belum — kalau sudah, field referral di-disable
     private var sudahAdaSponsor: Boolean = false
@@ -42,16 +37,6 @@ class PengaturanUnitBisnisFragment : Fragment() {
         val id_owner: String,
         val nama_owner: String
     )
-
-    // Launcher galeri untuk pilih foto profil
-    private val pilihFotoLauncher = registerForActivityResult(
-        ActivityResultContracts.GetContent()
-    ) { uri ->
-        if (uri != null) {
-            fotoBaru = uri
-            binding.ivFotoProfil.setImageURI(uri)
-        }
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -94,8 +79,6 @@ class PengaturanUnitBisnisFragment : Fragment() {
                     .from("unit_bisnis_data")
                     .select { filter { eq("id_unit_bisnis", idUser!!) } }
                     .decodeSingle<UnitBisnisData>()
-
-                urlFotoLama = user.urlFotoProfil
 
                 // ===== ISI FIELD YANG BISA DIUBAH =====
 
@@ -168,16 +151,8 @@ class PengaturanUnitBisnisFragment : Fragment() {
                 }
                 binding.tvStatusVerifikasiValue.setBackgroundColor(statusUnitColor)
 
-                // Load foto profil
-                if (!urlFotoLama.isNullOrEmpty()) {
-                    try {
-                        com.bumptech.glide.Glide.with(this@PengaturanUnitBisnisFragment)
-                            .load(urlFotoLama)
-                            .circleCrop()
-                            .placeholder(android.R.drawable.ic_menu_myplaces)
-                            .into(binding.ivFotoProfil)
-                    } catch (_: Exception) { }
-                }
+                // Tampilkan avatar inisial nama (menggantikan foto profil)
+                AvatarUtils.pasangKeImageView(binding.ivFotoProfil, user.namaLengkap, 300)
 
                 setFormLoading(false)
 
@@ -193,7 +168,7 @@ class PengaturanUnitBisnisFragment : Fragment() {
             parentFragmentManager.popBackStack()
         }
         binding.btnGantiFoto.setOnClickListener {
-            pilihFotoLauncher.launch("image/*")
+            Toast.makeText(requireContext(), "Foto profil menggunakan inisial nama", Toast.LENGTH_SHORT).show()
         }
         binding.btnSimpan.setOnClickListener {
             simpanPerubahan()
@@ -222,32 +197,6 @@ class PengaturanUnitBisnisFragment : Fragment() {
         lifecycleScope.launch {
             try {
                 val id = idUser ?: throw Exception("Session tidak ditemukan")
-
-                // ===== UPLOAD FOTO BARU JIKA ADA =====
-                var urlFotoBaru: String? = urlFotoLama
-                val fotoUri = fotoBaru
-                if (fotoUri != null) {
-                    try {
-                        val inputStream: InputStream = requireContext().contentResolver
-                            .openInputStream(fotoUri)
-                            ?: throw Exception("Gagal membuka foto")
-                        val bytes = inputStream.readBytes()
-                        inputStream.close()
-
-                        val namaFile = "profil_$id.jpg"
-                        // Gunakan operator [] — cara yang benar untuk Supabase SDK v3
-                        client.storage["foto-profil"].upload(namaFile, bytes) {
-                            upsert = true
-                        }
-                        urlFotoBaru = client.storage["foto-profil"].publicUrl(namaFile)
-                    } catch (e: Exception) {
-                        Toast.makeText(
-                            requireContext(),
-                            "Foto gagal diupload: ${e.message}",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
-                }
 
                 // ===== RESOLUSI KODE REFERRAL SPONSOR via RPC =====
                 // Pakai check_referral_code (SECURITY DEFINER) — bypass RLS
@@ -303,9 +252,9 @@ class PengaturanUnitBisnisFragment : Fragment() {
                 // ===== 1. UPDATE TABEL users =====
                 client.postgrest.from("users").update(
                     mapOf(
-                        "nama_lengkap"    to nama,
-                        "no_telp"         to noTelp.ifEmpty { null },
-                        "url_foto_profil" to urlFotoBaru
+                        "nama_lengkap" to nama,
+                        "no_telp"      to noTelp.ifEmpty { null }
+                        // url_foto_profil TIDAK diupdate
                     )
                 ) { filter { eq("id_user", id) } }
 
@@ -336,6 +285,9 @@ class PengaturanUnitBisnisFragment : Fragment() {
                         "hari_operasional" to hariOperasional.ifEmpty { null }
                     )
                 ) { filter { eq("id_unit_bisnis", id) } }
+
+                // Update avatar dengan nama baru setelah simpan berhasil
+                AvatarUtils.pasangKeImageView(binding.ivFotoProfil, nama, 300)
 
                 setLoading(false)
                 Toast.makeText(

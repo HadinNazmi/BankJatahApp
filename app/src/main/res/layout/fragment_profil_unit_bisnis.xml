@@ -63,12 +63,13 @@
                 android:layout_height="90dp">
 
                 <ImageView
+                    android:id="@+id/ivFotoProfil"
                     android:layout_width="90dp"
                     android:layout_height="90dp"
                     android:src="@android:drawable/ic_menu_myplaces"
                     android:background="@drawable/ic_bg_foto_profil"
-                    android:padding="20dp"
-                    android:scaleType="centerInside" />
+
+                    android:scaleType="centerCrop" />
 
                 <ImageView
                     android:layout_width="24dp"

@@ -75,25 +75,25 @@
                     android:layout_width="80dp"
                     android:layout_height="80dp">
 
+                    <!-- ImageView avatar inisial — diisi dari AvatarUtils -->
                     <ImageView
                         android:id="@+id/ivFotoProfil"
                         android:layout_width="80dp"
                         android:layout_height="80dp"
-                        android:src="@android:drawable/ic_menu_myplaces"
-                        android:background="@drawable/ic_bg_foto_profil"
-                        android:padding="16dp"
                         android:scaleType="centerCrop" />
 
+                    <!-- Tombol kamera disembunyikan (tidak ada upload foto) -->
                     <androidx.cardview.widget.CardView
                         android:id="@+id/btnGantiFoto"
                         android:layout_width="26dp"
                         android:layout_height="26dp"
                         android:layout_gravity="bottom|end"
+                        android:visibility="gone"
                         app:cardCornerRadius="13dp"
                         app:cardElevation="3dp"
                         app:cardBackgroundColor="@color/white"
-                        android:clickable="true"
-                        android:focusable="true">
+                        android:clickable="false"
+                        android:focusable="false">
 
                         <ImageView
                             android:layout_width="match_parent"
@@ -109,7 +109,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Ketuk ikon kamera untuk ganti foto"
+                    android:text="Avatar menggunakan inisial nama"
                     android:textSize="11sp"
                     android:textColor="#CCFFFFFF"
                     android:fontFamily="@font/poppins_regular"

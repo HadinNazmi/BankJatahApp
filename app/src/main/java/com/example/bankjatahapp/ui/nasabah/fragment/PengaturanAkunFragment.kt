@@ -1,56 +1,26 @@
 package com.example.bankjatahapp.ui.nasabah.fragment
 
-import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.example.bankjatahapp.data.model.NasabahData
 import com.example.bankjatahapp.data.model.User
 import com.example.bankjatahapp.data.remote.SupabaseClient.client
 import com.example.bankjatahapp.databinding.FragmentPengaturanAkunBinding
+import com.example.bankjatahapp.ui.component.AvatarUtils
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.postgrest.postgrest
-import io.github.jan.supabase.storage.storage
 import kotlinx.coroutines.launch
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.buildJsonObject
-import kotlinx.serialization.json.put
-import java.io.InputStream
 
 class PengaturanAkunFragment : Fragment() {
 
     private var _binding: FragmentPengaturanAkunBinding? = null
     private val binding get() = _binding!!
-
     private var idUser: String? = null
-    private var fotoBaru: Uri? = null
-    private var urlFotoLama: String? = null
-
-    // Track apakah sudah ada sponsor — jika sudah, field referral di-disable
-    private var sudahAdaSponsor: Boolean = false
-
-    // Model decode hasil RPC check_referral_code
-    // RPC: check_referral_code(target_code TEXT) → TABLE(id_owner UUID, nama_owner TEXT)
-    @Serializable
-    data class ReferralResult(
-        val id_owner: String,
-        val nama_owner: String
-    )
-
-    // Launcher galeri untuk pilih foto profil
-    private val pilihFotoLauncher = registerForActivityResult(
-        ActivityResultContracts.GetContent()
-    ) { uri ->
-        if (uri != null) {
-            fotoBaru = uri
-            binding.ivFotoProfil.setImageURI(uri)
-        }
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -83,32 +53,28 @@ class PengaturanAkunFragment : Fragment() {
                     .select { filter { eq("id_nasabah", idUser!!) } }
                     .decodeSingle<NasabahData>()
 
-                urlFotoLama = user.urlFotoProfil
+                // ===== AVATAR INISIAL dari nama =====
+                AvatarUtils.pasangKeImageView(binding.ivFotoProfil, user.namaLengkap, 300)
 
-                // ===== ISI FIELD YANG BISA DIUBAH =====
+                // Field yang bisa diubah
                 binding.etNama.setText(user.namaLengkap)
                 binding.etNoTelp.setText(user.noTelp ?: "")
                 binding.etAlamat.setText(nasabah.alamatRumah ?: "")
 
-                // ===== FIELD KODE REFERRAL SPONSOR =====
-                // Jika id_sponsor sudah terisi → field di-disable, tidak boleh diubah lagi
-                // Jika belum ada sponsor → field aktif, user bisa isi kode referral
-                // TIDAK query nasabah_data lagi untuk tampilkan kode sponsor
-                // karena RLS memblokir query ke row milik user lain
-                sudahAdaSponsor = !nasabah.idSponsor.isNullOrEmpty()
-                if (sudahAdaSponsor) {
-                    binding.etKodeReferralSponsor.setText("")
-                    binding.etKodeReferralSponsor.hint = "Sponsor sudah terdaftar"
-                    binding.tilKodeReferralSponsor.isEnabled = false
-                    binding.tilKodeReferralSponsor.helperText = "Sponsor tidak dapat diubah"
-                } else {
-                    binding.etKodeReferralSponsor.setText("")
-                    binding.etKodeReferralSponsor.hint = "Contoh: ABC12345"
-                    binding.tilKodeReferralSponsor.isEnabled = true
-                    binding.tilKodeReferralSponsor.helperText = "Opsional — isi jika Anda memiliki sponsor"
+                // Kode referral sponsor — tampilkan kode bukan UUID
+                if (!nasabah.idSponsor.isNullOrEmpty()) {
+                    try {
+                        val sponsor = client.postgrest
+                            .from("nasabah_data")
+                            .select { filter { eq("id_nasabah", nasabah.idSponsor!!) } }
+                            .decodeSingle<NasabahData>()
+                        binding.etKodeReferralSponsor.setText(sponsor.kodeReferral ?: "")
+                    } catch (_: Exception) {
+                        binding.etKodeReferralSponsor.setText("")
+                    }
                 }
 
-                // ===== ISI FIELD READ-ONLY =====
+                // Field read-only
                 binding.tvEmailValue.text        = user.email
                 binding.tvNikValue.text          = nasabah.nik ?: "-"
                 binding.tvKodeReferralValue.text = nasabah.kodeReferral ?: "-"
@@ -118,7 +84,6 @@ class PengaturanAkunFragment : Fragment() {
                 binding.tvStatusAkunValue.text   = user.statusAkun.replaceFirstChar { it.uppercase() }
                 binding.tvRoleValue.text         = "Nasabah"
 
-                // Warna badge status akun
                 val statusColor = when (user.statusAkun) {
                     "aktif"               -> requireContext().getColor(com.example.bankjatahapp.R.color.notif_success_bg)
                     "dibekukan"           -> requireContext().getColor(com.example.bankjatahapp.R.color.notif_error_bg)
@@ -126,17 +91,6 @@ class PengaturanAkunFragment : Fragment() {
                     else                  -> requireContext().getColor(com.example.bankjatahapp.R.color.gray_border)
                 }
                 binding.tvStatusAkunValue.setBackgroundColor(statusColor)
-
-                // Load foto profil dengan Glide
-                if (!urlFotoLama.isNullOrEmpty()) {
-                    try {
-                        com.bumptech.glide.Glide.with(this@PengaturanAkunFragment)
-                            .load(urlFotoLama)
-                            .circleCrop()
-                            .placeholder(android.R.drawable.ic_menu_myplaces)
-                            .into(binding.ivFotoProfil)
-                    } catch (_: Exception) { }
-                }
 
                 setFormLoading(false)
 
@@ -151,9 +105,8 @@ class PengaturanAkunFragment : Fragment() {
         binding.btnBack.setOnClickListener {
             parentFragmentManager.popBackStack()
         }
-        binding.btnGantiFoto.setOnClickListener {
-            pilihFotoLauncher.launch("image/*")
-        }
+        // ===== HAPUS btnGantiFoto — tidak ada upload foto =====
+        // btnGantiFoto dihide dari XML atau tidak dipakai
         binding.btnSimpan.setOnClickListener {
             simpanPerubahan()
         }
@@ -177,128 +130,48 @@ class PengaturanAkunFragment : Fragment() {
             try {
                 val id = idUser ?: throw Exception("Session tidak ditemukan")
 
-                // ===== UPLOAD FOTO BARU JIKA ADA =====
-                var urlFotoBaru: String? = urlFotoLama
-                val fotoUri = fotoBaru
-                if (fotoUri != null) {
-                    try {
-                        val inputStream: InputStream = requireContext().contentResolver
-                            .openInputStream(fotoUri)
-                            ?: throw Exception("Gagal membuka foto")
-                        val bytes = inputStream.readBytes()
-                        inputStream.close()
-
-                        val namaFile = "profil_$id.jpg"
-                        // Operator [] — cara benar Supabase SDK v3
-                        client.storage["foto-profil"].upload(namaFile, bytes) {
-                            upsert = true
-                        }
-                        urlFotoBaru = client.storage["foto-profil"].publicUrl(namaFile)
-                    } catch (e: Exception) {
-                        Toast.makeText(
-                            requireContext(),
-                            "Foto gagal diupload: ${e.message}",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
-                }
-
-                // ===== RESOLUSI KODE REFERRAL SPONSOR via RPC =====
-                // Pakai check_referral_code (SECURITY DEFINER) — bypass RLS
-                // Sama persis seperti cara RegisterActivity — tidak query langsung nasabah_data
-                // Hanya diproses jika field aktif (belum ada sponsor) dan user mengisi
+                // Resolusi kode referral sponsor → UUID
                 var idSponsorBaru: String? = null
-                if (!sudahAdaSponsor && kodeRefSponsor.isNotEmpty()) {
+                if (kodeRefSponsor.isNotEmpty()) {
                     try {
-                        val payload = buildJsonObject {
-                            put("target_code", kodeRefSponsor)
-                        }
-
-                        val hasil = client.postgrest
-                            .rpc("check_referral_code", payload)
-                            .decodeList<ReferralResult>()
-
-                        if (hasil.isEmpty()) {
-                            // Kode tidak ditemukan — sama dengan perilaku RegisterActivity
-                            setLoading(false)
-                            Toast.makeText(
-                                requireContext(),
-                                "⚠ Kode referral \"$kodeRefSponsor\" tidak ditemukan.\nPastikan kode benar.",
-                                Toast.LENGTH_LONG
-                            ).show()
-                            return@launch
-                        }
-
-                        // Ditemukan — ambil UUID pemilik kode referral
-                        idSponsorBaru = hasil[0].id_owner
-
-                        // Cegah user memasukkan kode referral dirinya sendiri
-                        if (idSponsorBaru == id) {
-                            setLoading(false)
-                            Toast.makeText(
-                                requireContext(),
-                                "Anda tidak bisa menjadi sponsor diri sendiri",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                            return@launch
-                        }
-
-                    } catch (e: Exception) {
+                        val sponsorData = client.postgrest
+                            .from("nasabah_data")
+                            .select { filter { eq("kode_referral", kodeRefSponsor) } }
+                            .decodeSingle<NasabahData>()
+                        idSponsorBaru = sponsorData.idNasabah
+                    } catch (_: Exception) {
                         setLoading(false)
-                        Toast.makeText(
-                            requireContext(),
-                            "Gagal memvalidasi kode referral: ${e.message}",
-                            Toast.LENGTH_LONG
-                        ).show()
+                        Toast.makeText(requireContext(), "Kode referral sponsor tidak ditemukan", Toast.LENGTH_SHORT).show()
                         return@launch
                     }
                 }
 
-                // ===== UPDATE TABEL users =====
+                // Update tabel users — tanpa url_foto_profil
                 client.postgrest.from("users").update(
                     mapOf(
-                        "nama_lengkap"    to nama,
-                        "no_telp"         to noTelp.ifEmpty { null },
-                        "url_foto_profil" to urlFotoBaru
+                        "nama_lengkap" to nama,
+                        "no_telp"      to noTelp.ifEmpty { null }
                     )
                 ) { filter { eq("id_user", id) } }
 
-                // ===== UPDATE TABEL nasabah_data =====
-                // id_sponsor hanya diupdate jika belum ada sponsor dan kode valid
-                // Jika field disabled (sudah ada sponsor) → tidak sentuh id_sponsor sama sekali
-                if (!sudahAdaSponsor && idSponsorBaru != null) {
-                    client.postgrest.from("nasabah_data").update(
-                        mapOf(
-                            "alamat_rumah" to alamat.ifEmpty { null },
-                            "id_sponsor"   to idSponsorBaru
-                        )
-                    ) { filter { eq("id_nasabah", id) } }
-                } else {
-                    // Update hanya alamat, id_sponsor tidak disentuh
-                    client.postgrest.from("nasabah_data").update(
-                        mapOf(
-                            "alamat_rumah" to alamat.ifEmpty { null }
-                        )
-                    ) { filter { eq("id_nasabah", id) } }
-                }
+                // Update tabel nasabah_data
+                client.postgrest.from("nasabah_data").update(
+                    mapOf(
+                        "alamat_rumah" to alamat.ifEmpty { null },
+                        "id_sponsor"   to idSponsorBaru
+                    )
+                ) { filter { eq("id_nasabah", id) } }
+
+                // Update avatar sesuai nama baru
+                AvatarUtils.pasangKeImageView(binding.ivFotoProfil, nama, 300)
 
                 setLoading(false)
-                Toast.makeText(
-                    requireContext(),
-                    "✓ Profil berhasil diperbarui!",
-                    Toast.LENGTH_SHORT
-                ).show()
+                Toast.makeText(requireContext(), "✓ Profil berhasil diperbarui!", Toast.LENGTH_SHORT).show()
                 parentFragmentManager.popBackStack()
 
             } catch (e: Exception) {
                 setLoading(false)
-                val pesan = when {
-                    e.message?.contains("unique") == true &&
-                            e.message?.contains("no_telp") == true ->
-                        "Nomor telepon sudah digunakan akun lain"
-                    else -> "Gagal menyimpan: ${e.message}"
-                }
-                Toast.makeText(requireContext(), pesan, Toast.LENGTH_LONG).show()
+                Toast.makeText(requireContext(), "Gagal menyimpan: ${e.message}", Toast.LENGTH_LONG).show()
             }
         }
     }

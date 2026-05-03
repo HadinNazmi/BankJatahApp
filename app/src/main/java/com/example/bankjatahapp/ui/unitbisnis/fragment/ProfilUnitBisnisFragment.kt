@@ -21,6 +21,7 @@ import com.example.bankjatahapp.data.model.User
 import com.example.bankjatahapp.data.remote.SupabaseClient.client
 import com.example.bankjatahapp.databinding.FragmentProfilUnitBisnisBinding
 import com.example.bankjatahapp.ui.auth.LoginActivity
+import com.example.bankjatahapp.ui.component.AvatarUtils
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.qrcode.QRCodeWriter
 import io.github.jan.supabase.auth.auth
@@ -100,13 +101,13 @@ class ProfilUnitBisnisFragment : Fragment() {
         binding.tvNama.text = user.namaLengkap
         binding.tvRole.text = if (!unit.namaUsaha.isNullOrEmpty()) unit.namaUsaha!! else "Unit Bisnis"
 
-        // Bonus (saldo_unit) & poin dari dompet
+        // ===== AVATAR INISIAL =====
+        AvatarUtils.pasangKeImageView(binding.ivFotoProfil, user.namaLengkap, 300)
+
         val bonus = dompet.saldoUnit ?: 0.0
         val poin = dompet.poinReward ?: 0
         binding.tvBonus.text = "Rp ${String.format("%,.0f", bonus)}"
         binding.tvPoin.text = "$poin pts"
-
-        // Jumlah afiliasi di card
         binding.tvJumlahAfiliasi.text = "$jumlahAfiliasi orang"
     }
 
