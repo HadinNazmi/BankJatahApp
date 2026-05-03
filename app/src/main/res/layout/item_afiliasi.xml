@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="10dp"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="2dp"
+    app:cardBackgroundColor="@color/white">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="14dp">
+
+        <!-- Avatar lingkaran -->
+        <FrameLayout
+            android:id="@+id/flAvatar"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:background="@drawable/ic_bg_aktivitas_orange"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@android:drawable/ic_menu_myplaces"
+                android:layout_gravity="center"
+                android:scaleType="centerInside" />
+
+        </FrameLayout>
+
+        <!-- Nama -->
+        <TextView
+            android:id="@+id/tvNamaAfiliasi"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Nama Nasabah"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:textColor="@color/black"
+            android:fontFamily="@font/poppins_bold"
+            android:layout_marginStart="12dp"
+            app:layout_constraintStart_toEndOf="@+id/flAvatar"
+            app:layout_constraintEnd_toStartOf="@+id/tvKategori"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <!-- No Telp -->
+        <TextView
+            android:id="@+id/tvNoTelp"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="-"
+            android:textSize="12sp"
+            android:textColor="@color/gray_text"
+            android:fontFamily="@font/poppins_regular"
+            android:layout_marginStart="12dp"
+            android:layout_marginTop="2dp"
+            app:layout_constraintStart_toEndOf="@+id/flAvatar"
+            app:layout_constraintEnd_toStartOf="@+id/tvKategori"
+            app:layout_constraintTop_toBottomOf="@+id/tvNamaAfiliasi" />
+
+        <!-- Kode Referral -->
+        <TextView
+            android:id="@+id/tvKodeReferral"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Ref: -"
+            android:textSize="11sp"
+            android:textColor="@color/orange_primary"
+            android:fontFamily="@font/poppins_regular"
+            android:layout_marginStart="12dp"
+            android:layout_marginTop="2dp"
+            app:layout_constraintStart_toEndOf="@+id/flAvatar"
+            app:layout_constraintEnd_toStartOf="@+id/tvKategori"
+            app:layout_constraintTop_toBottomOf="@+id/tvNoTelp" />
+
+        <!-- Badge Kategori -->
+        <TextView
+            android:id="@+id/tvKategori"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Aktif"
+            android:textSize="11sp"
+            android:textColor="@color/white"
+            android:fontFamily="@font/poppins_regular"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android:paddingTop="3dp"
+            android:paddingBottom="3dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.cardview.widget.CardView>

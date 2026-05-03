@@ -15,6 +15,7 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.example.bankjatahapp.R
+import com.example.bankjatahapp.data.model.NasabahData
 import com.example.bankjatahapp.data.model.UnitBisnisData
 import com.example.bankjatahapp.data.model.User
 import com.example.bankjatahapp.data.remote.SupabaseClient.client
@@ -73,10 +74,16 @@ class ProfilUnitBisnisFragment : Fragment() {
                     .select { filter { eq("id_dompet", idUser) } }
                     .decodeSingle<com.example.bankjatahapp.data.model.DompetUser>()
 
+                // Hitung jumlah nasabah yang disponsori oleh unit bisnis ini
+                val listAfiliasi = client.postgrest
+                    .from("nasabah_data")
+                    .select { filter { eq("id_sponsor", idUser) } }
+                    .decodeList<NasabahData>()
+
                 // Simpan UUID PENUH
                 idUnitBisnis = unitData.idUnitBisnis
 
-                tampilkanData(user, unitData, dompet)
+                tampilkanData(user, unitData, dompet, listAfiliasi.size)
 
             } catch (e: Exception) {
                 Toast.makeText(requireContext(), "Gagal memuat data: ${e.message}", Toast.LENGTH_LONG).show()
@@ -87,17 +94,20 @@ class ProfilUnitBisnisFragment : Fragment() {
     private fun tampilkanData(
         user: User,
         unit: UnitBisnisData,
-        dompet: com.example.bankjatahapp.data.model.DompetUser
+        dompet: com.example.bankjatahapp.data.model.DompetUser,
+        jumlahAfiliasi: Int
     ) {
         binding.tvNama.text = user.namaLengkap
         binding.tvRole.text = if (!unit.namaUsaha.isNullOrEmpty()) unit.namaUsaha!! else "Unit Bisnis"
-        binding.tvTotalMinyak.text = "${unit.transaksiHarian} L"
 
         // Bonus (saldo_unit) & poin dari dompet
         val bonus = dompet.saldoUnit ?: 0.0
         val poin = dompet.poinReward ?: 0
         binding.tvBonus.text = "Rp ${String.format("%,.0f", bonus)}"
         binding.tvPoin.text = "$poin pts"
+
+        // Jumlah afiliasi di card
+        binding.tvJumlahAfiliasi.text = "$jumlahAfiliasi orang"
     }
 
     // QR berisi UUID PENUH
@@ -149,6 +159,14 @@ class ProfilUnitBisnisFragment : Fragment() {
             Toast.makeText(requireContext(), "Edit Profil", Toast.LENGTH_SHORT).show()
         }
 
+        // Tombol card List Afiliasi
+        binding.cardListAfiliasi.setOnClickListener {
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.fragmentContainer, ListAfiliasiUnitBisnisFragment())
+                .addToBackStack(null)
+                .commit()
+        }
+
         binding.menuPengaturan.setOnClickListener {
             parentFragmentManager.beginTransaction()
                 .replace(R.id.fragmentContainer, PengaturanUnitBisnisFragment())
@@ -156,7 +174,6 @@ class ProfilUnitBisnisFragment : Fragment() {
                 .commit()
         }
 
-        // Tombol Ajukan Berhenti — menggantikan menu Notifikasi
         binding.menuNotifikasi.setOnClickListener {
             bukaFormAjukanBerhenti()
         }

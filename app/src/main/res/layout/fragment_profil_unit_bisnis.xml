@@ -98,7 +98,6 @@
                     android:textColor="@color/black"
                     android:fontFamily="@font/poppins_bold" />
 
-                <!-- Tombol QR kecil di samping nama -->
                 <androidx.cardview.widget.CardView
                     android:id="@+id/btnTampilkanQr"
                     android:layout_width="32dp"
@@ -230,13 +229,16 @@
             </androidx.constraintlayout.widget.ConstraintLayout>
         </androidx.cardview.widget.CardView>
 
-        <!-- ===== CARD TRANSAKSI HARIAN ===== -->
+        <!-- ===== CARD LIST AFILIASI (menggantikan Transaksi Harian) ===== -->
         <androidx.cardview.widget.CardView
+            android:id="@+id/cardListAfiliasi"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="20dp"
             android:layout_marginEnd="20dp"
             android:layout_marginTop="10dp"
+            android:clickable="true"
+            android:focusable="true"
             app:cardCornerRadius="12dp"
             app:cardElevation="2dp"
             app:cardBackgroundColor="@color/white">
@@ -247,37 +249,41 @@
                 android:padding="16dp">
 
                 <TextView
-                    android:id="@+id/tvMinyakLabel"
-                    android:layout_width="wrap_content"
+                    android:id="@+id/tvAfiliasiLabel"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:text="Transaksi Harian"
-                    android:textSize="12sp"
-                    android:textColor="@color/gray_text"
-                    android:fontFamily="@font/poppins_regular"
+                    android:text="List Afiliasi"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/black"
+                    android:fontFamily="@font/poppins_bold"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
-
-                <ImageView
-                    android:id="@+id/ivMinyak"
-                    android:layout_width="32dp"
-                    android:layout_height="32dp"
-                    android:src="@drawable/ic_nav_setor"
-                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintEnd_toStartOf="@+id/tvJumlahAfiliasi"
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintBottom_toBottomOf="parent" />
 
                 <TextView
-                    android:id="@+id/tvTotalMinyak"
+                    android:id="@+id/tvJumlahAfiliasi"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="0 L"
-                    android:textSize="22sp"
-                    android:textStyle="bold"
-                    android:textColor="@color/black"
-                    android:fontFamily="@font/poppins_bold"
-                    android:layout_marginTop="4dp"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/tvMinyakLabel" />
+                    android:text="0 orang"
+                    android:textSize="12sp"
+                    android:textColor="@color/orange_primary"
+                    android:fontFamily="@font/poppins_regular"
+                    android:layout_marginEnd="8dp"
+                    app:layout_constraintEnd_toStartOf="@+id/ivAfiliasiArrow"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent" />
+
+                <ImageView
+                    android:id="@+id/ivAfiliasiArrow"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:src="@android:drawable/ic_media_next"
+                    android:alpha="0.4"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent" />
 
             </androidx.constraintlayout.widget.ConstraintLayout>
         </androidx.cardview.widget.CardView>
@@ -352,7 +358,7 @@
                     android:background="@color/gray_border"
                     android:layout_marginStart="56dp" />
 
-                <!-- Ajukan Berhenti (merah, menggantikan Notifikasi) -->
+                <!-- Ajukan Berhenti (merah) -->
                 <androidx.constraintlayout.widget.ConstraintLayout
                     android:id="@+id/menuNotifikasi"
                     android:layout_width="match_parent"

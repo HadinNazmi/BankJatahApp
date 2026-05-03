@@ -73,10 +73,16 @@ class ProfilNasabahFragment : Fragment() {
                     .select { filter { eq("id_dompet", idUser) } }
                     .decodeSingle<com.example.bankjatahapp.data.model.DompetUser>()
 
+                // Hitung jumlah afiliasi (nasabah yang id_sponsornya adalah user ini)
+                val listAfiliasi = client.postgrest
+                    .from("nasabah_data")
+                    .select { filter { eq("id_sponsor", idUser) } }
+                    .decodeList<NasabahData>()
+
                 // Simpan UUID PENUH untuk QR
                 idNasabah = nasabahData.idNasabah
 
-                tampilkanData(user, nasabahData, dompet)
+                tampilkanData(user, nasabahData, dompet, listAfiliasi.size)
 
             } catch (e: Exception) {
                 Toast.makeText(requireContext(), "Gagal memuat data: ${e.message}", Toast.LENGTH_LONG).show()
@@ -87,17 +93,20 @@ class ProfilNasabahFragment : Fragment() {
     private fun tampilkanData(
         user: User,
         nasabah: NasabahData,
-        dompet: com.example.bankjatahapp.data.model.DompetUser
+        dompet: com.example.bankjatahapp.data.model.DompetUser,
+        jumlahAfiliasi: Int
     ) {
         binding.tvNama.text = user.namaLengkap
         binding.tvRole.text = "Nasabah"
-        binding.tvTotalMinyak.text = "${nasabah.totalSetoranLifetime} L"
 
         // Saldo & poin dari dompet
         val saldo = dompet.saldoNasabah ?: 0.0
         val poin = dompet.poinReward ?: 0
         binding.tvSaldoWallet.text = "Rp ${String.format("%,.0f", saldo)}"
         binding.tvPoin.text = "$poin pts"
+
+        // Jumlah afiliasi di card
+        binding.tvJumlahAfiliasi.text = "$jumlahAfiliasi orang"
     }
 
     // QR berisi UUID PENUH
@@ -149,6 +158,14 @@ class ProfilNasabahFragment : Fragment() {
             Toast.makeText(requireContext(), "Edit Profil", Toast.LENGTH_SHORT).show()
         }
 
+        // Tombol card List Afiliasi
+        binding.cardListAfiliasi.setOnClickListener {
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.fragmentContainer, ListAfiliasiFragment())
+                .addToBackStack(null)
+                .commit()
+        }
+
         binding.menuPengaturan.setOnClickListener {
             parentFragmentManager.beginTransaction()
                 .replace(R.id.fragmentContainer, PengaturanAkunFragment())
@@ -156,7 +173,6 @@ class ProfilNasabahFragment : Fragment() {
                 .commit()
         }
 
-        // Tombol Ajukan Berhenti — menggantikan menu Notifikasi
         binding.menuNotifikasi.setOnClickListener {
             bukaFormAjukanBerhenti()
         }
