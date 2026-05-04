@@ -7,6 +7,9 @@ import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
+import com.bumptech.glide.request.RequestOptions
 import com.example.bankjatahapp.R
 import com.example.bankjatahapp.data.model.ProdukReward
 
@@ -16,13 +19,13 @@ class ProdukRewardAdapter(
 ) : RecyclerView.Adapter<ProdukRewardAdapter.ViewHolder>() {
 
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        val ivFoto: ImageView     = view.findViewById(R.id.ivFotoProduk)
+        val ivFoto: ImageView        = view.findViewById(R.id.ivFotoProduk)
         val ivPlaceholder: ImageView = view.findViewById(R.id.ivPlaceholder)
-        val tvStokHabis: TextView = view.findViewById(R.id.tvStokHabis)
-        val tvNama: TextView      = view.findViewById(R.id.tvNamaProduk)
-        val tvPoin: TextView      = view.findViewById(R.id.tvPoin)
-        val tvStok: TextView      = view.findViewById(R.id.tvStok)
-        val btnTukar: Button      = view.findViewById(R.id.btnTukar)
+        val tvStokHabis: TextView    = view.findViewById(R.id.tvStokHabis)
+        val tvNama: TextView         = view.findViewById(R.id.tvNamaProduk)
+        val tvPoin: TextView         = view.findViewById(R.id.tvPoin)
+        val tvStok: TextView         = view.findViewById(R.id.tvStok)
+        val btnTukar: Button         = view.findViewById(R.id.btnTukar)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -34,22 +37,32 @@ class ProdukRewardAdapter(
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val produk = listProduk[position]
 
-        holder.tvNama.text  = produk.namaProduk
-        holder.tvPoin.text  = "${formatAngka(produk.poinDibutuhkan)} poin"
-        holder.tvStok.text  = "Stok ${produk.stok}"
+        holder.tvNama.text = produk.namaProduk
+        holder.tvPoin.text = "${formatAngka(produk.poinDibutuhkan)} poin"
+        holder.tvStok.text = "Stok ${produk.stok}"
 
-        // Foto produk — tampilkan placeholder kalau tidak ada URL
-        if (!produk.fotoProduk.isNullOrEmpty()) {
-            // TODO: load gambar pakai Glide/Coil nanti
-            // Glide.with(holder.ivFoto).load(produk.fotoProduk).into(holder.ivFoto)
+        // ===== LOAD FOTO DARI SUPABASE STORAGE =====
+        val urlFoto = produk.fotoProduk
+        if (!urlFoto.isNullOrEmpty()) {
             holder.ivFoto.visibility        = View.VISIBLE
             holder.ivPlaceholder.visibility = View.GONE
+
+            Glide.with(holder.ivFoto.context)
+                .load(urlFoto)
+                .apply(
+                    RequestOptions()
+                        .centerCrop()
+                        .diskCacheStrategy(DiskCacheStrategy.ALL)
+                        .placeholder(R.drawable.ic_nav_reward)
+                        .error(R.drawable.ic_nav_reward)
+                )
+                .into(holder.ivFoto)
         } else {
             holder.ivFoto.visibility        = View.GONE
             holder.ivPlaceholder.visibility = View.VISIBLE
         }
 
-        // Stok habis
+        // ===== STATUS STOK =====
         if (produk.stok <= 0) {
             holder.tvStokHabis.visibility = View.VISIBLE
             holder.btnTukar.isEnabled     = false
@@ -76,7 +89,6 @@ class ProdukRewardAdapter(
         notifyDataSetChanged()
     }
 
-    private fun formatAngka(angka: Int): String {
-        return String.format("%,d", angka).replace(',', '.')
-    }
+    private fun formatAngka(angka: Int): String =
+        String.format("%,d", angka).replace(',', '.')
 }
