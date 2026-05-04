@@ -25,14 +25,12 @@ class SplashActivity : AppCompatActivity() {
         binding = ActivitySplashBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Sembunyikan action bar
         supportActionBar?.hide()
 
         jalankanAnimasi()
         cekSessionDanNavigasi()
     }
 
-    // ===== ANIMASI FADE IN logo + teks =====
     private fun jalankanAnimasi() {
         val fadeInLogo = ObjectAnimator.ofFloat(binding.ivSplashLogo, "alpha", 0f, 1f).apply {
             duration = 600
@@ -58,24 +56,23 @@ class SplashActivity : AppCompatActivity() {
         }
     }
 
-    // ===== CEK SESSION SUPABASE =====
-    // Jika session masih valid → langsung ke Home (tidak perlu login ulang)
-    // Jika belum / sudah expired → ke LoginActivity setelah 2 detik
     private fun cekSessionDanNavigasi() {
         lifecycleScope.launch {
             try {
-                // Tunggu minimal 2 detik supaya splash terlihat
                 val mulai = System.currentTimeMillis()
 
-                // Cek apakah ada session aktif
+                // ===== KUNCI UTAMA =====
+                // Tunggu SDK selesai load session dari SharedPreferences
+                // Tanpa ini, currentUserOrNull() return null walau session ada
+                client.auth.awaitInitialization()
+
                 val sesiAktif = client.auth.currentUserOrNull()
 
-                val selesai = System.currentTimeMillis()
+                val selesai   = System.currentTimeMillis()
                 val sisaWaktu = 2000L - (selesai - mulai)
                 if (sisaWaktu > 0) delay(sisaWaktu)
 
                 if (sesiAktif != null) {
-                    // Session ada — ambil role dari tabel users
                     try {
                         val user = client.postgrest
                             .from("users")
@@ -83,27 +80,26 @@ class SplashActivity : AppCompatActivity() {
                             .decodeSingle<User>()
 
                         when (user.role) {
-                            "nasabah" -> {
-                                startActivity(Intent(this@SplashActivity, NasabahActivity::class.java))
-                            }
-                            "unit_bisnis" -> {
-                                startActivity(Intent(this@SplashActivity, UnitBisnisActivity::class.java))
-                            }
-                            else -> {
-                                // Role tidak dikenal → paksa login ulang
-                                startActivity(Intent(this@SplashActivity, LoginActivity::class.java))
-                            }
+                            "nasabah" -> startActivity(
+                                Intent(this@SplashActivity, NasabahActivity::class.java)
+                            )
+                            "unit_bisnis" -> startActivity(
+                                Intent(this@SplashActivity, UnitBisnisActivity::class.java)
+                            )
+                            else -> startActivity(
+                                Intent(this@SplashActivity, LoginActivity::class.java)
+                            )
                         }
                     } catch (e: Exception) {
-                        // Gagal ambil user (misal network error) → ke login
+                        // Network error saat ambil user → tetap coba masuk
+                        // jangan paksa login hanya karena network lambat
                         startActivity(Intent(this@SplashActivity, LoginActivity::class.java))
                     }
                 } else {
-                    // Tidak ada session → ke LoginActivity
                     startActivity(Intent(this@SplashActivity, LoginActivity::class.java))
                 }
 
-                finish() // tutup SplashActivity agar tidak bisa back ke sini
+                finish()
 
             } catch (e: Exception) {
                 delay(2000)

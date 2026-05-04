@@ -1,6 +1,7 @@
 package com.example.bankjatahapp.data.remote
 
 import io.github.jan.supabase.auth.Auth
+import io.github.jan.supabase.auth.FlowType
 import io.github.jan.supabase.createSupabaseClient
 import io.github.jan.supabase.postgrest.Postgrest
 import io.github.jan.supabase.storage.Storage
@@ -14,7 +15,14 @@ object SupabaseClient {
         supabaseUrl = SUPABASE_URL,
         supabaseKey = SUPABASE_KEY
     ) {
-        install(Auth)
+        install(Auth) {
+            // Simpan session ke storage permanen (SharedPreferences)
+            // sehingga user tidak perlu login ulang walau app di-kill
+            autoSaveToStorage   = true
+            autoLoadFromStorage = true
+            alwaysAutoRefresh   = true
+            flowType            = FlowType.PKCE
+        }
         install(Postgrest)
         install(Storage)
     }
