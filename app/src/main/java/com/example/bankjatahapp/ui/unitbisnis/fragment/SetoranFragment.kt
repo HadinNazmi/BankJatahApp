@@ -26,10 +26,10 @@ import com.example.bankjatahapp.data.model.User
 import com.example.bankjatahapp.data.remote.SupabaseClient.client
 import com.example.bankjatahapp.databinding.FragmentSetoranBinding
 import com.google.mlkit.vision.barcode.BarcodeScanning
-import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.common.InputImage
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.postgrest.postgrest
+import io.github.jan.supabase.storage.storage
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
@@ -239,12 +239,11 @@ class SetoranFragment : Fragment() {
         isScannerActive = true
         sudahDipindai   = false
 
-        // Sembunyikan placeholder, tampilkan camera + overlay
-        binding.frameQrScanner.visibility   = View.GONE
-        binding.cameraPreview.visibility    = View.VISIBLE
-        binding.qrOverlay.visibility        = View.VISIBLE
-        binding.tvScanInstruksi.visibility  = View.VISIBLE
-        binding.btnTutupKamera.visibility   = View.VISIBLE
+        binding.frameQrScanner.visibility  = View.GONE
+        binding.cameraPreview.visibility   = View.VISIBLE
+        binding.qrOverlay.visibility       = View.VISIBLE
+        binding.tvScanInstruksi.visibility = View.VISIBLE
+        binding.btnTutupKamera.visibility  = View.VISIBLE
 
         val cameraProviderFuture = ProcessCameraProvider.getInstance(requireContext())
         cameraProviderFuture.addListener({
@@ -316,7 +315,6 @@ class SetoranFragment : Fragment() {
         sudahDipindai   = false
         cameraProvider?.unbindAll()
 
-        // Tampilkan kembali placeholder, sembunyikan camera
         binding.frameQrScanner.visibility  = View.VISIBLE
         binding.cameraPreview.visibility   = View.GONE
         binding.qrOverlay.visibility       = View.GONE
@@ -456,9 +454,9 @@ class SetoranFragment : Fragment() {
     private fun submitSetoran(beratKg: Double, catatan: String) {
         setLoading(true)
 
-        val harga        = hargaPerKg!!
-        val komisi       = komisiPerKg!!
-        val totalKomisi  = beratKg * komisi
+        val harga       = hargaPerKg!!
+        val komisi      = komisiPerKg!!
+        val totalKomisi = beratKg * komisi
         val catatanValue = catatan.ifEmpty { null }
 
         lifecycleScope.launch {
@@ -469,6 +467,25 @@ class SetoranFragment : Fragment() {
                 val kodeTransaksi = "TRX-${UUID.randomUUID().toString()
                     .replace("-", "").take(16).uppercase()}"
 
+                // ===== UPLOAD FOTO BUKTI KE SUPABASE STORAGE =====
+                var urlFotoBukti: String? = null
+                val foto = fotoFile
+                if (foto != null && foto.exists() && foto.length() > 0) {
+                    try {
+                        val bytes    = foto.readBytes()
+                        val namaFile = "bukti-ub/${idUnit}/${kodeTransaksi}.jpg"
+                        client.storage["evidence"].upload(namaFile, bytes) { upsert = true }
+                        urlFotoBukti = client.storage.from("evidence").publicUrl(namaFile)
+
+                    } catch (e: Exception) {
+                        Toast.makeText(
+                            requireContext(),
+                            "Foto gagal diupload (${e.message}), setoran tetap disimpan",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                }
+
                 val payload = buildJsonObject {
                     put("kode_transaksi",    kodeTransaksi)
                     put("id_nasabah",        idNasabahDipilih!!)
@@ -477,7 +494,8 @@ class SetoranFragment : Fragment() {
                     put("status_setoran",    "menunggu")
                     put("komisi_per_kg",     komisi)
                     put("total_komisi_unit", totalKomisi)
-                    if (catatanValue != null) put("catatan_unit", catatanValue)
+                    if (catatanValue != null)  put("catatan_unit",     catatanValue)
+                    if (urlFotoBukti != null)  put("bukti_foto_minyak", urlFotoBukti)
                 }
 
                 client.postgrest.from("setoran").insert(payload)
@@ -524,7 +542,6 @@ class SetoranFragment : Fragment() {
         binding.tvSaldoNilai.text                = "Rp 0"
         binding.tvEstimasiRupiah.text            = "Rp 0"
 
-        // Pastikan scanner tertutup saat form direset
         if (isScannerActive) tutupScanner()
     }
 
