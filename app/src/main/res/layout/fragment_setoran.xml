@@ -153,7 +153,7 @@
                     android:textColor="@color/black"
                     android:fontFamily="@font/poppins_semibold" />
 
-                <!-- ===== AREA QR SCANNER PROFESIONAL ===== -->
+                <!-- ===== AREA QR SCANNER ===== -->
                 <androidx.cardview.widget.CardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -166,21 +166,18 @@
                         android:layout_width="match_parent"
                         android:layout_height="260dp">
 
-                        <!-- Live camera preview CameraX -->
                         <androidx.camera.view.PreviewView
                             android:id="@+id/cameraPreview"
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
                             android:visibility="gone" />
 
-                        <!-- Custom overlay bingkai oranye -->
                         <com.example.bankjatahapp.ui.component.QrScannerOverlayView
                             android:id="@+id/qrOverlay"
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
                             android:visibility="gone" />
 
-                        <!-- Placeholder sebelum scan dibuka (tap untuk buka kamera) -->
                         <LinearLayout
                             android:id="@+id/frameQrScanner"
                             android:layout_width="match_parent"
@@ -192,64 +189,27 @@
                             android:focusable="true"
                             android:foreground="?attr/selectableItemBackground">
 
-                            <!-- Bingkai QR dekoratif oranye -->
                             <FrameLayout
                                 android:layout_width="160dp"
                                 android:layout_height="160dp">
 
-                                <!-- Sudut kiri atas — horizontal -->
-                                <View
-                                    android:layout_width="40dp"
-                                    android:layout_height="4dp"
-                                    android:background="@color/orange_primary"
-                                    android:layout_gravity="top|start" />
-                                <!-- Sudut kiri atas — vertikal -->
-                                <View
-                                    android:layout_width="4dp"
-                                    android:layout_height="40dp"
-                                    android:background="@color/orange_primary"
-                                    android:layout_gravity="top|start" />
+                                <View android:layout_width="40dp" android:layout_height="4dp"
+                                    android:background="@color/orange_primary" android:layout_gravity="top|start" />
+                                <View android:layout_width="4dp" android:layout_height="40dp"
+                                    android:background="@color/orange_primary" android:layout_gravity="top|start" />
+                                <View android:layout_width="40dp" android:layout_height="4dp"
+                                    android:background="@color/orange_primary" android:layout_gravity="top|end" />
+                                <View android:layout_width="4dp" android:layout_height="40dp"
+                                    android:background="@color/orange_primary" android:layout_gravity="top|end" />
+                                <View android:layout_width="40dp" android:layout_height="4dp"
+                                    android:background="@color/orange_primary" android:layout_gravity="bottom|start" />
+                                <View android:layout_width="4dp" android:layout_height="40dp"
+                                    android:background="@color/orange_primary" android:layout_gravity="bottom|start" />
+                                <View android:layout_width="40dp" android:layout_height="4dp"
+                                    android:background="@color/orange_primary" android:layout_gravity="bottom|end" />
+                                <View android:layout_width="4dp" android:layout_height="40dp"
+                                    android:background="@color/orange_primary" android:layout_gravity="bottom|end" />
 
-                                <!-- Sudut kanan atas — horizontal -->
-                                <View
-                                    android:layout_width="40dp"
-                                    android:layout_height="4dp"
-                                    android:background="@color/orange_primary"
-                                    android:layout_gravity="top|end" />
-                                <!-- Sudut kanan atas — vertikal -->
-                                <View
-                                    android:layout_width="4dp"
-                                    android:layout_height="40dp"
-                                    android:background="@color/orange_primary"
-                                    android:layout_gravity="top|end" />
-
-                                <!-- Sudut kiri bawah — horizontal -->
-                                <View
-                                    android:layout_width="40dp"
-                                    android:layout_height="4dp"
-                                    android:background="@color/orange_primary"
-                                    android:layout_gravity="bottom|start" />
-                                <!-- Sudut kiri bawah — vertikal -->
-                                <View
-                                    android:layout_width="4dp"
-                                    android:layout_height="40dp"
-                                    android:background="@color/orange_primary"
-                                    android:layout_gravity="bottom|start" />
-
-                                <!-- Sudut kanan bawah — horizontal -->
-                                <View
-                                    android:layout_width="40dp"
-                                    android:layout_height="4dp"
-                                    android:background="@color/orange_primary"
-                                    android:layout_gravity="bottom|end" />
-                                <!-- Sudut kanan bawah — vertikal -->
-                                <View
-                                    android:layout_width="4dp"
-                                    android:layout_height="40dp"
-                                    android:background="@color/orange_primary"
-                                    android:layout_gravity="bottom|end" />
-
-                                <!-- Icon kamera di tengah bingkai -->
                                 <ImageView
                                     android:layout_width="44dp"
                                     android:layout_height="44dp"
@@ -280,7 +240,6 @@
 
                         </LinearLayout>
 
-                        <!-- Label instruksi saat scan aktif -->
                         <TextView
                             android:id="@+id/tvScanInstruksi"
                             android:layout_width="match_parent"
@@ -295,7 +254,6 @@
                             android:layout_gravity="bottom"
                             android:visibility="gone" />
 
-                        <!-- Tombol tutup kamera (X) -->
                         <ImageView
                             android:id="@+id/btnTutupKamera"
                             android:layout_width="36dp"
@@ -516,6 +474,84 @@
                         app:layout_constraintBottom_toBottomOf="parent" />
 
                 </androidx.constraintlayout.widget.ConstraintLayout>
+
+                <!-- Info detail jika mode jemput aktif -->
+                <TextView
+                    android:id="@+id/tvInfoJemput"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text=""
+                    android:textSize="11sp"
+                    android:textColor="@color/orange_primary"
+                    android:fontFamily="@font/poppins_regular"
+                    android:layout_marginTop="4dp"
+                    android:visibility="gone" />
+
+                <!-- ===== UPAH JEMPUT ===== -->
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="@color/gray_border"
+                    android:layout_marginTop="16dp"
+                    android:layout_marginBottom="12dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Mode Pengiriman"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/black"
+                    android:fontFamily="@font/poppins_semibold" />
+
+                <!-- Opsi Antar Sendiri -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginTop="10dp"
+                    android:padding="12dp"
+                    android:background="@drawable/ic_bg_upload_area"
+                    android:clickable="true"
+                    android:focusable="true">
+
+                    <CheckBox
+                        android:id="@+id/switchJemput"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:checked="false"
+                        android:buttonTint="@color/orange_primary" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical"
+                        android:layout_marginStart="8dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="UB Jemput ke Rumah Nasabah"
+                            android:textSize="13sp"
+                            android:textStyle="bold"
+                            android:textColor="@color/black"
+                            android:fontFamily="@font/poppins_semibold" />
+
+                        <TextView
+                            android:id="@+id/tvJemputSub"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Nasabah -Rp500/kg • UB +Rp500/kg"
+                            android:textSize="11sp"
+                            android:textColor="@color/gray_text"
+                            android:fontFamily="@font/poppins_regular"
+                            android:layout_marginTop="2dp" />
+
+                    </LinearLayout>
+
+                </LinearLayout>
 
                 <!-- Divider -->
                 <View

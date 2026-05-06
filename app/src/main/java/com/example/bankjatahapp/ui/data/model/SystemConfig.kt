@@ -66,6 +66,13 @@ data class SystemConfig(
     val bonusUbKabupaten: Double = 140.0,
 
     // ==========================================
+    // UPAH JEMPUT
+    // ==========================================
+
+    @SerialName("biaya_jemput_per_kg")
+    val biayaJemputPerKg: Double = 500.0,
+
+    // ==========================================
     // SYARAT LEVEL BINTANG
     // ==========================================
 

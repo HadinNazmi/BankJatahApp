@@ -53,6 +53,10 @@ class SetoranFragment : Fragment() {
     private var hargaPerKg: Double? = null
     private var komisiPerKg: Double? = null
 
+    // ===== UPAH JEMPUT =====
+    private var isJemput: Boolean = false
+    private var biayaJemputPerKg: Double = 500.0
+
     // CameraX
     private var cameraProvider: ProcessCameraProvider? = null
     private lateinit var cameraExecutor: ExecutorService
@@ -140,6 +144,16 @@ class SetoranFragment : Fragment() {
                     else        -> config.bonusUbKelurahan
                 }
 
+                // ===== LOAD BIAYA JEMPUT =====
+                biayaJemputPerKg = config.biayaJemputPerKg
+
+                // Tampilkan info biaya jemput di label switch
+                binding.tvJemputSub.text =
+                    "Nasabah -${formatRupiah(biayaJemputPerKg)}/kg • UB +${formatRupiah(biayaJemputPerKg)}/kg"
+
+                // Inisialisasi harga awal di card Ringkasan
+                binding.tvPoinNilai.text = "${formatRupiah(harga.hargaPerKg)}/Kg"
+
                 setFormEnabled(true)
                 binding.btnKonfirmasi.text = "Konfirmasi Setor"
 
@@ -160,6 +174,7 @@ class SetoranFragment : Fragment() {
         binding.btnBukaKamera.isEnabled  = enabled
         binding.frameQrScanner.isEnabled = enabled
         binding.btnCekNasabah.isEnabled  = enabled
+        binding.switchJemput.isEnabled   = enabled
     }
 
     private fun setupListeners() {
@@ -191,35 +206,59 @@ class SetoranFragment : Fragment() {
             }
         }
 
+        // ===== TOGGLE UPAH JEMPUT =====
+        binding.switchJemput.setOnCheckedChangeListener { _, checked ->
+            isJemput = checked
+            hitungUlangEstimasi()
+        }
+
         binding.etJumlah.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
             override fun afterTextChanged(s: Editable?) {
-                val berat = s.toString().toDoubleOrNull()
-                val harga = hargaPerKg
-                when {
-                    berat != null && berat > 0 && harga != null -> {
-                        val estimasi = formatRupiah(berat * harga)
-                        binding.tvEstimasiRupiah.text      = estimasi
-                        binding.tvSaldoNilai.text           = estimasi
-                        binding.layoutKalkulasi.visibility = View.VISIBLE
-                    }
-                    berat != null && berat > 0 -> {
-                        binding.tvEstimasiRupiah.text      = "Menghitung..."
-                        binding.tvSaldoNilai.text           = "Menghitung..."
-                        binding.layoutKalkulasi.visibility = View.VISIBLE
-                    }
-                    else -> {
-                        binding.tvEstimasiRupiah.text      = "Rp 0"
-                        binding.tvSaldoNilai.text           = "Rp 0"
-                        binding.layoutKalkulasi.visibility = View.GONE
-                    }
-                }
+                hitungUlangEstimasi()
             }
         })
 
         binding.btnBukaKamera.setOnClickListener { bukaKameraFoto() }
         binding.btnKonfirmasi.setOnClickListener { validasiDanSubmit() }
+    }
+
+    // ===== KALKULASI ESTIMASI =====
+    private fun hitungUlangEstimasi() {
+        val berat = binding.etJumlah.text.toString().trim().toDoubleOrNull()
+        val harga = hargaPerKg
+
+        if (berat != null && berat > 0 && harga != null) {
+            val hargaNasabah = if (isJemput) harga - biayaJemputPerKg else harga
+            val totalNasabah = berat * hargaNasabah
+
+            binding.tvEstimasiRupiah.text      = formatRupiah(totalNasabah)
+            binding.layoutKalkulasi.visibility = View.VISIBLE
+
+            // ===== UPDATE RINGKASAN =====
+            binding.tvSaldoNilai.text  = formatRupiah(totalNasabah)
+            binding.tvPoinNilai.text   = if (isJemput)
+                "${formatRupiah(hargaNasabah)}/Kg (-${formatRupiah(biayaJemputPerKg)})"
+            else
+                "${formatRupiah(harga)}/Kg"
+
+            // Info jemput di bawah kalkulasi
+            if (isJemput) {
+                binding.tvInfoJemput.visibility = View.VISIBLE
+                binding.tvInfoJemput.text =
+                    "Harga nasabah: ${formatRupiah(hargaNasabah)}/kg (dipotong ${formatRupiah(biayaJemputPerKg)}/kg untuk biaya jemput)"
+            } else {
+                binding.tvInfoJemput.visibility = View.GONE
+            }
+
+        } else {
+            binding.tvEstimasiRupiah.text      = "Rp 0"
+            binding.tvSaldoNilai.text           = "Rp 0"
+            binding.tvPoinNilai.text            = "${formatRupiah(hargaPerKg ?: 0.0)}/Kg"
+            binding.tvInfoJemput.visibility    = View.GONE
+            binding.layoutKalkulasi.visibility = View.GONE
+        }
     }
 
     // ===== QR SCANNER =====
@@ -454,9 +493,6 @@ class SetoranFragment : Fragment() {
     private fun submitSetoran(beratKg: Double, catatan: String) {
         setLoading(true)
 
-        val harga       = hargaPerKg!!
-        val komisi      = komisiPerKg!!
-        val totalKomisi = beratKg * komisi
         val catatanValue = catatan.ifEmpty { null }
 
         lifecycleScope.launch {
@@ -476,7 +512,6 @@ class SetoranFragment : Fragment() {
                         val namaFile = "bukti-ub/${idUnit}/${kodeTransaksi}.jpg"
                         client.storage["evidence"].upload(namaFile, bytes) { upsert = true }
                         urlFotoBukti = client.storage.from("evidence").publicUrl(namaFile)
-
                     } catch (e: Exception) {
                         Toast.makeText(
                             requireContext(),
@@ -486,24 +521,28 @@ class SetoranFragment : Fragment() {
                     }
                 }
 
+                // ===== BUILD PAYLOAD =====
+                // Catatan: harga_per_kg, komisi_per_kg, total_rupiah_nasabah, total_komisi_unit
+                // dihitung otomatis oleh trigger before_insert di Supabase berdasarkan is_jemput.
+                // Kita hanya perlu kirim is_jemput = true/false.
                 val payload = buildJsonObject {
-                    put("kode_transaksi",    kodeTransaksi)
-                    put("id_nasabah",        idNasabahDipilih!!)
-                    put("id_unit",           idUnit)
-                    put("berat_bersih_kg",   beratKg)
-                    put("status_setoran",    "menunggu")
-                    put("komisi_per_kg",     komisi)
-                    put("total_komisi_unit", totalKomisi)
-                    if (catatanValue != null)  put("catatan_unit",     catatanValue)
+                    put("kode_transaksi", kodeTransaksi)
+                    put("id_nasabah",     idNasabahDipilih!!)
+                    put("id_unit",        idUnit)
+                    put("berat_bersih_kg", beratKg)
+                    put("status_setoran", "menunggu")
+                    put("is_jemput",      isJemput)
+                    if (catatanValue != null)  put("catatan_unit",      catatanValue)
                     if (urlFotoBukti != null)  put("bukti_foto_minyak", urlFotoBukti)
                 }
 
                 client.postgrest.from("setoran").insert(payload)
 
+                val pesanJemput = if (isJemput) "\nMode: UB Jemput (+upah jemput)" else ""
                 setLoading(false)
                 Toast.makeText(
                     requireContext(),
-                    "✓ Setoran berhasil!\nKode: $kodeTransaksi\nHarga: ${formatRupiah(harga)}/kg\nMenunggu validasi admin.",
+                    "✓ Setoran berhasil!\nKode: $kodeTransaksi$pesanJemput\nMenunggu validasi admin.",
                     Toast.LENGTH_LONG
                 ).show()
 
@@ -532,15 +571,19 @@ class SetoranFragment : Fragment() {
         namaNasabahDipilih = null
         fotoUri  = null
         fotoFile = null
+        isJemput = false
+
         binding.etIdNasabah.setText("")
         binding.etJumlah.setText("")
         binding.etCatatan.setText("")
+        binding.switchJemput.isChecked           = false
         binding.layoutInfoNasabah.visibility     = View.GONE
         binding.layoutKalkulasi.visibility       = View.GONE
         binding.ivPreviewFoto.visibility         = View.GONE
         binding.layoutPlaceholderFoto.visibility = View.VISIBLE
         binding.tvSaldoNilai.text                = "Rp 0"
         binding.tvEstimasiRupiah.text            = "Rp 0"
+        binding.tvInfoJemput.visibility          = View.GONE
 
         if (isScannerActive) tutupScanner()
     }
