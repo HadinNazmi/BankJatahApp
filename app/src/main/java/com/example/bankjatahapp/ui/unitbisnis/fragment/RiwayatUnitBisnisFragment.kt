@@ -1,11 +1,9 @@
 package com.example.bankjatahapp.ui.unitbisnis.fragment
 
 import android.content.ContentValues
-import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.Typeface
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Environment
@@ -48,6 +46,7 @@ class RiwayatUnitBisnisFragment : Fragment() {
     private var _binding: FragmentRiwayatUnitBisnisBinding? = null
     private val binding get() = _binding!!
 
+    // "semua" | "minggu" | "bulan" | "setoran" | "penarikan" | "reward"
     private var filterAktif = "semua"
 
     override fun onCreateView(
@@ -65,6 +64,15 @@ class RiwayatUnitBisnisFragment : Fragment() {
         loadData()
     }
 
+    private fun semuaTab() = listOf(
+        binding.tabSemua,
+        binding.tabMingguIni,
+        binding.tabBulanIni,
+        binding.tabSetoran,
+        binding.tabPenarikan,
+        binding.tabReward
+    )
+
     private fun setupClickListeners() {
         binding.btnBack.setOnClickListener {
             (activity as? UnitBisnisActivity)?.navigateTo(R.id.nav_home)
@@ -79,10 +87,19 @@ class RiwayatUnitBisnisFragment : Fragment() {
         binding.tabBulanIni.setOnClickListener {
             filterAktif = "bulan"; setActiveTab(binding.tabBulanIni); loadData()
         }
+        binding.tabSetoran.setOnClickListener {
+            filterAktif = "setoran"; setActiveTab(binding.tabSetoran); loadData()
+        }
+        binding.tabPenarikan.setOnClickListener {
+            filterAktif = "penarikan"; setActiveTab(binding.tabPenarikan); loadData()
+        }
+        binding.tabReward.setOnClickListener {
+            filterAktif = "reward"; setActiveTab(binding.tabReward); loadData()
+        }
     }
 
     private fun setActiveTab(active: TextView) {
-        listOf(binding.tabSemua, binding.tabMingguIni, binding.tabBulanIni).forEach { tab ->
+        semuaTab().forEach { tab ->
             if (tab == active) {
                 tab.setBackgroundResource(R.drawable.ic_bg_tab_active)
                 tab.setTextColor(requireContext().getColor(R.color.white))
@@ -118,37 +135,48 @@ class RiwayatUnitBisnisFragment : Fragment() {
         lifecycleScope.launch {
             try {
                 val idUnit = client.auth.currentUserOrNull()?.id ?: return@launch
-                val batas  = getBatasTanggal()
 
-                val setoranJson = if (batas != null) {
-                    client.postgrest.from("setoran").select {
-                        filter { eq("id_unit", idUnit); gte("created_at", batas) }
-                    }.data
-                } else {
-                    client.postgrest.from("setoran").select {
-                        filter { eq("id_unit", idUnit) }
-                    }.data
-                }
+                val tampilSetoran   = filterAktif in listOf("semua", "minggu", "bulan", "setoran")
+                val tampilPenarikan = filterAktif in listOf("semua", "minggu", "bulan", "penarikan")
+                val tampilReward    = filterAktif in listOf("semua", "minggu", "bulan", "reward")
 
-                val pencairanJson = if (batas != null) {
-                    client.postgrest.from("pencairan_dana").select {
-                        filter { eq("id_user", idUnit); gte("created_at", batas) }
-                    }.data
-                } else {
-                    client.postgrest.from("pencairan_dana").select {
-                        filter { eq("id_user", idUnit) }
-                    }.data
-                }
+                val batas = getBatasTanggal()
 
-                val redeemJson = if (batas != null) {
-                    client.postgrest.from("redeem_reward").select {
-                        filter { eq("id_nasabah", idUnit); gte("created_at", batas) }
-                    }.data
-                } else {
-                    client.postgrest.from("redeem_reward").select {
-                        filter { eq("id_nasabah", idUnit) }
-                    }.data
-                }
+                val setoranJson = if (tampilSetoran) {
+                    if (batas != null) {
+                        client.postgrest.from("setoran").select {
+                            filter { eq("id_unit", idUnit); gte("created_at", batas) }
+                        }.data
+                    } else {
+                        client.postgrest.from("setoran").select {
+                            filter { eq("id_unit", idUnit) }
+                        }.data
+                    }
+                } else "[]"
+
+                val pencairanJson = if (tampilPenarikan) {
+                    if (batas != null) {
+                        client.postgrest.from("pencairan_dana").select {
+                            filter { eq("id_user", idUnit); gte("created_at", batas) }
+                        }.data
+                    } else {
+                        client.postgrest.from("pencairan_dana").select {
+                            filter { eq("id_user", idUnit) }
+                        }.data
+                    }
+                } else "[]"
+
+                val redeemJson = if (tampilReward) {
+                    if (batas != null) {
+                        client.postgrest.from("redeem_reward").select {
+                            filter { eq("id_nasabah", idUnit); gte("created_at", batas) }
+                        }.data
+                    } else {
+                        client.postgrest.from("redeem_reward").select {
+                            filter { eq("id_nasabah", idUnit) }
+                        }.data
+                    }
+                } else "[]"
 
                 tampilkanRiwayat(setoranJson, pencairanJson, redeemJson)
 
@@ -168,87 +196,102 @@ class RiwayatUnitBisnisFragment : Fragment() {
         var totalBerat  = 0.0
         var totalKomisi = 0.0
 
+        val tampilSetoran   = filterAktif in listOf("semua", "minggu", "bulan", "setoran")
+        val tampilPenarikan = filterAktif in listOf("semua", "minggu", "bulan", "penarikan")
+        val tampilReward    = filterAktif in listOf("semua", "minggu", "bulan", "reward")
+
         // ===== SETORAN =====
-        try {
-            val arr = kotlinx.serialization.json.Json.parseToJsonElement(setoranJson).jsonArray
-            tambahkanLabel("Setoran Minyak Diterima")
-            if (arr.isEmpty()) {
-                tambahkanInfoKosong("Belum ada setoran diterima")
-            } else {
-                arr.forEach { element ->
-                    val obj    = element.jsonObject
-                    val berat  = obj["berat_bersih_kg"]?.jsonPrimitive?.content?.toDoubleOrNull() ?: 0.0
-                    val komisi = obj["total_komisi_unit"]?.jsonPrimitive?.content?.toDoubleOrNull() ?: 0.0
-                    val status = obj["status_setoran"]?.jsonPrimitive?.content ?: "-"
-                    val tgl    = obj["tgl_setoran"]?.jsonPrimitive?.content?.take(10) ?: "-"
-                    val kode   = obj["kode_transaksi"]?.jsonPrimitive?.content ?: "-"
-                    totalBerat  += berat
-                    totalKomisi += komisi
-                    tambahkanItemRiwayat(
-                        "💧", "Penerimaan Setoran",
-                        "$berat Kg  •  Komisi ${formatRupiah(komisi)}",
-                        tgl, kode, status, "setoran",
-                        buktiTransfer = null
-                    )
+        if (tampilSetoran) {
+            try {
+                val arr = kotlinx.serialization.json.Json.parseToJsonElement(setoranJson).jsonArray
+                tambahkanLabel("Setoran Minyak Diterima")
+                if (arr.isEmpty()) {
+                    tambahkanInfoKosong("Belum ada setoran diterima")
+                } else {
+                    arr.forEach { element ->
+                        val obj    = element.jsonObject
+                        val berat  = obj["berat_bersih_kg"]?.jsonPrimitive?.content?.toDoubleOrNull() ?: 0.0
+                        val komisi = obj["total_komisi_unit"]?.jsonPrimitive?.content?.toDoubleOrNull() ?: 0.0
+                        val status = obj["status_setoran"]?.jsonPrimitive?.content ?: "-"
+                        val tgl    = obj["tgl_setoran"]?.jsonPrimitive?.content?.take(10) ?: "-"
+                        val kode   = obj["kode_transaksi"]?.jsonPrimitive?.content ?: "-"
+                        totalBerat  += berat
+                        totalKomisi += komisi
+                        tambahkanItemRiwayat(
+                            "💧", "Penerimaan Setoran",
+                            "$berat Kg  •  Komisi ${formatRupiah(komisi)}",
+                            tgl, kode, status, "setoran",
+                            buktiTransfer = null
+                        )
+                    }
                 }
+            } catch (e: Exception) {
+                tambahkanLabel("Setoran Minyak Diterima")
+                tambahkanInfoKosong("Belum ada riwayat setoran")
             }
-        } catch (e: Exception) {
-            tambahkanLabel("Setoran Minyak Diterima")
-            tambahkanInfoKosong("Belum ada riwayat setoran")
         }
 
         // ===== PENCAIRAN =====
-        try {
-            val arr = kotlinx.serialization.json.Json.parseToJsonElement(pencairanJson).jsonArray
-            tambahkanLabel("Request Penarikan")
-            if (arr.isEmpty()) {
-                tambahkanInfoKosong("Belum ada riwayat penarikan")
-            } else {
-                arr.forEach { element ->
-                    val obj           = element.jsonObject
-                    val jumlah        = obj["jumlah_tarik"]?.jsonPrimitive?.content?.toDoubleOrNull() ?: 0.0
-                    val bersih        = obj["jumlah_bersih"]?.jsonPrimitive?.content?.toDoubleOrNull() ?: 0.0
-                    val bank          = obj["bank_tujuan"]?.jsonPrimitive?.content ?: "-"
-                    val noRek         = obj["no_rekening_tujuan"]?.jsonPrimitive?.content ?: "-"
-                    val status        = obj["status_request"]?.jsonPrimitive?.content ?: "-"
-                    val tgl           = obj["tgl_request"]?.jsonPrimitive?.content?.take(10) ?: "-"
-                    val kode          = obj["kode_pencairan"]?.jsonPrimitive?.content ?: "-"
-                    val sumber        = obj["sumber_dana"]?.jsonPrimitive?.content ?: "setoran_minyak"
-                    val buktiTransfer = obj["bukti_transfer"]?.jsonPrimitive?.content
-                    val labelSumber   = when (sumber) {
-                        "komisi_unit"     -> "Komisi Unit"
-                        "komisi_afiliasi" -> "Komisi Afiliasi"
-                        else              -> "Tabungan Minyak"
+        if (tampilPenarikan) {
+            try {
+                val arr = kotlinx.serialization.json.Json.parseToJsonElement(pencairanJson).jsonArray
+                tambahkanLabel("Request Penarikan")
+                if (arr.isEmpty()) {
+                    tambahkanInfoKosong("Belum ada riwayat penarikan")
+                } else {
+                    arr.forEach { element ->
+                        val obj           = element.jsonObject
+                        val jumlah        = obj["jumlah_tarik"]?.jsonPrimitive?.content?.toDoubleOrNull() ?: 0.0
+                        val bersih        = obj["jumlah_bersih"]?.jsonPrimitive?.content?.toDoubleOrNull() ?: 0.0
+                        val bank          = obj["bank_tujuan"]?.jsonPrimitive?.content ?: "-"
+                        val noRek         = obj["no_rekening_tujuan"]?.jsonPrimitive?.content ?: "-"
+                        val status        = obj["status_request"]?.jsonPrimitive?.content ?: "-"
+                        val tgl           = obj["tgl_request"]?.jsonPrimitive?.content?.take(10) ?: "-"
+                        val kode          = obj["kode_pencairan"]?.jsonPrimitive?.content ?: "-"
+                        val sumber        = obj["sumber_dana"]?.jsonPrimitive?.content ?: "setoran_minyak"
+                        val buktiTransfer = obj["bukti_transfer"]?.jsonPrimitive?.content
+                        val labelSumber   = when (sumber) {
+                            "komisi_unit"     -> "Komisi Unit"
+                            "komisi_afiliasi" -> "Komisi Afiliasi"
+                            else              -> "Tabungan Minyak"
+                        }
+                        tambahkanItemRiwayat(
+                            "🏦", "Penarikan $labelSumber",
+                            "${formatRupiah(jumlah)}  •  $bank $noRek  •  Diterima ${formatRupiah(bersih)}",
+                            tgl, kode, status, "pencairan",
+                            buktiTransfer = buktiTransfer
+                        )
                     }
-                    tambahkanItemRiwayat(
-                        "🏦", "Penarikan $labelSumber",
-                        "${formatRupiah(jumlah)}  •  $bank $noRek  •  Diterima ${formatRupiah(bersih)}",
-                        tgl, kode, status, "pencairan",
-                        buktiTransfer = buktiTransfer
-                    )
                 }
+            } catch (e: Exception) {
+                tambahkanLabel("Request Penarikan")
+                tambahkanInfoKosong("Belum ada riwayat penarikan")
             }
-        } catch (e: Exception) {
-            tambahkanLabel("Request Penarikan")
-            tambahkanInfoKosong("Belum ada riwayat penarikan")
         }
 
         // ===== REDEEM =====
-        try {
-            val arr = kotlinx.serialization.json.Json.parseToJsonElement(redeemJson).jsonArray
-            if (arr.isNotEmpty()) {
+        if (tampilReward) {
+            try {
+                val arr = kotlinx.serialization.json.Json.parseToJsonElement(redeemJson).jsonArray
                 tambahkanLabel("Penukaran Reward")
-                arr.forEach { element ->
-                    val obj      = element.jsonObject
-                    val idRedeem = obj["id_redeem"]?.jsonPrimitive?.content ?: ""
-                    val poin     = obj["poin_dipakai"]?.jsonPrimitive?.content ?: "0"
-                    val status   = obj["status_redeem"]?.jsonPrimitive?.content ?: "-"
-                    val tgl      = obj["tgl_redeem"]?.jsonPrimitive?.content?.take(10) ?: "-"
-                    val kode     = idRedeem.take(8).uppercase()
-                    tambahkanItemRedeem(idRedeem, poin, tgl, kode, status)
+                if (arr.isEmpty()) {
+                    tambahkanInfoKosong("Belum ada penukaran reward")
+                } else {
+                    arr.forEach { element ->
+                        val obj      = element.jsonObject
+                        val idRedeem = obj["id_redeem"]?.jsonPrimitive?.content ?: ""
+                        val poin     = obj["poin_dipakai"]?.jsonPrimitive?.content ?: "0"
+                        val status   = obj["status_redeem"]?.jsonPrimitive?.content ?: "-"
+                        val tgl      = obj["tgl_redeem"]?.jsonPrimitive?.content?.take(10) ?: "-"
+                        val kode     = idRedeem.take(8).uppercase()
+                        tambahkanItemRedeem(idRedeem, poin, tgl, kode, status)
+                    }
                 }
+            } catch (e: Exception) {
+                tambahkanLabel("Penukaran Reward")
+                tambahkanInfoKosong("Belum ada penukaran reward")
             }
-        } catch (e: Exception) { /* skip */ }
+        }
 
         binding.tvTotalSetor.text = "$totalBerat Kg"
         binding.tvSaldo.text      = formatRupiah(totalKomisi)
@@ -348,7 +391,6 @@ class RiwayatUnitBisnisFragment : Fragment() {
         inner.addView(tvDetail)
         inner.addView(tvKode)
 
-        // ===== TOMBOL LIHAT BUKTI TRANSFER =====
         if (tipeStatus == "pencairan" && status == "selesai" && !buktiTransfer.isNullOrEmpty()) {
             val divider = View(requireContext()).apply {
                 layoutParams = LinearLayout.LayoutParams(
@@ -422,12 +464,9 @@ class RiwayatUnitBisnisFragment : Fragment() {
             .error(android.R.drawable.ic_menu_close_clear_cancel)
             .into(ivBukti)
 
-
-
         layout.addView(tvJudul)
         layout.addView(tvKode)
         layout.addView(ivBukti)
-
 
         AlertDialog.Builder(requireContext())
             .setView(layout)
@@ -494,7 +533,7 @@ class RiwayatUnitBisnisFragment : Fragment() {
         }
         row1.addView(tvIcon); row1.addView(tvJudul); row1.addView(tvBadge)
 
-        val tvTgl    = TextView(requireContext()).apply {
+        val tvTgl = TextView(requireContext()).apply {
             text = tgl; textSize = 11f
             setTextColor(requireContext().getColor(R.color.gray_text)); setPadding(0, dp4, 0, 0)
         }
@@ -502,7 +541,7 @@ class RiwayatUnitBisnisFragment : Fragment() {
             text = "$poin Poin digunakan"; textSize = 12f
             setTextColor(requireContext().getColor(R.color.orange_primary)); setPadding(0, dp4, 0, 0)
         }
-        val tvKode   = TextView(requireContext()).apply {
+        val tvKode = TextView(requireContext()).apply {
             text = "ID: $kode..."; textSize = 10f
             setTextColor(requireContext().getColor(R.color.gray_text))
             setPadding(0, (2 * resources.displayMetrics.density).toInt(), 0, 0)

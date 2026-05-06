@@ -108,6 +108,50 @@
                 android:paddingEnd="20dp"
                 android:layout_marginStart="8dp"
                 android:background="@drawable/ic_bg_tab_inactive" />
+
+            <!-- ✅ TAB BARU -->
+            <TextView
+                android:id="@+id/tabSetoran"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:text="Setoran"
+                android:textSize="13sp"
+                android:textColor="@color/gray_text"
+                android:fontFamily="@font/poppins_regular"
+                android:gravity="center"
+                android:paddingStart="20dp"
+                android:paddingEnd="20dp"
+                android:layout_marginStart="8dp"
+                android:background="@drawable/ic_bg_tab_inactive" />
+
+            <TextView
+                android:id="@+id/tabPenarikan"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:text="Penarikan"
+                android:textSize="13sp"
+                android:textColor="@color/gray_text"
+                android:fontFamily="@font/poppins_regular"
+                android:gravity="center"
+                android:paddingStart="20dp"
+                android:paddingEnd="20dp"
+                android:layout_marginStart="8dp"
+                android:background="@drawable/ic_bg_tab_inactive" />
+
+            <TextView
+                android:id="@+id/tabReward"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:text="Reward"
+                android:textSize="13sp"
+                android:textColor="@color/gray_text"
+                android:fontFamily="@font/poppins_regular"
+                android:gravity="center"
+                android:paddingStart="20dp"
+                android:paddingEnd="20dp"
+                android:layout_marginStart="8dp"
+                android:background="@drawable/ic_bg_tab_inactive" />
+
         </LinearLayout>
     </HorizontalScrollView>
 
@@ -178,7 +222,7 @@
             app:layout_constraintTop_toBottomOf="@+id/tvSaldo" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <!-- DAFTAR RIWAYAT (dinamis dari Fragment) -->
+    <!-- DAFTAR RIWAYAT -->
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
