@@ -27,4 +27,6 @@
     <color name="notif_error_bg">#E53935</color>
     <color name="notif_warning_bg">#FFA000</color>
     <color name="notif_info_bg">#2196F3</color>
+
+    <color name="ic_logoapp_background">#FFFFFF</color>
 </resources>

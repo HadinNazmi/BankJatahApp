@@ -10,14 +10,25 @@ import androidx.lifecycle.lifecycleScope
 import com.example.bankjatahapp.R
 import com.example.bankjatahapp.data.model.DompetUser
 import com.example.bankjatahapp.data.model.NasabahData
+import com.example.bankjatahapp.data.model.Notification
 import com.example.bankjatahapp.data.model.ProdukReward
 import com.example.bankjatahapp.data.model.SystemConfig
 import com.example.bankjatahapp.data.model.User
 import com.example.bankjatahapp.data.remote.SupabaseClient.client
 import com.example.bankjatahapp.databinding.FragmentHomeNasabahBinding
+import com.example.bankjatahapp.ui.common.NotifikasiFragment
 import com.example.bankjatahapp.ui.nasabah.NasabahActivity
+import com.google.android.material.snackbar.Snackbar
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.postgrest.postgrest
+import io.github.jan.supabase.postgrest.query.filter.FilterOperator
+import io.github.jan.supabase.realtime.PostgresAction
+import io.github.jan.supabase.realtime.RealtimeChannel
+import io.github.jan.supabase.realtime.channel
+import io.github.jan.supabase.realtime.postgresChangeFlow
+import io.github.jan.supabase.realtime.realtime
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import java.text.NumberFormat
 import java.util.Locale
@@ -27,9 +38,9 @@ class HomeNasabahFragment : Fragment() {
     private var _binding: FragmentHomeNasabahBinding? = null
     private val binding get() = _binding!!
 
-    // Simpan data yang diperlukan untuk cek syarat UB
     private var nasabahData: NasabahData? = null
     private var systemConfig: SystemConfig? = null
+    private var realtimeChannel: RealtimeChannel? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -44,6 +55,74 @@ class HomeNasabahFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         loadData()
         setupClickListeners()
+        mulaiDengarkanNotifikasi()
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        lifecycleScope.launch {
+            try {
+                realtimeChannel?.let { client.realtime.removeChannel(it) }
+            } catch (_: Exception) {}
+        }
+        _binding = null
+    }
+
+    private fun mulaiDengarkanNotifikasi() {
+        lifecycleScope.launch {
+            try {
+                val idUser = client.auth.currentUserOrNull()?.id ?: return@launch
+
+                client.realtime.connect()
+
+                val channel = client.realtime.channel("notifikasi-nasabah-$idUser")
+                realtimeChannel = channel
+
+                channel.postgresChangeFlow<PostgresAction.Insert>(schema = "public") {
+                    table  = "notifications"
+                    filter("id_user", FilterOperator.EQ, idUser)
+                }.onEach { action ->
+                    val record  = action.record
+                    val title   = record["title"]?.toString()?.trim('"') ?: "Notifikasi Baru"
+                    val message = record["message"]?.toString()?.trim('"') ?: ""
+                    updateBadgeNotifikasi()
+                    tampilkanPopupNotifikasi(title, message)
+                }.launchIn(viewLifecycleOwner.lifecycleScope)
+
+                channel.subscribe()
+                updateBadgeNotifikasi()
+
+            } catch (_: Exception) {}
+        }
+    }
+
+    private fun updateBadgeNotifikasi() {
+        lifecycleScope.launch {
+            try {
+                val idUser = client.auth.currentUserOrNull()?.id ?: return@launch
+                val listBelumDibaca = client.postgrest
+                    .from("notifications")
+                    .select { filter { eq("id_user", idUser); eq("is_read", false) } }
+                    .decodeList<Notification>()
+
+                if (_binding == null) return@launch
+                val jumlah = listBelumDibaca.size
+                if (jumlah > 0) {
+                    binding.tvBadgeNotif.visibility = View.VISIBLE
+                    binding.tvBadgeNotif.text = if (jumlah > 99) "99+" else jumlah.toString()
+                } else {
+                    binding.tvBadgeNotif.visibility = View.GONE
+                }
+            } catch (_: Exception) {}
+        }
+    }
+
+    private fun tampilkanPopupNotifikasi(title: String, message: String) {
+        if (_binding == null) return
+        val snackbar = Snackbar.make(binding.root, "🔔 $title\n$message", Snackbar.LENGTH_LONG)
+        snackbar.setAction("Lihat") { bukaHalamanNotifikasi() }
+        snackbar.setActionTextColor(requireContext().getColor(R.color.orange_primary))
+        snackbar.show()
     }
 
     private fun loadData() {
@@ -51,31 +130,26 @@ class HomeNasabahFragment : Fragment() {
             try {
                 val idUser = client.auth.currentUserOrNull()?.id ?: return@launch
 
-                // 1. Data users
                 val user = client.postgrest
                     .from("users")
                     .select { filter { eq("id_user", idUser) } }
                     .decodeSingle<User>()
 
-                // 2. Data dompet
                 val dompet = client.postgrest
                     .from("dompet_user")
                     .select { filter { eq("id_dompet", idUser) } }
                     .decodeSingle<DompetUser>()
 
-                // 3. Data nasabah_data → level + total setoran
                 nasabahData = client.postgrest
                     .from("nasabah_data")
                     .select { filter { eq("id_nasabah", idUser) } }
                     .decodeSingle<NasabahData>()
 
-                // 4. System config — untuk ambil min_bintang_kemitraan secara dinamis
                 systemConfig = client.postgrest
                     .from("system_config")
                     .select { filter { eq("id_config", 1) } }
                     .decodeSingle<SystemConfig>()
 
-                // 5. Produk reward aktif
                 val produkList = client.postgrest
                     .from("produk_reward")
                     .select { filter { eq("status_produk", "aktif") } }
@@ -96,32 +170,20 @@ class HomeNasabahFragment : Fragment() {
         nasabah: NasabahData,
         rewardTersedia: Int
     ) {
-        // Header
-        binding.tvNamaUser.text = user.namaLengkap
-        binding.tvRoleUser.text = when (user.role) {
-            "nasabah"     -> "Nasabah"
-            "unit_bisnis" -> "Unit Bisnis"
-            else          -> user.role
-        }
-
-        // Card orange: Saldo Tabungan + Saldo Bonus
+        binding.tvNamaUser.text      = user.namaLengkap
+        binding.tvRoleUser.text      = "Nasabah"
         binding.tvSaldoTabungan.text = formatRupiah(dompet.saldoNasabah)
         binding.tvSaldoBonus.text    = formatRupiah(dompet.saldoAfiliasi)
-
-        // Card poin reward
         binding.tvTotalPoin.text      = dompet.poinReward.toString()
         binding.tvRewardTersedia.text = rewardTersedia.toString()
         binding.tvInfoReward.text     = "Ada $rewardTersedia reward yang bisa kamu tukar sekarang!"
 
-        // Total setoran lifetime
         val totalKg = nasabah.totalSetoranLifetime ?: 0.0
         binding.tvSaldoMinyak.text = "$totalKg Kg"
 
-        // Level bintang
         val level = nasabah.levelBintang ?: 1
         binding.tvLevelLabel.text = labelLevel(level)
 
-        // Progress bar
         val progressPersen = hitungProgressLevel(level, totalKg)
         binding.progressMinyak.progress = progressPersen
         binding.tvProgressLabel.text = if (progressPersen >= 100) {
@@ -147,11 +209,18 @@ class HomeNasabahFragment : Fragment() {
         if (level >= 8) return 100
         val targetKg = level * 50.0
         val prevKg   = (level - 1) * 50.0
-        val progress = ((totalKg - prevKg) / (targetKg - prevKg) * 100).toInt()
-        return progress.coerceIn(0, 100)
+        return ((totalKg - prevKg) / (targetKg - prevKg) * 100).toInt().coerceIn(0, 100)
+    }
+
+    private fun bukaHalamanNotifikasi() {
+        parentFragmentManager.beginTransaction()
+            .replace(R.id.fragmentContainer, NotifikasiFragment())
+            .addToBackStack(null)
+            .commit()
     }
 
     private fun setupClickListeners() {
+        binding.ivNotifikasi.setOnClickListener { bukaHalamanNotifikasi() }
         binding.btnSetorMinyak.setOnClickListener {
             (activity as? NasabahActivity)?.navigateTo(R.id.nav_riwayat)
         }
@@ -168,51 +237,29 @@ class HomeNasabahFragment : Fragment() {
                 .commit()
         }
         binding.tvLihatSemua.setOnClickListener { }
-        binding.ivNotifikasi.setOnClickListener { }
-
-        // ===== TOMBOL DAFTAR UNIT BISNIS =====
-        // Cek syarat bintang dari system_config sebelum buka form registrasi
-        binding.btnDaftarUnitBisnis.setOnClickListener {
-            cekSyaratDanBukaRegistrasiUB()
-        }
+        binding.btnDaftarUnitBisnis.setOnClickListener { cekSyaratDanBukaRegistrasiUB() }
     }
 
-    // ===== CEK SYARAT LEVEL BINTANG UNTUK DAFTAR UB =====
-    // Syarat diambil dari system_config.min_bintang_kemitraan (dinamis, diatur admin)
-    // Default fallback = 3 jika config belum dimuat
     private fun cekSyaratDanBukaRegistrasiUB() {
-        val nasabah = nasabahData
-        val config  = systemConfig
-
-        // Jika data belum dimuat, load dulu
-        if (nasabah == null || config == null) {
+        if (nasabahData == null || systemConfig == null) {
             lifecycleScope.launch {
                 try {
                     val idUser = client.auth.currentUserOrNull()?.id ?: return@launch
-
                     if (nasabahData == null) {
                         nasabahData = client.postgrest
                             .from("nasabah_data")
                             .select { filter { eq("id_nasabah", idUser) } }
                             .decodeSingle<NasabahData>()
                     }
-
                     if (systemConfig == null) {
                         systemConfig = client.postgrest
                             .from("system_config")
                             .select { filter { eq("id_config", 1) } }
                             .decodeSingle<SystemConfig>()
                     }
-
-                    // Setelah data dimuat, cek lagi
                     prosesKlikDaftarUB()
-
                 } catch (e: Exception) {
-                    Toast.makeText(
-                        requireContext(),
-                        "Gagal memuat data: ${e.message}",
-                        Toast.LENGTH_LONG
-                    ).show()
+                    Toast.makeText(requireContext(), "Gagal: ${e.message}", Toast.LENGTH_LONG).show()
                 }
             }
         } else {
@@ -221,28 +268,17 @@ class HomeNasabahFragment : Fragment() {
     }
 
     private fun prosesKlikDaftarUB() {
-        val nasabah       = nasabahData ?: return
-        val config        = systemConfig
-        val levelSaatIni  = nasabah.levelBintang ?: 1
-
-        // Ambil syarat minimum bintang dari config Supabase
-        // Fallback ke 3 jika config belum ada (sesuai default DB)
-        val minBintang = config?.minBintangKemitraan ?: 3
-
+        val nasabah      = nasabahData ?: return
+        val levelSaatIni = nasabah.levelBintang ?: 1
+        val minBintang   = systemConfig?.minBintangKemitraan ?: 3
         if (levelSaatIni < minBintang) {
-            // Belum memenuhi syarat — tampilkan pesan jelas
             val sisa = minBintang - levelSaatIni
             Toast.makeText(
                 requireContext(),
-                "⚠ Belum memenuhi syarat!\n\n" +
-                        "Untuk mendaftar sebagai Unit Bisnis, Anda perlu minimal Bintang $minBintang.\n\n" +
-                        "Level Anda saat ini: Bintang $levelSaatIni\n" +
-                        "Kurang $sisa tingkat lagi.\n\n" +
-                        "Terus setor minyak untuk naik level!",
+                "⚠ Belum memenuhi syarat!\nMinimal Bintang $minBintang.\nLevel kamu: Bintang $levelSaatIni\nKurang $sisa tingkat lagi.",
                 Toast.LENGTH_LONG
             ).show()
         } else {
-            // Sudah memenuhi syarat — buka form registrasi UB
             parentFragmentManager.beginTransaction()
                 .replace(R.id.fragmentContainer, RegistrasiUnitBisnisFragment())
                 .addToBackStack(null)
@@ -252,9 +288,4 @@ class HomeNasabahFragment : Fragment() {
 
     private fun formatRupiah(nominal: Double): String =
         NumberFormat.getCurrencyInstance(Locale("id", "ID")).format(nominal).replace(",00", "")
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
-    }
 }

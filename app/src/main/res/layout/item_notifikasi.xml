@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="16dp"
+    android:layout_marginEnd="16dp"
+    android:layout_marginBottom="8dp"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="2dp"
+    app:cardBackgroundColor="@color/white">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="14dp">
+
+        <!-- Dot merah penanda belum dibaca -->
+        <View
+            android:id="@+id/viewUnread"
+            android:layout_width="8dp"
+            android:layout_height="8dp"
+            android:background="@drawable/bg_badge_notif"
+            android:visibility="gone"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <!-- Icon notifikasi -->
+        <ImageView
+            android:id="@+id/ivIcon"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/ic_notifikasi"
+            android:background="@drawable/ic_bg_aktivitas_orange"
+            android:padding="8dp"
+            android:scaleType="centerInside"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent" />
+
+        <!-- Judul -->
+        <TextView
+            android:id="@+id/tvJudul"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Judul Notifikasi"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:textColor="@color/black"
+            android:fontFamily="@font/poppins_bold"
+            android:layout_marginStart="12dp"
+            app:layout_constraintStart_toEndOf="@+id/ivIcon"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <!-- Pesan -->
+        <TextView
+            android:id="@+id/tvPesan"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Isi pesan notifikasi di sini"
+            android:textSize="12sp"
+            android:textColor="@color/gray_text"
+            android:fontFamily="@font/poppins_regular"
+            android:layout_marginStart="12dp"
+            android:layout_marginTop="2dp"
+            app:layout_constraintStart_toEndOf="@+id/ivIcon"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/tvJudul" />
+
+        <!-- Waktu -->
+        <TextView
+            android:id="@+id/tvWaktu"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="01 Jan 2025 • 10:00"
+            android:textSize="10sp"
+            android:textColor="@color/gray_text"
+            android:fontFamily="@font/poppins_regular"
+            android:layout_marginStart="12dp"
+            android:layout_marginTop="4dp"
+            app:layout_constraintStart_toEndOf="@+id/ivIcon"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/tvPesan" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.cardview.widget.CardView>

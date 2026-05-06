@@ -10,13 +10,24 @@ import androidx.lifecycle.lifecycleScope
 import com.example.bankjatahapp.R
 import com.example.bankjatahapp.data.model.DompetUser
 import com.example.bankjatahapp.data.model.NasabahData
+import com.example.bankjatahapp.data.model.Notification
 import com.example.bankjatahapp.data.model.ProdukReward
 import com.example.bankjatahapp.data.model.User
 import com.example.bankjatahapp.data.remote.SupabaseClient.client
 import com.example.bankjatahapp.databinding.FragmentHomeUnitBisnisBinding
+import com.example.bankjatahapp.ui.common.NotifikasiFragment
 import com.example.bankjatahapp.ui.unitbisnis.UnitBisnisActivity
+import com.google.android.material.snackbar.Snackbar
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.postgrest.postgrest
+import io.github.jan.supabase.postgrest.query.filter.FilterOperator
+import io.github.jan.supabase.realtime.PostgresAction
+import io.github.jan.supabase.realtime.RealtimeChannel
+import io.github.jan.supabase.realtime.channel
+import io.github.jan.supabase.realtime.postgresChangeFlow
+import io.github.jan.supabase.realtime.realtime
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import java.text.NumberFormat
 import java.util.Locale
@@ -25,6 +36,8 @@ class HomeUnitBisnisFragment : Fragment() {
 
     private var _binding: FragmentHomeUnitBisnisBinding? = null
     private val binding get() = _binding!!
+
+    private var realtimeChannel: RealtimeChannel? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -39,6 +52,74 @@ class HomeUnitBisnisFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         loadData()
         setupClickListeners()
+        mulaiDengarkanNotifikasi()
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        lifecycleScope.launch {
+            try {
+                realtimeChannel?.let { client.realtime.removeChannel(it) }
+            } catch (_: Exception) {}
+        }
+        _binding = null
+    }
+
+    private fun mulaiDengarkanNotifikasi() {
+        lifecycleScope.launch {
+            try {
+                val idUser = client.auth.currentUserOrNull()?.id ?: return@launch
+
+                client.realtime.connect()
+
+                val channel = client.realtime.channel("notifikasi-unitbisnis-$idUser")
+                realtimeChannel = channel
+
+                channel.postgresChangeFlow<PostgresAction.Insert>(schema = "public") {
+                    table  = "notifications"
+                    filter("id_user", FilterOperator.EQ, idUser)
+                }.onEach { action ->
+                    val record  = action.record
+                    val title   = record["title"]?.toString()?.trim('"') ?: "Notifikasi Baru"
+                    val message = record["message"]?.toString()?.trim('"') ?: ""
+                    updateBadgeNotifikasi()
+                    tampilkanPopupNotifikasi(title, message)
+                }.launchIn(viewLifecycleOwner.lifecycleScope)
+
+                channel.subscribe()
+                updateBadgeNotifikasi()
+
+            } catch (_: Exception) {}
+        }
+    }
+
+    private fun updateBadgeNotifikasi() {
+        lifecycleScope.launch {
+            try {
+                val idUser = client.auth.currentUserOrNull()?.id ?: return@launch
+                val listBelumDibaca = client.postgrest
+                    .from("notifications")
+                    .select { filter { eq("id_user", idUser); eq("is_read", false) } }
+                    .decodeList<Notification>()
+
+                if (_binding == null) return@launch
+                val jumlah = listBelumDibaca.size
+                if (jumlah > 0) {
+                    binding.tvBadgeNotif.visibility = View.VISIBLE
+                    binding.tvBadgeNotif.text = if (jumlah > 99) "99+" else jumlah.toString()
+                } else {
+                    binding.tvBadgeNotif.visibility = View.GONE
+                }
+            } catch (_: Exception) {}
+        }
+    }
+
+    private fun tampilkanPopupNotifikasi(title: String, message: String) {
+        if (_binding == null) return
+        val snackbar = Snackbar.make(binding.root, "🔔 $title\n$message", Snackbar.LENGTH_LONG)
+        snackbar.setAction("Lihat") { bukaHalamanNotifikasi() }
+        snackbar.setActionTextColor(requireContext().getColor(R.color.orange_primary))
+        snackbar.show()
     }
 
     private fun loadData() {
@@ -46,25 +127,21 @@ class HomeUnitBisnisFragment : Fragment() {
             try {
                 val idUser = client.auth.currentUserOrNull()?.id ?: return@launch
 
-                // 1. Data users
                 val user = client.postgrest
                     .from("users")
                     .select { filter { eq("id_user", idUser) } }
                     .decodeSingle<User>()
 
-                // 2. Data dompet — unit bisnis: saldo_nasabah + saldo_unit + saldo_afiliasi
                 val dompet = client.postgrest
                     .from("dompet_user")
                     .select { filter { eq("id_dompet", idUser) } }
                     .decodeSingle<DompetUser>()
 
-                // 3. Data nasabah_data → level + total setoran
                 val nasabah = client.postgrest
                     .from("nasabah_data")
                     .select { filter { eq("id_nasabah", idUser) } }
                     .decodeSingle<NasabahData>()
 
-                // 4. Produk reward aktif
                 val produkList = client.postgrest
                     .from("produk_reward")
                     .select { filter { eq("status_produk", "aktif") } }
@@ -85,28 +162,20 @@ class HomeUnitBisnisFragment : Fragment() {
         nasabah: NasabahData,
         rewardTersedia: Int
     ) {
-        // Header
-        binding.tvNamaUser.text = user.namaLengkap
-
-        // 3 card saldo:
-        binding.tvSaldoTabungan.text = formatRupiah(dompet.saldoNasabah)  // saldo_nasabah
-        binding.tvSaldoKomisi.text   = formatRupiah(dompet.saldoUnit)      // saldo_unit
-        binding.tvSaldoBonus.text    = formatRupiah(dompet.saldoAfiliasi)  // saldo_afiliasi
-
-        // Poin & reward
+        binding.tvNamaUser.text      = user.namaLengkap
+        binding.tvSaldoTabungan.text = formatRupiah(dompet.saldoNasabah)
+        binding.tvSaldoKomisi.text   = formatRupiah(dompet.saldoUnit)
+        binding.tvSaldoBonus.text    = formatRupiah(dompet.saldoAfiliasi)
         binding.tvTotalPoin.text      = dompet.poinReward.toString()
         binding.tvRewardTersedia.text = rewardTersedia.toString()
         binding.tvInfoReward.text     = "Ada $rewardTersedia reward yang bisa ditukar sekarang!"
 
-        // Total setoran lifetime
         val totalKg = nasabah.totalSetoranLifetime ?: 0.0
         binding.tvSaldoMinyak.text = "$totalKg Kg"
 
-        // Level bintang
         val level = nasabah.levelBintang ?: 1
         binding.tvLevelLabel.text = labelLevel(level)
 
-        // Progress bar
         val progressPersen = hitungProgressLevel(level, totalKg)
         binding.progressMinyak.progress = progressPersen
         binding.tvProgressLabel.text = if (progressPersen >= 100) {
@@ -132,11 +201,18 @@ class HomeUnitBisnisFragment : Fragment() {
         if (level >= 8) return 100
         val targetKg = level * 50.0
         val prevKg   = (level - 1) * 50.0
-        val progress = ((totalKg - prevKg) / (targetKg - prevKg) * 100).toInt()
-        return progress.coerceIn(0, 100)
+        return ((totalKg - prevKg) / (targetKg - prevKg) * 100).toInt().coerceIn(0, 100)
+    }
+
+    private fun bukaHalamanNotifikasi() {
+        parentFragmentManager.beginTransaction()
+            .replace(R.id.fragmentContainer, NotifikasiFragment())
+            .addToBackStack(null)
+            .commit()
     }
 
     private fun setupClickListeners() {
+        binding.ivNotifikasi.setOnClickListener { bukaHalamanNotifikasi() }
         binding.btnSetoran.setOnClickListener {
             (activity as? UnitBisnisActivity)?.navigateTo(R.id.nav_setoran)
         }
@@ -156,14 +232,8 @@ class HomeUnitBisnisFragment : Fragment() {
                 .commit()
         }
         binding.tvLihatSemua.setOnClickListener { }
-        binding.ivNotifikasi.setOnClickListener { }
     }
 
     private fun formatRupiah(nominal: Double): String =
         NumberFormat.getCurrencyInstance(Locale("id", "ID")).format(nominal).replace(",00", "")
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
-    }
 }

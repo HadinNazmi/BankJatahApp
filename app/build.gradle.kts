@@ -97,5 +97,6 @@ dependencies {
     implementation("com.google.zxing:core:3.5.2")
 
     implementation("com.github.bumptech.glide:glide:4.16.0")
+    implementation("io.github.jan-tennert.supabase:realtime-kt")
 
 }
