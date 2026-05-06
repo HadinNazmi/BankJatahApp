@@ -1,5 +1,6 @@
 package com.example.bankjatahapp.ui.nasabah.fragment
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -105,11 +106,37 @@ class PengaturanAkunFragment : Fragment() {
         binding.btnBack.setOnClickListener {
             parentFragmentManager.popBackStack()
         }
-        // ===== HAPUS btnGantiFoto — tidak ada upload foto =====
-        // btnGantiFoto dihide dari XML atau tidak dipakai
         binding.btnSimpan.setOnClickListener {
             simpanPerubahan()
         }
+        // ===== SHARE KODE REFERRAL =====
+        binding.tvBagikanKeTeman.setOnClickListener {
+            val kodeReferral = binding.tvKodeReferralValue.text.toString()
+            if (kodeReferral == "-" || kodeReferral.isEmpty()) {
+                Toast.makeText(requireContext(), "Kode referral belum tersedia", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+            bagikanKodeReferral(kodeReferral)
+        }
+    }
+
+    private fun bagikanKodeReferral(kode: String) {
+        val link = "bankjatah://register/ref?kode=$kode"
+        val pesan = """
+            🎉 Hei! Aku mengundang kamu bergabung di aplikasi Bank Jatah!
+            
+            Gunakan kode referral aku: *$kode*
+            
+            Daftar sekarang lewat link ini:
+            $link
+            
+            Atau buka aplikasi Bank Jatah dan masukkan kode referral saat daftar.
+        """.trimIndent()
+        val intent = Intent(Intent.ACTION_SEND).apply {
+            type = "text/plain"
+            putExtra(Intent.EXTRA_TEXT, pesan)
+        }
+        startActivity(Intent.createChooser(intent, "Bagikan kode referral via"))
     }
 
     private fun simpanPerubahan() {

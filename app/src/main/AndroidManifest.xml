@@ -32,7 +32,6 @@
             android:theme="@style/Theme.BankJatahApp">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
@@ -42,9 +41,23 @@
         <activity
             android:name=".ui.nasabah.NasabahActivity"
             android:exported="false" />
+
+        <!-- ✅ PERUBAHAN: exported=true + intent-filter deep link ditambahkan -->
         <activity
             android:name=".ui.auth.RegisterActivity"
-            android:exported="false" /> <!-- FileProvider untuk kamera (foto bukti setoran) -->
+            android:exported="true">
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:scheme="bankjatah"
+                    android:host="register"
+                    android:pathPrefix="/ref" />
+            </intent-filter>
+        </activity>
+
+        <!-- FileProvider untuk kamera (foto bukti setoran) -->
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.provider"

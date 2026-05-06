@@ -284,14 +284,20 @@
 
                         </LinearLayout>
 
+                        <!-- ✅ PERUBAHAN: Tambah id, clickable, focusable, background ripple -->
                         <TextView
+                            android:id="@+id/tvBagikanKeTeman"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Bagikan ke nasabah"
                             android:textSize="10sp"
                             android:textColor="@color/orange_primary"
                             android:fontFamily="@font/poppins_regular"
-                            android:layout_gravity="center_vertical" />
+                            android:layout_gravity="center_vertical"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:padding="8dp" />
 
                     </LinearLayout>
 
