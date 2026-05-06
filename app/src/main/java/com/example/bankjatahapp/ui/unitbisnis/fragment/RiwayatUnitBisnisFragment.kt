@@ -1,9 +1,11 @@
 package com.example.bankjatahapp.ui.unitbisnis.fragment
 
 import android.content.ContentValues
+import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.Typeface
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Environment
@@ -12,6 +14,7 @@ import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
@@ -19,6 +22,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.cardview.widget.CardView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import com.bumptech.glide.Glide
 import com.example.bankjatahapp.R
 import com.example.bankjatahapp.data.remote.SupabaseClient.client
 import com.example.bankjatahapp.databinding.DialogQrRedeemBinding
@@ -66,21 +70,14 @@ class RiwayatUnitBisnisFragment : Fragment() {
             (activity as? UnitBisnisActivity)?.navigateTo(R.id.nav_home)
         }
         binding.btnFilter.setOnClickListener { }
-
         binding.tabSemua.setOnClickListener {
-            filterAktif = "semua"
-            setActiveTab(binding.tabSemua)
-            loadData()
+            filterAktif = "semua"; setActiveTab(binding.tabSemua); loadData()
         }
         binding.tabMingguIni.setOnClickListener {
-            filterAktif = "minggu"
-            setActiveTab(binding.tabMingguIni)
-            loadData()
+            filterAktif = "minggu"; setActiveTab(binding.tabMingguIni); loadData()
         }
         binding.tabBulanIni.setOnClickListener {
-            filterAktif = "bulan"
-            setActiveTab(binding.tabBulanIni)
-            loadData()
+            filterAktif = "bulan"; setActiveTab(binding.tabBulanIni); loadData()
         }
     }
 
@@ -99,11 +96,8 @@ class RiwayatUnitBisnisFragment : Fragment() {
     private fun getBatasTanggal(): String? {
         val cal = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
         return when (filterAktif) {
-            "minggu" -> {
-                cal.add(Calendar.DAY_OF_YEAR, -7)
-                formatIso(cal.time)
-            }
-            "bulan" -> {
+            "minggu" -> { cal.add(Calendar.DAY_OF_YEAR, -7); formatIso(cal.time) }
+            "bulan"  -> {
                 cal.set(Calendar.DAY_OF_MONTH, 1)
                 cal.set(Calendar.HOUR_OF_DAY, 0)
                 cal.set(Calendar.MINUTE, 0)
@@ -146,7 +140,6 @@ class RiwayatUnitBisnisFragment : Fragment() {
                     }.data
                 }
 
-                // Redeem reward unit bisnis
                 val redeemJson = if (batas != null) {
                     client.postgrest.from("redeem_reward").select {
                         filter { eq("id_nasabah", idUnit); gte("created_at", batas) }
@@ -193,7 +186,9 @@ class RiwayatUnitBisnisFragment : Fragment() {
                     totalKomisi += komisi
                     tambahkanItemRiwayat(
                         "💧", "Penerimaan Setoran",
-                        "$berat Kg  •  Komisi ${formatRupiah(komisi)}", tgl, kode, status, "setoran"
+                        "$berat Kg  •  Komisi ${formatRupiah(komisi)}",
+                        tgl, kode, status, "setoran",
+                        buktiTransfer = null
                     )
                 }
             }
@@ -210,16 +205,17 @@ class RiwayatUnitBisnisFragment : Fragment() {
                 tambahkanInfoKosong("Belum ada riwayat penarikan")
             } else {
                 arr.forEach { element ->
-                    val obj    = element.jsonObject
-                    val jumlah = obj["jumlah_tarik"]?.jsonPrimitive?.content?.toDoubleOrNull() ?: 0.0
-                    val bersih = obj["jumlah_bersih"]?.jsonPrimitive?.content?.toDoubleOrNull() ?: 0.0
-                    val bank   = obj["bank_tujuan"]?.jsonPrimitive?.content ?: "-"
-                    val noRek  = obj["no_rekening_tujuan"]?.jsonPrimitive?.content ?: "-"
-                    val status = obj["status_request"]?.jsonPrimitive?.content ?: "-"
-                    val tgl    = obj["tgl_request"]?.jsonPrimitive?.content?.take(10) ?: "-"
-                    val kode   = obj["kode_pencairan"]?.jsonPrimitive?.content ?: "-"
-                    val sumber = obj["sumber_dana"]?.jsonPrimitive?.content ?: "setoran_minyak"
-                    val labelSumber = when (sumber) {
+                    val obj           = element.jsonObject
+                    val jumlah        = obj["jumlah_tarik"]?.jsonPrimitive?.content?.toDoubleOrNull() ?: 0.0
+                    val bersih        = obj["jumlah_bersih"]?.jsonPrimitive?.content?.toDoubleOrNull() ?: 0.0
+                    val bank          = obj["bank_tujuan"]?.jsonPrimitive?.content ?: "-"
+                    val noRek         = obj["no_rekening_tujuan"]?.jsonPrimitive?.content ?: "-"
+                    val status        = obj["status_request"]?.jsonPrimitive?.content ?: "-"
+                    val tgl           = obj["tgl_request"]?.jsonPrimitive?.content?.take(10) ?: "-"
+                    val kode          = obj["kode_pencairan"]?.jsonPrimitive?.content ?: "-"
+                    val sumber        = obj["sumber_dana"]?.jsonPrimitive?.content ?: "setoran_minyak"
+                    val buktiTransfer = obj["bukti_transfer"]?.jsonPrimitive?.content
+                    val labelSumber   = when (sumber) {
                         "komisi_unit"     -> "Komisi Unit"
                         "komisi_afiliasi" -> "Komisi Afiliasi"
                         else              -> "Tabungan Minyak"
@@ -227,7 +223,8 @@ class RiwayatUnitBisnisFragment : Fragment() {
                     tambahkanItemRiwayat(
                         "🏦", "Penarikan $labelSumber",
                         "${formatRupiah(jumlah)}  •  $bank $noRek  •  Diterima ${formatRupiah(bersih)}",
-                        tgl, kode, status, "pencairan"
+                        tgl, kode, status, "pencairan",
+                        buktiTransfer = buktiTransfer
                     )
                 }
             }
@@ -236,7 +233,7 @@ class RiwayatUnitBisnisFragment : Fragment() {
             tambahkanInfoKosong("Belum ada riwayat penarikan")
         }
 
-        // ===== REDEEM — dengan tombol Lihat QR =====
+        // ===== REDEEM =====
         try {
             val arr = kotlinx.serialization.json.Json.parseToJsonElement(redeemJson).jsonArray
             if (arr.isNotEmpty()) {
@@ -248,13 +245,7 @@ class RiwayatUnitBisnisFragment : Fragment() {
                     val status   = obj["status_redeem"]?.jsonPrimitive?.content ?: "-"
                     val tgl      = obj["tgl_redeem"]?.jsonPrimitive?.content?.take(10) ?: "-"
                     val kode     = idRedeem.take(8).uppercase()
-                    tambahkanItemRedeem(
-                        idRedeem = idRedeem,
-                        poin     = poin,
-                        tgl      = tgl,
-                        kode     = kode,
-                        status   = status
-                    )
+                    tambahkanItemRedeem(idRedeem, poin, tgl, kode, status)
                 }
             }
         } catch (e: Exception) { /* skip */ }
@@ -263,210 +254,22 @@ class RiwayatUnitBisnisFragment : Fragment() {
         binding.tvSaldo.text      = formatRupiah(totalKomisi)
     }
 
-    // ===== ITEM REDEEM KHUSUS dengan tombol Lihat QR =====
-    private fun tambahkanItemRedeem(
-        idRedeem: String,
-        poin: String,
-        tgl: String,
+    // ===== ITEM RIWAYAT BIASA =====
+    private fun tambahkanItemRiwayat(
+        icon: String,
+        judul: String,
+        detail: String,
+        tanggal: String,
         kode: String,
-        status: String
+        status: String,
+        tipeStatus: String,
+        buktiTransfer: String?
     ) {
-        val dp8  = (8  * resources.displayMetrics.density).toInt()
-        val dp20 = (20 * resources.displayMetrics.density).toInt()
         val dp4  = (4  * resources.displayMetrics.density).toInt()
+        val dp8  = (8  * resources.displayMetrics.density).toInt()
+        val dp10 = (10 * resources.displayMetrics.density).toInt()
         val dp12 = (12 * resources.displayMetrics.density).toInt()
         val dp14 = (14 * resources.displayMetrics.density).toInt()
-
-        val (bgStatus, labelStatus) = when (status) {
-            "selesai"   -> Pair(R.drawable.ic_bg_status_berhasil, "Selesai")
-            "disetujui" -> Pair(R.drawable.ic_bg_status_berhasil, "Disetujui")
-            "menunggu"  -> Pair(R.drawable.ic_bg_status_pending,  "Menunggu")
-            "diproses"  -> Pair(R.drawable.ic_bg_status_pending,  "Diproses")
-            "ditolak"   -> Pair(R.drawable.ic_bg_status_gagal,    "Ditolak")
-            else        -> Pair(R.drawable.ic_bg_status_pending,  status)
-        }
-
-        val card = CardView(requireContext()).apply {
-            radius        = (12 * resources.displayMetrics.density)
-            cardElevation = (2  * resources.displayMetrics.density)
-            setCardBackgroundColor(requireContext().getColor(R.color.white))
-            layoutParams = LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT
-            ).apply { setMargins(dp20, 0, dp20, dp8) }
-        }
-
-        val inner = LinearLayout(requireContext()).apply {
-            orientation = LinearLayout.VERTICAL
-            setPadding(dp14, dp14, dp14, dp14)
-        }
-
-        val row1 = LinearLayout(requireContext()).apply {
-            orientation = LinearLayout.HORIZONTAL
-            gravity     = Gravity.CENTER_VERTICAL
-        }
-        val tvIcon = TextView(requireContext()).apply {
-            text = "🎁"; textSize = 18f
-            setPadding(0, 0, dp8, 0)
-        }
-        val tvJudul = TextView(requireContext()).apply {
-            text = "Penukaran Reward"; textSize = 13f
-            setTypeface(null, Typeface.BOLD)
-            setTextColor(requireContext().getColor(R.color.black))
-            layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
-        }
-        val tvBadge = TextView(requireContext()).apply {
-            text = labelStatus; textSize = 11f
-            setTextColor(requireContext().getColor(R.color.white))
-            setBackgroundResource(bgStatus)
-            val ph = (10 * resources.displayMetrics.density).toInt()
-            val pv = (4  * resources.displayMetrics.density).toInt()
-            setPadding(ph, pv, ph, pv)
-        }
-        row1.addView(tvIcon); row1.addView(tvJudul); row1.addView(tvBadge)
-
-        val tvTgl = TextView(requireContext()).apply {
-            text = tgl; textSize = 11f
-            setTextColor(requireContext().getColor(R.color.gray_text))
-            setPadding(0, dp4, 0, 0)
-        }
-        val tvDetail = TextView(requireContext()).apply {
-            text = "$poin Poin digunakan"; textSize = 12f
-            setTextColor(requireContext().getColor(R.color.orange_primary))
-            setPadding(0, dp4, 0, 0)
-        }
-        val tvKode = TextView(requireContext()).apply {
-            text = "ID: $kode..."; textSize = 10f
-            setTextColor(requireContext().getColor(R.color.gray_text))
-            setPadding(0, (2 * resources.displayMetrics.density).toInt(), 0, 0)
-        }
-
-        val divider = View(requireContext()).apply {
-            layoutParams = LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT, 1
-            ).apply { setMargins(0, dp8, 0, dp8) }
-            setBackgroundColor(requireContext().getColor(R.color.gray_border))
-        }
-
-        val btnLihatQr = TextView(requireContext()).apply {
-            text = "🔍 Lihat QR Redeem"
-            textSize = 12f
-            setTypeface(null, Typeface.BOLD)
-            setTextColor(requireContext().getColor(R.color.orange_primary))
-            gravity = Gravity.CENTER
-            background = requireContext().getDrawable(R.drawable.ic_bg_aktivitas_orange)
-            val pv = (10 * resources.displayMetrics.density).toInt()
-            setPadding(dp12, pv, dp12, pv)
-            layoutParams = LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT
-            )
-            isClickable = true
-            isFocusable = true
-            setOnClickListener {
-                tampilkanDialogQrRedeem(idRedeem, poin, status)
-            }
-        }
-
-        inner.addView(row1)
-        inner.addView(tvTgl)
-        inner.addView(tvDetail)
-        inner.addView(tvKode)
-        inner.addView(divider)
-        inner.addView(btnLihatQr)
-
-        card.addView(inner)
-        binding.layoutDaftarRiwayat.addView(card)
-    }
-
-    // ===== DIALOG QR REDEEM =====
-    private fun tampilkanDialogQrRedeem(idRedeem: String, poin: String, status: String) {
-        val dialogBinding = DialogQrRedeemBinding.inflate(layoutInflater)
-
-        val qrBitmap = generateQrBitmap(idRedeem, 600)
-        dialogBinding.ivQrCode.setImageBitmap(qrBitmap)
-
-        dialogBinding.tvNamaProduk.text   = "Penukaran Reward"
-        dialogBinding.tvPoinDipakai.text  = "$poin poin"
-        dialogBinding.tvKodeRedeem.text   = "ID: ${idRedeem.take(8).uppercase()}..."
-        dialogBinding.tvStatusRedeem.text = "Status: ${
-            when (status) {
-                "selesai"   -> "Selesai"
-                "disetujui" -> "Disetujui"
-                "menunggu"  -> "Menunggu Verifikasi"
-                "diproses"  -> "Sedang Diproses"
-                "ditolak"   -> "Ditolak"
-                else        -> status
-            }
-        }"
-        dialogBinding.tvInfoQr.text = "Tunjukkan QR ini kepada petugas untuk menukarkan reward Anda."
-
-        val dialog = AlertDialog.Builder(requireContext())
-            .setView(dialogBinding.root)
-            .setCancelable(true)
-            .create()
-        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
-
-        dialogBinding.btnSimpanQr.setOnClickListener {
-            simpanQrKeGaleri(qrBitmap, idRedeem)
-        }
-        dialogBinding.btnTutup.setOnClickListener {
-            dialog.dismiss()
-        }
-
-        dialog.show()
-    }
-
-    // ===== GENERATE QR =====
-    private fun generateQrBitmap(content: String, size: Int): Bitmap {
-        val writer    = QRCodeWriter()
-        val bitMatrix = writer.encode(content, BarcodeFormat.QR_CODE, size, size)
-        val bitmap    = Bitmap.createBitmap(size, size, Bitmap.Config.RGB_565)
-        for (x in 0 until size) {
-            for (y in 0 until size) {
-                bitmap.setPixel(x, y, if (bitMatrix[x, y]) Color.BLACK else Color.WHITE)
-            }
-        }
-        return bitmap
-    }
-
-    // ===== SIMPAN QR KE GALERI =====
-    private fun simpanQrKeGaleri(bitmap: Bitmap, idRedeem: String) {
-        try {
-            val namaFile = "QR_Redeem_${idRedeem.take(8).uppercase()}.png"
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                val values = ContentValues().apply {
-                    put(MediaStore.Images.Media.DISPLAY_NAME, namaFile)
-                    put(MediaStore.Images.Media.MIME_TYPE, "image/png")
-                    put(MediaStore.Images.Media.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + "/BankJatah")
-                }
-                val uri = requireContext().contentResolver
-                    .insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values)
-                uri?.let {
-                    requireContext().contentResolver.openOutputStream(it)?.use { os ->
-                        bitmap.compress(Bitmap.CompressFormat.PNG, 100, os)
-                    }
-                }
-            } else {
-                @Suppress("DEPRECATION")
-                val dir = java.io.File(
-                    Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
-                    "BankJatah"
-                ).apply { mkdirs() }
-                val file = java.io.File(dir, namaFile)
-                file.outputStream().use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
-            }
-            Toast.makeText(requireContext(), "✓ QR disimpan ke Galeri / BankJatah", Toast.LENGTH_LONG).show()
-        } catch (e: Exception) {
-            Toast.makeText(requireContext(), "Gagal menyimpan: ${e.message}", Toast.LENGTH_SHORT).show()
-        }
-    }
-
-    private fun tambahkanItemRiwayat(
-        icon: String, judul: String, detail: String,
-        tanggal: String, kode: String, status: String, tipeStatus: String
-    ) {
-        val dp8  = (8  * resources.displayMetrics.density).toInt()
         val dp20 = (20 * resources.displayMetrics.density).toInt()
 
         val (bgStatus, labelStatus) = when (tipeStatus) {
@@ -500,8 +303,7 @@ class RiwayatUnitBisnisFragment : Fragment() {
 
         val inner = LinearLayout(requireContext()).apply {
             orientation = LinearLayout.VERTICAL
-            val p = (14 * resources.displayMetrics.density).toInt()
-            setPadding(p, p, p, p)
+            setPadding(dp14, dp14, dp14, dp14)
         }
 
         val row1 = LinearLayout(requireContext()).apply {
@@ -509,8 +311,7 @@ class RiwayatUnitBisnisFragment : Fragment() {
             gravity     = Gravity.CENTER_VERTICAL
         }
         val tvIcon = TextView(requireContext()).apply {
-            text = icon; textSize = 18f
-            setPadding(0, 0, dp8, 0)
+            text = icon; textSize = 18f; setPadding(0, 0, dp8, 0)
         }
         val tvJudul = TextView(requireContext()).apply {
             text = judul; textSize = 13f
@@ -522,13 +323,10 @@ class RiwayatUnitBisnisFragment : Fragment() {
             text = labelStatus; textSize = 11f
             setTextColor(requireContext().getColor(R.color.white))
             setBackgroundResource(bgStatus)
-            val ph = (10 * resources.displayMetrics.density).toInt()
-            val pv = (4  * resources.displayMetrics.density).toInt()
-            setPadding(ph, pv, ph, pv)
+            setPadding(dp10, dp4, dp10, dp4)
         }
         row1.addView(tvIcon); row1.addView(tvJudul); row1.addView(tvBadge)
 
-        val dp4 = (4 * resources.displayMetrics.density).toInt()
         val tvTgl = TextView(requireContext()).apply {
             text = tanggal; textSize = 11f
             setTextColor(requireContext().getColor(R.color.gray_text))
@@ -545,9 +343,267 @@ class RiwayatUnitBisnisFragment : Fragment() {
             setPadding(0, (2 * resources.displayMetrics.density).toInt(), 0, 0)
         }
 
-        inner.addView(row1); inner.addView(tvTgl); inner.addView(tvDetail); inner.addView(tvKode)
+        inner.addView(row1)
+        inner.addView(tvTgl)
+        inner.addView(tvDetail)
+        inner.addView(tvKode)
+
+        // ===== TOMBOL LIHAT BUKTI TRANSFER =====
+        if (tipeStatus == "pencairan" && status == "selesai" && !buktiTransfer.isNullOrEmpty()) {
+            val divider = View(requireContext()).apply {
+                layoutParams = LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT, 1
+                ).apply { setMargins(0, dp8, 0, dp8) }
+                setBackgroundColor(requireContext().getColor(R.color.gray_border))
+            }
+            val btnBukti = TextView(requireContext()).apply {
+                text = "🧾 Lihat Bukti Transfer"
+                textSize = 12f
+                setTypeface(null, Typeface.BOLD)
+                setTextColor(requireContext().getColor(R.color.orange_primary))
+                gravity = Gravity.CENTER
+                background = requireContext().getDrawable(R.drawable.ic_bg_aktivitas_orange)
+                setPadding(dp12, dp10, dp12, dp10)
+                layoutParams = LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+                )
+                isClickable = true
+                isFocusable = true
+                setOnClickListener {
+                    tampilkanDialogBuktiTransfer(buktiTransfer, kode)
+                }
+            }
+            inner.addView(divider)
+            inner.addView(btnBukti)
+        }
+
         card.addView(inner)
         binding.layoutDaftarRiwayat.addView(card)
+    }
+
+    // ===== DIALOG BUKTI TRANSFER =====
+    private fun tampilkanDialogBuktiTransfer(urlBukti: String, kodePencairan: String) {
+        val layout = LinearLayout(requireContext()).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(48, 48, 48, 48)
+            setBackgroundResource(android.R.color.white)
+        }
+
+        val tvJudul = TextView(requireContext()).apply {
+            text = "Bukti Transfer"
+            textSize = 16f
+            setTypeface(null, Typeface.BOLD)
+            setTextColor(requireContext().getColor(R.color.black))
+            gravity = Gravity.CENTER
+            setPadding(0, 0, 0, 8)
+        }
+
+        val tvKode = TextView(requireContext()).apply {
+            text = kodePencairan
+            textSize = 11f
+            setTextColor(requireContext().getColor(R.color.gray_text))
+            gravity = Gravity.CENTER
+            setPadding(0, 0, 0, 16)
+        }
+
+        val ivBukti = ImageView(requireContext()).apply {
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                (300 * resources.displayMetrics.density).toInt()
+            )
+            scaleType = ImageView.ScaleType.FIT_CENTER
+            adjustViewBounds = true
+        }
+
+        Glide.with(requireContext())
+            .load(urlBukti)
+            .placeholder(android.R.drawable.ic_menu_gallery)
+            .error(android.R.drawable.ic_menu_close_clear_cancel)
+            .into(ivBukti)
+
+
+
+        layout.addView(tvJudul)
+        layout.addView(tvKode)
+        layout.addView(ivBukti)
+
+
+        AlertDialog.Builder(requireContext())
+            .setView(layout)
+            .setCancelable(true)
+            .setNegativeButton("Tutup") { dialog, _ -> dialog.dismiss() }
+            .create()
+            .also { it.window?.setBackgroundDrawableResource(android.R.color.transparent) }
+            .show()
+    }
+
+    // ===== ITEM REDEEM =====
+    private fun tambahkanItemRedeem(
+        idRedeem: String, poin: String, tgl: String, kode: String, status: String
+    ) {
+        val dp4  = (4  * resources.displayMetrics.density).toInt()
+        val dp8  = (8  * resources.displayMetrics.density).toInt()
+        val dp10 = (10 * resources.displayMetrics.density).toInt()
+        val dp12 = (12 * resources.displayMetrics.density).toInt()
+        val dp14 = (14 * resources.displayMetrics.density).toInt()
+        val dp20 = (20 * resources.displayMetrics.density).toInt()
+
+        val (bgStatus, labelStatus) = when (status) {
+            "selesai"   -> Pair(R.drawable.ic_bg_status_berhasil, "Selesai")
+            "disetujui" -> Pair(R.drawable.ic_bg_status_berhasil, "Disetujui")
+            "menunggu"  -> Pair(R.drawable.ic_bg_status_pending,  "Menunggu")
+            "diproses"  -> Pair(R.drawable.ic_bg_status_pending,  "Diproses")
+            "ditolak"   -> Pair(R.drawable.ic_bg_status_gagal,    "Ditolak")
+            else        -> Pair(R.drawable.ic_bg_status_pending,  status)
+        }
+
+        val card = CardView(requireContext()).apply {
+            radius        = (12 * resources.displayMetrics.density)
+            cardElevation = (2  * resources.displayMetrics.density)
+            setCardBackgroundColor(requireContext().getColor(R.color.white))
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            ).apply { setMargins(dp20, 0, dp20, dp8) }
+        }
+
+        val inner = LinearLayout(requireContext()).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(dp14, dp14, dp14, dp14)
+        }
+
+        val row1 = LinearLayout(requireContext()).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity     = Gravity.CENTER_VERTICAL
+        }
+        val tvIcon = TextView(requireContext()).apply {
+            text = "🎁"; textSize = 18f; setPadding(0, 0, dp8, 0)
+        }
+        val tvJudul = TextView(requireContext()).apply {
+            text = "Penukaran Reward"; textSize = 13f
+            setTypeface(null, Typeface.BOLD)
+            setTextColor(requireContext().getColor(R.color.black))
+            layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+        }
+        val tvBadge = TextView(requireContext()).apply {
+            text = labelStatus; textSize = 11f
+            setTextColor(requireContext().getColor(R.color.white))
+            setBackgroundResource(bgStatus)
+            setPadding(dp10, dp4, dp10, dp4)
+        }
+        row1.addView(tvIcon); row1.addView(tvJudul); row1.addView(tvBadge)
+
+        val tvTgl    = TextView(requireContext()).apply {
+            text = tgl; textSize = 11f
+            setTextColor(requireContext().getColor(R.color.gray_text)); setPadding(0, dp4, 0, 0)
+        }
+        val tvDetail = TextView(requireContext()).apply {
+            text = "$poin Poin digunakan"; textSize = 12f
+            setTextColor(requireContext().getColor(R.color.orange_primary)); setPadding(0, dp4, 0, 0)
+        }
+        val tvKode   = TextView(requireContext()).apply {
+            text = "ID: $kode..."; textSize = 10f
+            setTextColor(requireContext().getColor(R.color.gray_text))
+            setPadding(0, (2 * resources.displayMetrics.density).toInt(), 0, 0)
+        }
+
+        val divider = View(requireContext()).apply {
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, 1
+            ).apply { setMargins(0, dp8, 0, dp8) }
+            setBackgroundColor(requireContext().getColor(R.color.gray_border))
+        }
+
+        val btnLihatQr = TextView(requireContext()).apply {
+            text = "🔍 Lihat QR Redeem"; textSize = 12f
+            setTypeface(null, Typeface.BOLD)
+            setTextColor(requireContext().getColor(R.color.orange_primary))
+            gravity = Gravity.CENTER
+            background = requireContext().getDrawable(R.drawable.ic_bg_aktivitas_orange)
+            setPadding(dp12, dp10, dp12, dp10)
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT
+            )
+            isClickable = true; isFocusable = true
+            setOnClickListener { tampilkanDialogQrRedeem(idRedeem, poin, status) }
+        }
+
+        inner.addView(row1); inner.addView(tvTgl); inner.addView(tvDetail)
+        inner.addView(tvKode); inner.addView(divider); inner.addView(btnLihatQr)
+        card.addView(inner)
+        binding.layoutDaftarRiwayat.addView(card)
+    }
+
+    // ===== DIALOG QR REDEEM =====
+    private fun tampilkanDialogQrRedeem(idRedeem: String, poin: String, status: String) {
+        val dialogBinding = DialogQrRedeemBinding.inflate(layoutInflater)
+        val qrBitmap = generateQrBitmap(idRedeem, 600)
+        dialogBinding.ivQrCode.setImageBitmap(qrBitmap)
+        dialogBinding.tvNamaProduk.text   = "Penukaran Reward"
+        dialogBinding.tvPoinDipakai.text  = "$poin poin"
+        dialogBinding.tvKodeRedeem.text   = "ID: ${idRedeem.take(8).uppercase()}..."
+        dialogBinding.tvStatusRedeem.text = "Status: ${
+            when (status) {
+                "selesai"   -> "Selesai"
+                "disetujui" -> "Disetujui"
+                "menunggu"  -> "Menunggu Verifikasi"
+                "diproses"  -> "Sedang Diproses"
+                "ditolak"   -> "Ditolak"
+                else        -> status
+            }
+        }"
+        dialogBinding.tvInfoQr.text = "Tunjukkan QR ini kepada petugas untuk menukarkan reward Anda."
+        val dialog = AlertDialog.Builder(requireContext())
+            .setView(dialogBinding.root).setCancelable(true).create()
+        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+        dialogBinding.btnSimpanQr.setOnClickListener { simpanQrKeGaleri(qrBitmap, idRedeem) }
+        dialogBinding.btnTutup.setOnClickListener { dialog.dismiss() }
+        dialog.show()
+    }
+
+    private fun generateQrBitmap(content: String, size: Int): Bitmap {
+        val writer    = QRCodeWriter()
+        val bitMatrix = writer.encode(content, BarcodeFormat.QR_CODE, size, size)
+        val bitmap    = Bitmap.createBitmap(size, size, Bitmap.Config.RGB_565)
+        for (x in 0 until size) {
+            for (y in 0 until size) {
+                bitmap.setPixel(x, y, if (bitMatrix[x, y]) Color.BLACK else Color.WHITE)
+            }
+        }
+        return bitmap
+    }
+
+    private fun simpanQrKeGaleri(bitmap: Bitmap, idRedeem: String) {
+        try {
+            val namaFile = "QR_Redeem_${idRedeem.take(8).uppercase()}.png"
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                val values = ContentValues().apply {
+                    put(MediaStore.Images.Media.DISPLAY_NAME, namaFile)
+                    put(MediaStore.Images.Media.MIME_TYPE, "image/png")
+                    put(MediaStore.Images.Media.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + "/BankJatah")
+                }
+                val uri = requireContext().contentResolver
+                    .insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values)
+                uri?.let {
+                    requireContext().contentResolver.openOutputStream(it)?.use { os ->
+                        bitmap.compress(Bitmap.CompressFormat.PNG, 100, os)
+                    }
+                }
+            } else {
+                @Suppress("DEPRECATION")
+                val dir = java.io.File(
+                    Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
+                    "BankJatah"
+                ).apply { mkdirs() }
+                java.io.File(dir, namaFile).outputStream().use {
+                    bitmap.compress(Bitmap.CompressFormat.PNG, 100, it)
+                }
+            }
+            Toast.makeText(requireContext(), "✓ QR disimpan ke Galeri / BankJatah", Toast.LENGTH_LONG).show()
+        } catch (e: Exception) {
+            Toast.makeText(requireContext(), "Gagal menyimpan: ${e.message}", Toast.LENGTH_SHORT).show()
+        }
     }
 
     private fun tambahkanLabel(teks: String) {
