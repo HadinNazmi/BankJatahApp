@@ -61,7 +61,6 @@ class RegistrasiUnitBisnisFragment : Fragment() {
     ) { uri: Uri? ->
         if (uri != null) {
             uriBuktiBayar = uri
-            // Tampilkan preview foto yang dipilih
             binding.ivPreviewBuktiBayar.setImageURI(uri)
             binding.ivPreviewBuktiBayar.visibility = View.VISIBLE
             binding.tvBuktiBayarStatus.text = "✓ Foto bukti pembayaran dipilih"
@@ -161,7 +160,10 @@ class RegistrasiUnitBisnisFragment : Fragment() {
 
         if (fineGranted || coarseGranted) gunakanLokasiSaya()
         else requestPermissionLauncher.launch(
-            arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)
+            arrayOf(
+                Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            )
         )
     }
 
@@ -172,7 +174,11 @@ class RegistrasiUnitBisnisFragment : Fragment() {
                 if (location != null) {
                     pindahkanMarker(location.latitude, location.longitude)
                     binding.mapView.controller.setZoom(17.0)
-                    Toast.makeText(requireContext(), "Lokasi GPS berhasil diambil!", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        requireContext(),
+                        "Lokasi GPS berhasil diambil!",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 } else {
                     Toast.makeText(
                         requireContext(),
@@ -181,7 +187,11 @@ class RegistrasiUnitBisnisFragment : Fragment() {
                     ).show()
                 }
             }.addOnFailureListener {
-                Toast.makeText(requireContext(), "Gagal mengambil lokasi: ${it.message}", Toast.LENGTH_LONG).show()
+                Toast.makeText(
+                    requireContext(),
+                    "Gagal mengambil lokasi: ${it.message}",
+                    Toast.LENGTH_LONG
+                ).show()
             }
         } catch (e: SecurityException) {
             Toast.makeText(requireContext(), "Izin lokasi belum diberikan.", Toast.LENGTH_SHORT).show()
@@ -209,7 +219,11 @@ class RegistrasiUnitBisnisFragment : Fragment() {
                 binding.spinnerWilayah.adapter = adapter
 
             } catch (e: Exception) {
-                Toast.makeText(requireContext(), "Gagal memuat wilayah: ${e.message}", Toast.LENGTH_LONG).show()
+                Toast.makeText(
+                    requireContext(),
+                    "Gagal memuat wilayah: ${e.message}",
+                    Toast.LENGTH_LONG
+                ).show()
             }
         }
     }
@@ -222,7 +236,6 @@ class RegistrasiUnitBisnisFragment : Fragment() {
         binding.btnGunakanLokasiSaya.setOnClickListener {
             mintaIzinLokasi()
         }
-        // Tombol pilih foto bukti pembayaran dari galeri
         binding.btnPilihBuktiBayar.setOnClickListener {
             pickImageLauncher.launch("image/*")
         }
@@ -282,7 +295,13 @@ class RegistrasiUnitBisnisFragment : Fragment() {
             return
         }
 
-        ajukanKemitraan(namaUsaha, alamat, latDipilih!!, lonDipilih!!, listWilayah[selectedIndex])
+        ajukanKemitraan(
+            namaUsaha,
+            alamat,
+            latDipilih!!,
+            lonDipilih!!,
+            listWilayah[selectedIndex]
+        )
     }
 
     // ===== SUBMIT PENGAJUAN =====
@@ -316,26 +335,27 @@ class RegistrasiUnitBisnisFragment : Fragment() {
                     return@launch
                 }
 
-                // 2. Upload foto bukti pembayaran ke Supabase Storage bucket 'evidence'
-                val uriBukti   = uriBuktiBayar!!
+                // 2. Upload foto bukti pembayaran ke bucket 'evidence'
+                //    Folder: bukti-pendaftaran-ub/{idUser}/{uuid}.jpg
+                val uriBukti    = uriBuktiBayar!!
                 val inputStream = requireContext().contentResolver.openInputStream(uriBukti)
                     ?: throw Exception("Gagal membaca file foto")
-                val fotoBytes  = inputStream.readBytes()
+                val fotoBytes   = inputStream.readBytes()
                 inputStream.close()
 
-                // Nama file: bukti-ub/{idUser}/{uuid}.jpg
-                val namaFile   = "bukti-ub/$idUser/${UUID.randomUUID()}.jpg"
-                val bucket     = client.storage.from("evidence")
+                // ✅ Path: bukti-pendaftaran-ub/{idUser}/{uuid}.jpg
+                val namaFile = "bukti-pendaftaran-ub/$idUser.jpg"
+                val bucket   = client.storage.from("evidence")
                 bucket.upload(namaFile, fotoBytes) { upsert = false }
 
-                // Ambil public URL foto
+                // Ambil public URL foto dari bucket evidence
                 val fotoUrl = bucket.publicUrl(namaFile)
 
                 // 3. Catat timestamp pembayaran
                 val sdf      = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX", Locale.getDefault())
                 val tglBayar = sdf.format(Date())
 
-                // 4. Insert ke unit_bisnis_data dengan bukti_bayar_pendaftaran & tgl_bayar_pendaftaran
+                // 4. Insert ke unit_bisnis_data
                 val payload = buildJsonObject {
                     put("id_unit_bisnis",          idUser)
                     put("id_wilayah",              wilayah.idWilayah)
@@ -346,8 +366,8 @@ class RegistrasiUnitBisnisFragment : Fragment() {
                     put("status_verifikasi_unit",  "menunggu")
                     put("tipe_unit",               "kelurahan")
                     put("transaksi_harian",        0)
-                    put("bukti_bayar_pendaftaran", fotoUrl)     // URL foto dari Storage
-                    put("tgl_bayar_pendaftaran",   tglBayar)   // Timestamp saat daftar
+                    put("bukti_bayar_pendaftaran", fotoUrl)   // ✅ URL dari bucket evidence
+                    put("tgl_bayar_pendaftaran",   tglBayar)
                 }
 
                 client.postgrest.from("unit_bisnis_data").insert(payload)
