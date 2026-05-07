@@ -108,9 +108,7 @@
             </androidx.constraintlayout.widget.ConstraintLayout>
         </androidx.cardview.widget.CardView>
 
-        <!-- CARD PILIH JENIS SALDO: Nasabah hanya punya 2 saldo -->
-        <!-- 1. Saldo Tabungan (saldo_nasabah) = hasil setor minyak -->
-        <!-- 2. Saldo Bonus Afiliasi (saldo_afiliasi) = komisi dari jaringan -->
+        <!-- CARD PILIH JENIS SALDO -->
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -137,7 +135,6 @@
                     android:fontFamily="@font/poppins_semibold"
                     android:layout_marginBottom="12dp" />
 
-                <!-- Opsi 1: Saldo Tabungan -->
                 <LinearLayout
                     android:id="@+id/optionTabungan"
                     android:layout_width="match_parent"
@@ -195,7 +192,6 @@
 
                 </LinearLayout>
 
-                <!-- Opsi 2: Saldo Bonus Afiliasi -->
                 <LinearLayout
                     android:id="@+id/optionAfiliasi"
                     android:layout_width="match_parent"
@@ -255,7 +251,7 @@
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
-        <!-- CARD FORM PENARIKAN -->
+        <!-- CARD FORM NOMINAL -->
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -281,28 +277,18 @@
                     android:textColor="@color/black"
                     android:fontFamily="@font/poppins_semibold" />
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Masukkan nominal yang ingin ditarik"
-                    android:textSize="11sp"
-                    android:textColor="@color/gray_text"
-                    android:fontFamily="@font/poppins_regular"
-                    android:layout_marginTop="2dp"
-                    android:layout_marginBottom="10dp" />
-
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/tilNominal"
                     style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
                     app:boxCornerRadiusTopStart="10dp"
                     app:boxCornerRadiusTopEnd="10dp"
                     app:boxCornerRadiusBottomStart="10dp"
                     app:boxCornerRadiusBottomEnd="10dp"
                     app:boxStrokeColor="@color/orange_primary"
                     app:prefixText="Rp "
-                    app:prefixTextColor="@color/gray_text"
                     app:hintEnabled="false">
 
                     <com.google.android.material.textfield.TextInputEditText
@@ -312,7 +298,6 @@
                         android:hint="0"
                         android:textSize="18sp"
                         android:textStyle="bold"
-                        android:textColor="@color/black"
                         android:fontFamily="@font/poppins_bold"
                         android:inputType="number" />
 
@@ -328,78 +313,20 @@
                     android:layout_marginTop="4dp"
                     android:visibility="gone" />
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Pilih cepat:"
-                    android:textSize="11sp"
-                    android:textColor="@color/gray_text"
-                    android:fontFamily="@font/poppins_regular"
-                    android:layout_marginTop="12dp" />
-
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    android:layout_marginTop="6dp">
-
-                    <Button
-                        android:id="@+id/btn50k"
-                        android:layout_width="0dp"
-                        android:layout_height="36dp"
-                        android:layout_weight="1"
-                        android:layout_marginEnd="6dp"
-                        android:text="50rb"
-                        android:textSize="12sp"
-                        android:textColor="@color/orange_primary"
-                        android:backgroundTint="#FFF3E0"
-                        android:fontFamily="@font/poppins_semibold"
-                        app:cornerRadius="8dp" />
-
-                    <Button
-                        android:id="@+id/btn100k"
-                        android:layout_width="0dp"
-                        android:layout_height="36dp"
-                        android:layout_weight="1"
-                        android:layout_marginEnd="6dp"
-                        android:text="100rb"
-                        android:textSize="12sp"
-                        android:textColor="@color/orange_primary"
-                        android:backgroundTint="#FFF3E0"
-                        android:fontFamily="@font/poppins_semibold"
-                        app:cornerRadius="8dp" />
-
-                    <Button
-                        android:id="@+id/btn200k"
-                        android:layout_width="0dp"
-                        android:layout_height="36dp"
-                        android:layout_weight="1"
-                        android:layout_marginEnd="6dp"
-                        android:text="200rb"
-                        android:textSize="12sp"
-                        android:textColor="@color/orange_primary"
-                        android:backgroundTint="#FFF3E0"
-                        android:fontFamily="@font/poppins_semibold"
-                        app:cornerRadius="8dp" />
-
-                    <Button
-                        android:id="@+id/btnSemua"
-                        android:layout_width="0dp"
-                        android:layout_height="36dp"
-                        android:layout_weight="1"
-                        android:text="Semua"
-                        android:textSize="12sp"
-                        android:textColor="@color/orange_primary"
-                        android:backgroundTint="#FFF3E0"
-                        android:fontFamily="@font/poppins_semibold"
-                        app:cornerRadius="8dp" />
-
+                    android:layout_marginTop="12dp">
+                    <Button android:id="@+id/btn50k" android:layout_width="0dp" android:layout_height="36dp" android:layout_weight="1" android:layout_marginEnd="4dp" android:text="50rb" android:textSize="11sp" android:backgroundTint="#FFF3E0" android:textColor="@color/orange_primary" app:cornerRadius="8dp" />
+                    <Button android:id="@+id/btn100k" android:layout_width="0dp" android:layout_height="36dp" android:layout_weight="1" android:layout_marginEnd="4dp" android:text="100rb" android:textSize="11sp" android:backgroundTint="#FFF3E0" android:textColor="@color/orange_primary" app:cornerRadius="8dp" />
+                    <Button android:id="@+id/btn200k" android:layout_width="0dp" android:layout_height="36dp" android:layout_weight="1" android:layout_marginEnd="4dp" android:text="200rb" android:textSize="11sp" android:backgroundTint="#FFF3E0" android:textColor="@color/orange_primary" app:cornerRadius="8dp" />
+                    <Button android:id="@+id/btnSemua" android:layout_width="0dp" android:layout_height="36dp" android:layout_weight="1" android:text="Semua" android:textSize="11sp" android:backgroundTint="#FFF3E0" android:textColor="@color/orange_primary" app:cornerRadius="8dp" />
                 </LinearLayout>
-
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
-        <!-- CARD REKENING TUJUAN -->
+        <!-- CARD REKENING TUJUAN (PERUBAHAN DISINI) -->
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -428,17 +355,18 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Dana akan ditransfer ke rekening berikut"
+                    android:text="Rekening tujuan diambil otomatis dari profil Anda"
                     android:textSize="11sp"
                     android:textColor="@color/gray_text"
                     android:fontFamily="@font/poppins_regular"
                     android:layout_marginTop="2dp"
                     android:layout_marginBottom="14dp" />
 
+                <!-- Spinner tetap ada untuk menampilkan data Triple dari Fragment -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Bank"
+                    android:text="Rekening Tujuan"
                     android:textSize="12sp"
                     android:textColor="@color/black"
                     android:fontFamily="@font/poppins_semibold" />
@@ -450,74 +378,9 @@
                     android:layout_marginTop="6dp"
                     android:layout_marginBottom="14dp"
                     android:background="@drawable/ic_bg_tab_inactive"
-                    android:padding="12dp" />
+                    android:padding="12dp"
+                    android:enabled="false" />
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Nomor Rekening"
-                    android:textSize="12sp"
-                    android:textColor="@color/black"
-                    android:fontFamily="@font/poppins_semibold" />
-
-                <com.google.android.material.textfield.TextInputLayout
-                    android:id="@+id/tilNoRekening"
-                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="6dp"
-                    android:layout_marginBottom="14dp"
-                    app:boxCornerRadiusTopStart="10dp"
-                    app:boxCornerRadiusTopEnd="10dp"
-                    app:boxCornerRadiusBottomStart="10dp"
-                    app:boxCornerRadiusBottomEnd="10dp"
-                    app:boxStrokeColor="@color/orange_primary"
-                    app:hintEnabled="false">
-
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/etNoRekening"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:hint="Contoh: 1234567890"
-                        android:textSize="14sp"
-                        android:textColor="@color/black"
-                        android:fontFamily="@font/poppins_regular"
-                        android:inputType="number" />
-
-                </com.google.android.material.textfield.TextInputLayout>
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Nama Pemilik Rekening"
-                    android:textSize="12sp"
-                    android:textColor="@color/black"
-                    android:fontFamily="@font/poppins_semibold" />
-
-                <com.google.android.material.textfield.TextInputLayout
-                    android:id="@+id/tilNamaPemilik"
-                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="6dp"
-                    app:boxCornerRadiusTopStart="10dp"
-                    app:boxCornerRadiusTopEnd="10dp"
-                    app:boxCornerRadiusBottomStart="10dp"
-                    app:boxCornerRadiusBottomEnd="10dp"
-                    app:boxStrokeColor="@color/orange_primary"
-                    app:hintEnabled="false">
-
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/etNamaPemilik"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:hint="Sesuai nama di buku tabungan"
-                        android:textSize="14sp"
-                        android:textColor="@color/black"
-                        android:fontFamily="@font/poppins_regular"
-                        android:inputType="textPersonName|textCapWords" />
-
-                </com.google.android.material.textfield.TextInputLayout>
 
             </LinearLayout>
         </androidx.cardview.widget.CardView>
@@ -547,109 +410,32 @@
                     android:text="Ringkasan Penarikan"
                     android:textSize="13sp"
                     android:textStyle="bold"
-                    android:textColor="@color/black"
                     android:fontFamily="@font/poppins_semibold"
                     android:layout_marginBottom="12dp" />
 
                 <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
-
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:text="Jumlah Tarik"
-                        android:textSize="13sp"
-                        android:textColor="@color/gray_text"
-                        android:fontFamily="@font/poppins_regular"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintEnd_toStartOf="@+id/tvRingkasanJumlah"
-                        app:layout_constraintTop_toTopOf="parent" />
-
-                    <TextView
-                        android:id="@+id/tvRingkasanJumlah"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Rp 0"
-                        android:textSize="13sp"
-                        android:textStyle="bold"
-                        android:textColor="@color/black"
-                        android:fontFamily="@font/poppins_semibold"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintTop_toTopOf="parent" />
-
+                    <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:text="Jumlah Tarik" android:textSize="13sp" app:layout_constraintStart_toStartOf="parent" app:layout_constraintTop_toTopOf="parent" />
+                    <TextView android:id="@+id/tvRingkasanJumlah" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Rp 0" android:textSize="13sp" android:textStyle="bold" app:layout_constraintEnd_toEndOf="parent" app:layout_constraintTop_toTopOf="parent" />
                 </androidx.constraintlayout.widget.ConstraintLayout>
 
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:background="@color/gray_border"
-                    android:layout_marginTop="10dp"
-                    android:layout_marginBottom="10dp" />
+                <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/gray_border" android:layout_marginTop="10dp" android:layout_marginBottom="10dp" />
 
                 <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
-
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:text="Biaya Admin"
-                        android:textSize="13sp"
-                        android:textColor="@color/gray_text"
-                        android:fontFamily="@font/poppins_regular"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintEnd_toStartOf="@+id/tvRingkasanBiaya"
-                        app:layout_constraintTop_toTopOf="parent" />
-
-                    <TextView
-                        android:id="@+id/tvRingkasanBiaya"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Gratis"
-                        android:textSize="13sp"
-                        android:textColor="@color/gray_text"
-                        android:fontFamily="@font/poppins_regular"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintTop_toTopOf="parent" />
-
+                    <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:text="Biaya Admin" android:textSize="13sp" app:layout_constraintStart_toStartOf="parent" app:layout_constraintTop_toTopOf="parent" />
+                    <TextView android:id="@+id/tvRingkasanBiaya" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Gratis" android:textSize="13sp" app:layout_constraintEnd_toEndOf="parent" app:layout_constraintTop_toTopOf="parent" />
                 </androidx.constraintlayout.widget.ConstraintLayout>
 
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:background="@color/gray_border"
-                    android:layout_marginTop="10dp"
-                    android:layout_marginBottom="10dp" />
+                <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/gray_border" android:layout_marginTop="10dp" android:layout_marginBottom="10dp" />
 
                 <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
-
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:text="Total Diterima"
-                        android:textSize="14sp"
-                        android:textStyle="bold"
-                        android:textColor="@color/black"
-                        android:fontFamily="@font/poppins_semibold"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintEnd_toStartOf="@+id/tvRingkasanBersih"
-                        app:layout_constraintTop_toTopOf="parent" />
-
-                    <TextView
-                        android:id="@+id/tvRingkasanBersih"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Rp 0"
-                        android:textSize="14sp"
-                        android:textStyle="bold"
-                        android:textColor="@color/orange_primary"
-                        android:fontFamily="@font/poppins_bold"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintTop_toTopOf="parent" />
-
+                    <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:text="Total Diterima" android:textSize="14sp" android:textStyle="bold" app:layout_constraintStart_toStartOf="parent" app:layout_constraintTop_toTopOf="parent" />
+                    <TextView android:id="@+id/tvRingkasanBersih" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Rp 0" android:textSize="14sp" android:textStyle="bold" android:textColor="@color/orange_primary" app:layout_constraintEnd_toEndOf="parent" app:layout_constraintTop_toTopOf="parent" />
                 </androidx.constraintlayout.widget.ConstraintLayout>
 
             </LinearLayout>
@@ -665,14 +451,7 @@
             android:layout_marginStart="20dp"
             android:layout_marginEnd="20dp"
             android:layout_marginTop="12dp">
-
-            <ImageView
-                android:layout_width="18dp"
-                android:layout_height="18dp"
-                android:src="@android:drawable/ic_menu_info_details"
-                android:scaleType="centerInside"
-                android:layout_marginTop="2dp" />
-
+            <ImageView android:layout_width="18dp" android:layout_height="18dp" android:src="@android:drawable/ic_menu_info_details" android:layout_marginTop="2dp" />
             <TextView
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -680,9 +459,7 @@
                 android:text="Proses transfer membutuhkan waktu 1x24 jam kerja. Status penarikan dapat dipantau di menu Riwayat."
                 android:textSize="11sp"
                 android:textColor="@color/black"
-                android:fontFamily="@font/poppins_regular"
                 android:layout_marginStart="8dp" />
-
         </LinearLayout>
 
         <!-- TOMBOL AJUKAN -->
@@ -693,7 +470,6 @@
             android:text="Ajukan Penarikan"
             android:textSize="15sp"
             android:textColor="@color/white"
-            android:fontFamily="@font/poppins_semibold"
             android:backgroundTint="@color/orange_primary"
             android:layout_marginStart="20dp"
             android:layout_marginEnd="20dp"

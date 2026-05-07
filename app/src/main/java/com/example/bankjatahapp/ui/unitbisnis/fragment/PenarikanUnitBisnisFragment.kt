@@ -31,22 +31,23 @@ class PenarikanUnitBisnisFragment : Fragment() {
     private val binding get() = _binding!!
 
     // Tiga kantong saldo unit bisnis
-    private var saldoTabungan: Double = 0.0   // saldo_nasabah  (UB juga punya tabungan sebagai nasabah)
-    private var saldoKomisi: Double   = 0.0   // saldo_unit     (komisi dari setoran nasabah ke UB)
-    private var saldoAfiliasi: Double = 0.0   // saldo_afiliasi (bonus jaringan afiliasi)
+    private var saldoTabungan: Double = 0.0   // saldo_nasabah
+    private var saldoKomisi: Double   = 0.0   // saldo_unit
+    private var saldoAfiliasi: Double = 0.0   // saldo_afiliasi
 
     private var saldoTerpilih: Double = 0.0
     private var jenisTerpilih: String = "tabungan" // "tabungan", "komisi", atau "afiliasi"
 
-    // Config & nasabah dari DB — semua nilai dinamis dari Supabase
+    // Config & nasabah dari DB
     private var config: SystemConfig?   = null
     private var nasabahData: NasabahData? = null
     private var isAktif: Boolean        = false
 
-    // biayaAdmin diambil dari config.biayaAdminPencairan, bukan hardcode
+    // Biaya admin dinamis
     private var biayaAdmin: Double = 0.0
 
-    private val listBank = mutableListOf<MasterBank>()
+    // Variabel baru untuk menampung data rekening unit bisnis (Triple: Kode Bank, No Rek, Atas Nama)
+    private var rekeningDipilih: Triple<String, String, String> = Triple("", "", "")
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -73,7 +74,7 @@ class PenarikanUnitBisnisFragment : Fragment() {
                     .select { filter { eq("id_dompet", idUser) } }
                     .decodeSingle<DompetUser>()
 
-                // 2. Data nasabah — UB juga punya row nasabah_data karena UB adalah nasabah
+                // 2. Data nasabah — Unit Bisnis mengambil data bank & sponsor dari sini
                 try {
                     nasabahData = client.postgrest
                         .from("nasabah_data")
@@ -81,19 +82,17 @@ class PenarikanUnitBisnisFragment : Fragment() {
                         .decodeSingle<NasabahData>()
                     isAktif = nasabahData?.kategoriNasabah == "aktif"
                 } catch (_: Exception) {
-                    // Jika tidak ada row nasabah_data, anggap aktif
                     isAktif = true
                 }
 
-                // 3. System config dari Supabase — SEMUA nilai dari sini, tidak ada yang hardcode
+                // 3. System config
                 config = client.postgrest
                     .from("system_config")
                     .select { filter { eq("id_config", 1) } }
                     .decodeSingle<SystemConfig>()
 
-                // 4. Biaya admin dari config (dinamis, bisa diubah admin)
+                // 4. Update variabel lokal
                 biayaAdmin = config?.biayaAdminPencairan ?: 0.0
-
                 saldoTabungan = dompet.saldoNasabah
                 saldoKomisi   = dompet.saldoUnit
                 saldoAfiliasi = dompet.saldoAfiliasi
@@ -103,21 +102,21 @@ class PenarikanUnitBisnisFragment : Fragment() {
                 binding.tvSaldoKomisiNilai.text   = formatRupiah(saldoKomisi)
                 binding.tvSaldoAfiliasiNilai.text = formatRupiah(saldoAfiliasi)
 
-                // 5. Daftar bank aktif
-                val banks = client.postgrest
-                    .from("master_bank")
-                    .select { filter { eq("status_bank", "aktif") } }
-                    .decodeList<MasterBank>()
+                // 5. PERUBAHAN: Setup data rekening ke Spinner (Otomatis dari profil)
+                val noRek = nasabahData?.noRekening ?: ""
+                val bank = nasabahData?.bankCode ?: ""
+                val atasNama = nasabahData?.atasNamaRekening ?: ""
 
-                listBank.clear()
-                listBank.addAll(banks)
                 val adapter = ArrayAdapter(
                     requireContext(),
                     android.R.layout.simple_spinner_item,
-                    listBank.map { "${it.kodeBank} - ${it.namaBank}" }
+                    listOf("$bank - $noRek ($atasNama)")
                 )
                 adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
                 binding.spinnerBank.adapter = adapter
+
+                // Simpan ke variabel Triple untuk proses submit
+                rekeningDipilih = Triple(bank, noRek, atasNama)
 
                 // Default pilih tabungan
                 pilihJenis("tabungan")
@@ -128,7 +127,6 @@ class PenarikanUnitBisnisFragment : Fragment() {
         }
     }
 
-    // ===== PILIH JENIS SALDO =====
     private fun pilihJenis(jenis: String) {
         jenisTerpilih = jenis
         saldoTerpilih = when (jenis) {
@@ -144,7 +142,7 @@ class PenarikanUnitBisnisFragment : Fragment() {
         }
         binding.tvSaldoTersedia.text = formatRupiah(saldoTerpilih)
 
-        // Reset visual semua opsi ke inactive
+        // UI Tab Management
         listOf(
             binding.optionTabungan to binding.tvSaldoTabunganNilai,
             binding.optionKomisi   to binding.tvSaldoKomisiNilai,
@@ -157,7 +155,6 @@ class PenarikanUnitBisnisFragment : Fragment() {
         binding.radioKomisi.isChecked   = false
         binding.radioAfiliasi.isChecked = false
 
-        // Aktifkan opsi yang dipilih
         when (jenis) {
             "tabungan" -> {
                 binding.optionTabungan.setBackgroundResource(com.example.bankjatahapp.R.drawable.ic_bg_tab_active)
@@ -176,7 +173,6 @@ class PenarikanUnitBisnisFragment : Fragment() {
             }
         }
 
-        // Cek syarat — semua nilai dari config Supabase
         val syaratInfo = cekSyaratPenarikan(jenis)
         if (syaratInfo != null) {
             binding.tvWarningNominal.text = syaratInfo
@@ -193,44 +189,32 @@ class PenarikanUnitBisnisFragment : Fragment() {
         binding.cardRingkasan.visibility = View.GONE
     }
 
-    // ===== CEK SYARAT PENARIKAN =====
-    // Return null = boleh tarik, return String = pesan error
-    // Semua nilai ambil dari config Supabase, fallback ke default jika config belum dimuat
     private fun cekSyaratPenarikan(jenis: String): String? {
         val cfg = config
         return when (jenis) {
             "tabungan" -> {
-                // UB dianggap aktif — gunakan threshold_saldo_nasabah_aktif (dari config)
                 val threshold = cfg?.thresholdSaldoNasabahAktif ?: 120000.0
                 when {
-                    saldoTabungan <= 0 ->
-                        "⚠ Saldo tabungan kosong"
-                    saldoTabungan < threshold ->
-                        "⚠ Saldo tabungan baru bisa ditarik jika ≥ ${formatRupiah(threshold)}\nSaldo: ${formatRupiah(saldoTabungan)}"
+                    saldoTabungan <= 0 -> "⚠ Saldo tabungan kosong"
+                    saldoTabungan < threshold -> "⚠ Saldo tabungan baru bisa ditarik jika ≥ ${formatRupiah(threshold)}\nSaldo: ${formatRupiah(saldoTabungan)}"
                     else -> null
                 }
             }
             "komisi" -> {
-                // Komisi unit: butuh min_bintang_penarikan (dari config)
                 val minBintang = cfg?.minBintangPenarikan ?: 3
                 val level      = nasabahData?.levelBintang ?: 1
                 when {
-                    level < minBintang ->
-                        "⚠ Penarikan komisi membutuhkan minimal Bintang $minBintang\nLevel Anda: Bintang $level"
-                    saldoKomisi <= 0 ->
-                        "⚠ Saldo komisi unit kosong"
+                    level < minBintang -> "⚠ Penarikan komisi membutuhkan minimal Bintang $minBintang\nLevel Anda: Bintang $level"
+                    saldoKomisi <= 0 -> "⚠ Saldo komisi unit kosong"
                     else -> null
                 }
             }
             "afiliasi" -> {
-                // Bonus afiliasi: butuh min_bintang_penarikan (dari config)
                 val minBintang = cfg?.minBintangPenarikan ?: 3
                 val level      = nasabahData?.levelBintang ?: 1
                 when {
-                    level < minBintang ->
-                        "⚠ Penarikan bonus afiliasi membutuhkan minimal Bintang $minBintang\nLevel Anda: Bintang $level"
-                    saldoAfiliasi <= 0 ->
-                        "⚠ Saldo bonus/afiliasi kosong"
+                    level < minBintang -> "⚠ Penarikan bonus afiliasi membutuhkan minimal Bintang $minBintang\nLevel Anda: Bintang $level"
+                    saldoAfiliasi <= 0 -> "⚠ Saldo bonus/afiliasi kosong"
                     else -> null
                 }
             }
@@ -238,7 +222,6 @@ class PenarikanUnitBisnisFragment : Fragment() {
         }
     }
 
-    // Teks info minimum penarikan — nilai dari config Supabase
     private fun getMinimumInfo(jenis: String): String {
         val cfg        = config
         val minBintang = cfg?.minBintangPenarikan ?: 3
@@ -257,7 +240,6 @@ class PenarikanUnitBisnisFragment : Fragment() {
         binding.btnSemua.isEnabled  = enabled
     }
 
-    // ===== SETUP LISTENERS =====
     private fun setupListeners() {
         binding.btnBack.setOnClickListener { parentFragmentManager.popBackStack() }
 
@@ -289,8 +271,6 @@ class PenarikanUnitBisnisFragment : Fragment() {
         binding.etNominal.setSelection(binding.etNominal.text?.length ?: 0)
     }
 
-    // ===== VALIDASI REAL-TIME & TAMPIL RINGKASAN =====
-    // Semua batas dari config Supabase
     private fun validasiDanTampilRingkasan(nominal: Double) {
         binding.tvWarningNominal.visibility = View.GONE
         binding.tilNominal.error = null
@@ -303,9 +283,7 @@ class PenarikanUnitBisnisFragment : Fragment() {
         }
 
         when {
-            nominal <= 0 -> {
-                binding.cardRingkasan.visibility = View.GONE
-            }
+            nominal <= 0 -> binding.cardRingkasan.visibility = View.GONE
             nominal < minPenarikan -> {
                 binding.tvWarningNominal.text = "⚠ Minimum penarikan adalah ${formatRupiah(minPenarikan)}"
                 binding.tvWarningNominal.visibility = View.VISIBLE
@@ -316,16 +294,12 @@ class PenarikanUnitBisnisFragment : Fragment() {
                 binding.tvWarningNominal.visibility = View.VISIBLE
                 binding.cardRingkasan.visibility = View.GONE
             }
-            // Untuk tabungan: wajib sisakan min_sisa_saldo_nasabah_aktif (dari config)
-            jenisTerpilih == "tabungan" && cfg != null &&
-                    (saldoTerpilih - nominal) < cfg.minSisaSaldoNasabahAktif -> {
-                binding.tvWarningNominal.text =
-                    "⚠ Harus menyisakan minimal ${formatRupiah(cfg.minSisaSaldoNasabahAktif)}"
+            jenisTerpilih == "tabungan" && cfg != null && (saldoTerpilih - nominal) < cfg.minSisaSaldoNasabahAktif -> {
+                binding.tvWarningNominal.text = "⚠ Harus menyisakan minimal ${formatRupiah(cfg.minSisaSaldoNasabahAktif)}"
                 binding.tvWarningNominal.visibility = View.VISIBLE
                 binding.cardRingkasan.visibility = View.GONE
             }
             else -> {
-                // biayaAdmin dari config.biayaAdminPencairan (dinamis)
                 val bersih = nominal - biayaAdmin
                 binding.tvRingkasanJumlah.text = formatRupiah(nominal)
                 binding.tvRingkasanBiaya.text  = if (biayaAdmin > 0) formatRupiah(biayaAdmin) else "Gratis"
@@ -335,21 +309,17 @@ class PenarikanUnitBisnisFragment : Fragment() {
         }
     }
 
-    // ===== SUBMIT PENARIKAN =====
     private fun ajukanPenarikan() {
         val nominalStr  = binding.etNominal.text.toString().trim()
-        val noRekening  = binding.etNoRekening.text.toString().trim()
-        val namaPemilik = binding.etNamaPemilik.text.toString().trim()
-
         val cfg = config
-        // Batas minimal dari config Supabase
+        val nominal = nominalStr.toDoubleOrNull()
+
         val minPenarikan = when (jenisTerpilih) {
             "tabungan" -> cfg?.minPenarikanNasabahAktif ?: 15000.0
             "komisi"   -> cfg?.minPenarikanUnit         ?: 50000.0
             else       -> cfg?.minPenarikanKomisi       ?: 10000.0
         }
 
-        val nominal = nominalStr.toDoubleOrNull()
         if (nominal == null || nominal < minPenarikan) {
             binding.tilNominal.error = "Nominal minimal ${formatRupiah(minPenarikan)}"
             return
@@ -358,31 +328,23 @@ class PenarikanUnitBisnisFragment : Fragment() {
             binding.tilNominal.error = "Nominal melebihi saldo tersedia"
             return
         }
-        // Sisa saldo minimal tabungan — dari config Supabase
-        if (jenisTerpilih == "tabungan" && cfg != null &&
-            (saldoTerpilih - nominal) < cfg.minSisaSaldoNasabahAktif) {
+        if (jenisTerpilih == "tabungan" && cfg != null && (saldoTerpilih - nominal) < cfg.minSisaSaldoNasabahAktif) {
             binding.tilNominal.error = "Harus menyisakan ${formatRupiah(cfg.minSisaSaldoNasabahAktif)}"
             return
         }
         binding.tilNominal.error = null
 
-        val selectedIndex = binding.spinnerBank.selectedItemPosition
-        if (listBank.isEmpty() || selectedIndex < 0 || selectedIndex >= listBank.size) {
-            Toast.makeText(requireContext(), "Pilih bank tujuan", Toast.LENGTH_SHORT).show()
-            return
-        }
-        if (noRekening.isEmpty()) {
-            binding.tilNoRekening.error = "Nomor rekening tidak boleh kosong"
-            return
-        }
-        binding.tilNoRekening.error = null
-        if (namaPemilik.isEmpty()) {
-            binding.tilNamaPemilik.error = "Nama pemilik tidak boleh kosong"
-            return
-        }
-        binding.tilNamaPemilik.error = null
+        // PERUBAHAN: Gunakan Triple rekeningDipilih yang sudah diisi otomatis
+        val kodeBank    = rekeningDipilih.first
+        val noRekening  = rekeningDipilih.second
+        val namaPemilik = rekeningDipilih.third
 
-        submitPenarikan(nominal, listBank[selectedIndex].kodeBank, noRekening, namaPemilik)
+        if (kodeBank.isEmpty() || noRekening.isEmpty()) {
+            Toast.makeText(requireContext(), "Data rekening belum tersedia. Lengkapi profil Anda.", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        submitPenarikan(nominal, kodeBank, noRekening, namaPemilik)
     }
 
     private fun submitPenarikan(
@@ -395,22 +357,17 @@ class PenarikanUnitBisnisFragment : Fragment() {
 
         lifecycleScope.launch {
             try {
-                val idUser = client.auth.currentUserOrNull()?.id
-                    ?: throw Exception("Session tidak ditemukan")
+                val idUser = client.auth.currentUserOrNull()?.id ?: throw Exception("Session tidak ditemukan")
 
-                // biayaAdmin dari config Supabase (bukan hardcode)
                 val jumlahBersih  = nominal - biayaAdmin
                 val kodePencairan = "PCR-${UUID.randomUUID().toString().replace("-", "").take(12).uppercase()}"
 
-                // sumber_dana berdasarkan jenis yang dipilih
                 val sumberDana = when (jenisTerpilih) {
                     "tabungan" -> "setoran_minyak"
                     "komisi"   -> "komisi_unit"
                     else       -> "komisi_afiliasi"
                 }
 
-                // Insert ke pencairan_dana — trigger DB yang handle potong saldo,
-                // catat mutasi, dan validasi akhir secara atomik
                 val payload = buildJsonObject {
                     put("kode_pencairan",        kodePencairan)
                     put("id_user",               idUser)
@@ -429,24 +386,14 @@ class PenarikanUnitBisnisFragment : Fragment() {
                 client.postgrest.from("pencairan_dana").insert(payload)
 
                 setLoading(false)
-                Toast.makeText(
-                    requireContext(),
-                    "✓ Pengajuan penarikan berhasil!\nKode: $kodePencairan\nMenunggu persetujuan admin.",
-                    Toast.LENGTH_LONG
-                ).show()
-
+                Toast.makeText(requireContext(), "✓ Pengajuan penarikan berhasil!\nKode: $kodePencairan", Toast.LENGTH_LONG).show()
                 parentFragmentManager.popBackStack()
 
             } catch (e: Exception) {
                 setLoading(false)
-                // Tangkap pesan error dari trigger DB Supabase
                 val pesan = when {
                     e.message?.contains("Saldo tidak mencukupi") == true -> e.message!!
                     e.message?.contains("Minimal saldo")         == true -> e.message!!
-                    e.message?.contains("menyisakan")            == true -> e.message!!
-                    e.message?.contains("Bintang")               == true -> e.message!!
-                    e.message?.contains("Maaf, penarikan")       == true -> e.message!!
-                    e.message?.contains("row-level security")    == true -> "Akses ditolak. Pastikan Anda sudah login."
                     else -> "Gagal mengajukan: ${e.message}"
                 }
                 Toast.makeText(requireContext(), pesan, Toast.LENGTH_LONG).show()
