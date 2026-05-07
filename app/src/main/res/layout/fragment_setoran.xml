@@ -355,52 +355,71 @@
                 </androidx.constraintlayout.widget.ConstraintLayout>
 
                 <!-- Info nama nasabah setelah cek/scan -->
-                <androidx.constraintlayout.widget.ConstraintLayout
+                <LinearLayout
                     android:id="@+id/layoutInfoNasabah"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:orientation="vertical"
                     android:layout_marginTop="10dp"
                     android:background="#F0FFF4"
                     android:padding="12dp"
                     android:visibility="gone">
 
-                    <ImageView
-                        android:id="@+id/ivCeklis"
-                        android:layout_width="20dp"
-                        android:layout_height="20dp"
-                        android:src="@android:drawable/checkbox_on_background"
-                        android:scaleType="centerInside"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toTopOf="parent"
-                        app:layout_constraintBottom_toBottomOf="parent" />
-
-                    <TextView
-                        android:id="@+id/tvNamaNasabah"
-                        android:layout_width="0dp"
+                    <!-- Baris nama + ceklis -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Nama Nasabah"
-                        android:textSize="13sp"
-                        android:textColor="@color/black"
-                        android:fontFamily="@font/poppins_semibold"
-                        android:layout_marginStart="10dp"
-                        app:layout_constraintStart_toEndOf="@+id/ivCeklis"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintTop_toTopOf="parent" />
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
 
+                        <ImageView
+                            android:id="@+id/ivCeklis"
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:src="@android:drawable/checkbox_on_background"
+                            android:scaleType="centerInside" />
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:layout_marginStart="10dp">
+
+                            <TextView
+                                android:id="@+id/tvNamaNasabah"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Nama Nasabah"
+                                android:textSize="13sp"
+                                android:textColor="@color/black"
+                                android:fontFamily="@font/poppins_semibold" />
+
+                            <TextView
+                                android:id="@+id/tvIdNasabahInfo"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="ID: -"
+                                android:textSize="11sp"
+                                android:textColor="@color/gray_text"
+                                android:fontFamily="@font/poppins_regular" />
+
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+                    <!-- ✅ TAMBAHAN: Status sponsor -->
                     <TextView
-                        android:id="@+id/tvIdNasabahInfo"
-                        android:layout_width="0dp"
+                        android:id="@+id/tvStatusSponsor"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="ID: -"
+                        android:text=""
                         android:textSize="11sp"
-                        android:textColor="@color/gray_text"
                         android:fontFamily="@font/poppins_regular"
-                        android:layout_marginStart="10dp"
-                        app:layout_constraintStart_toEndOf="@+id/ivCeklis"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintTop_toBottomOf="@+id/tvNamaNasabah" />
+                        android:layout_marginTop="6dp"
+                        android:visibility="gone" />
 
-                </androidx.constraintlayout.widget.ConstraintLayout>
+                </LinearLayout>
 
                 <!-- ===== BERAT BERSIH ===== -->
                 <TextView
@@ -504,7 +523,6 @@
                     android:textColor="@color/black"
                     android:fontFamily="@font/poppins_semibold" />
 
-                <!-- Opsi Antar Sendiri -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"

@@ -31,6 +31,8 @@ import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.storage.storage
 import kotlinx.coroutines.launch
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import java.io.File
@@ -39,6 +41,12 @@ import java.util.Locale
 import java.util.UUID
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+
+// ✅ Data class untuk cek status sponsor
+@Serializable
+data class NasabahSponsorInfo(
+    @SerialName("id_sponsor") val idSponsor: String? = null
+)
 
 class SetoranFragment : Fragment() {
 
@@ -147,11 +155,9 @@ class SetoranFragment : Fragment() {
                 // ===== LOAD BIAYA JEMPUT =====
                 biayaJemputPerKg = config.biayaJemputPerKg
 
-                // Tampilkan info biaya jemput di label switch
                 binding.tvJemputSub.text =
                     "Nasabah -${formatRupiah(biayaJemputPerKg)}/kg • UB +${formatRupiah(biayaJemputPerKg)}/kg"
 
-                // Inisialisasi harga awal di card Ringkasan
                 binding.tvPoinNilai.text = "${formatRupiah(harga.hargaPerKg)}/Kg"
 
                 setFormEnabled(true)
@@ -178,13 +184,10 @@ class SetoranFragment : Fragment() {
     }
 
     private fun setupListeners() {
-
-        // Tap placeholder hitam → buka scanner
         binding.frameQrScanner.setOnClickListener {
             mintaIzinDanScan()
         }
 
-        // Tombol X tutup scanner
         binding.btnTutupKamera.setOnClickListener {
             tutupScanner()
         }
@@ -236,14 +239,12 @@ class SetoranFragment : Fragment() {
             binding.tvEstimasiRupiah.text      = formatRupiah(totalNasabah)
             binding.layoutKalkulasi.visibility = View.VISIBLE
 
-            // ===== UPDATE RINGKASAN =====
             binding.tvSaldoNilai.text  = formatRupiah(totalNasabah)
             binding.tvPoinNilai.text   = if (isJemput)
                 "${formatRupiah(hargaNasabah)}/Kg (-${formatRupiah(biayaJemputPerKg)})"
             else
                 "${formatRupiah(harga)}/Kg"
 
-            // Info jemput di bawah kalkulasi
             if (isJemput) {
                 binding.tvInfoJemput.visibility = View.VISIBLE
                 binding.tvInfoJemput.text =
@@ -254,8 +255,8 @@ class SetoranFragment : Fragment() {
 
         } else {
             binding.tvEstimasiRupiah.text      = "Rp 0"
-            binding.tvSaldoNilai.text           = "Rp 0"
-            binding.tvPoinNilai.text            = "${formatRupiah(hargaPerKg ?: 0.0)}/Kg"
+            binding.tvSaldoNilai.text          = "Rp 0"
+            binding.tvPoinNilai.text           = "${formatRupiah(hargaPerKg ?: 0.0)}/Kg"
             binding.tvInfoJemput.visibility    = View.GONE
             binding.layoutKalkulasi.visibility = View.GONE
         }
@@ -367,7 +368,7 @@ class SetoranFragment : Fragment() {
         cekUserByUuid(uuid)
     }
 
-    // ===== CEK USER =====
+    // ===== CEK USER — ✅ UPDATE dengan cek sponsor =====
     private fun cekUserByUuid(uuid: String) {
         setTombolCek(loading = true)
         lifecycleScope.launch {
@@ -382,7 +383,10 @@ class SetoranFragment : Fragment() {
                     }
                     .decodeSingle<User>()
 
-                tampilkanUser(user, uuid.take(8))
+                // ✅ Cek status sponsor setelah user ditemukan
+                val sponsorInfo = cekStatusSponsor(uuid)
+                tampilkanUser(user, uuid.take(8), sponsorInfo)
+
             } catch (e: Exception) {
                 userTidakDitemukan()
                 Toast.makeText(
@@ -409,7 +413,10 @@ class SetoranFragment : Fragment() {
                     it.idUser.startsWith(inputId, ignoreCase = true)
                 } ?: throw Exception("User dengan ID $inputId tidak ditemukan.")
 
-                tampilkanUser(user, inputId)
+                // ✅ Cek status sponsor setelah user ditemukan
+                val sponsorInfo = cekStatusSponsor(user.idUser)
+                tampilkanUser(user, inputId, sponsorInfo)
+
             } catch (e: Exception) {
                 userTidakDitemukan()
                 Toast.makeText(requireContext(), "${e.message}", Toast.LENGTH_SHORT).show()
@@ -419,17 +426,55 @@ class SetoranFragment : Fragment() {
         }
     }
 
-    private fun tampilkanUser(user: User, displayId: String) {
+    // ✅ Fungsi baru: query nasabah_data untuk cek id_sponsor
+    private suspend fun cekStatusSponsor(idUser: String): NasabahSponsorInfo? {
+        return try {
+            client.postgrest
+                .from("nasabah_data")
+                .select { filter { eq("id_nasabah", idUser) } }
+                .decodeSingle<NasabahSponsorInfo>()
+        } catch (e: Exception) {
+            // Bukan nasabah (mungkin role lain), return null
+            null
+        }
+    }
+
+    // ✅ Update tampilkanUser untuk terima sponsorInfo
+    private fun tampilkanUser(user: User, displayId: String, sponsorInfo: NasabahSponsorInfo?) {
         idNasabahDipilih   = user.idUser
         namaNasabahDipilih = user.namaLengkap
+
         binding.layoutInfoNasabah.visibility = View.VISIBLE
-        binding.tvNamaNasabah.text            = user.namaLengkap
+        binding.tvNamaNasabah.text           = user.namaLengkap
+
         val labelRole = when (user.role) {
             "unit_bisnis" -> "Unit Bisnis"
             "nasabah"     -> "Nasabah"
             else          -> user.role
         }
         binding.tvIdNasabahInfo.text = "ID: $displayId • $labelRole"
+
+        // ===== TAMPILKAN STATUS SPONSOR =====
+        if (sponsorInfo != null) {
+            // User adalah nasabah, tampilkan info sponsor
+            if (sponsorInfo.idSponsor == null) {
+                binding.tvStatusSponsor.visibility = View.VISIBLE
+                binding.tvStatusSponsor.text = "⚠️ Belum ada sponsor — UB ini akan jadi sponsor saat setoran dikonfirmasi"
+                binding.tvStatusSponsor.setTextColor(
+                    ContextCompat.getColor(requireContext(), android.R.color.holo_orange_dark)
+                )
+            } else {
+                binding.tvStatusSponsor.visibility = View.VISIBLE
+                binding.tvStatusSponsor.text = "✓ Sudah memiliki sponsor"
+                binding.tvStatusSponsor.setTextColor(
+                    ContextCompat.getColor(requireContext(), android.R.color.holo_green_dark)
+                )
+            }
+        } else {
+            // Bukan nasabah (unit_bisnis / internal), sembunyikan info sponsor
+            binding.tvStatusSponsor.visibility = View.GONE
+        }
+
         Toast.makeText(
             requireContext(),
             "Ditemukan: ${user.namaLengkap} ($labelRole)",
@@ -437,10 +482,12 @@ class SetoranFragment : Fragment() {
         ).show()
     }
 
+    // ✅ Update userTidakDitemukan — sembunyikan tvStatusSponsor juga
     private fun userTidakDitemukan() {
         idNasabahDipilih   = null
         namaNasabahDipilih = null
         binding.layoutInfoNasabah.visibility = View.GONE
+        binding.tvStatusSponsor.visibility   = View.GONE
     }
 
     private fun setTombolCek(loading: Boolean) {
@@ -521,17 +568,13 @@ class SetoranFragment : Fragment() {
                     }
                 }
 
-                // ===== BUILD PAYLOAD =====
-                // Catatan: harga_per_kg, komisi_per_kg, total_rupiah_nasabah, total_komisi_unit
-                // dihitung otomatis oleh trigger before_insert di Supabase berdasarkan is_jemput.
-                // Kita hanya perlu kirim is_jemput = true/false.
                 val payload = buildJsonObject {
-                    put("kode_transaksi", kodeTransaksi)
-                    put("id_nasabah",     idNasabahDipilih!!)
-                    put("id_unit",        idUnit)
+                    put("kode_transaksi",  kodeTransaksi)
+                    put("id_nasabah",      idNasabahDipilih!!)
+                    put("id_unit",         idUnit)
                     put("berat_bersih_kg", beratKg)
-                    put("status_setoran", "menunggu")
-                    put("is_jemput",      isJemput)
+                    put("status_setoran",  "menunggu")
+                    put("is_jemput",       isJemput)
                     if (catatanValue != null)  put("catatan_unit",      catatanValue)
                     if (urlFotoBukti != null)  put("bukti_foto_minyak", urlFotoBukti)
                 }
@@ -578,6 +621,7 @@ class SetoranFragment : Fragment() {
         binding.etCatatan.setText("")
         binding.switchJemput.isChecked           = false
         binding.layoutInfoNasabah.visibility     = View.GONE
+        binding.tvStatusSponsor.visibility       = View.GONE
         binding.layoutKalkulasi.visibility       = View.GONE
         binding.ivPreviewFoto.visibility         = View.GONE
         binding.layoutPlaceholderFoto.visibility = View.VISIBLE
