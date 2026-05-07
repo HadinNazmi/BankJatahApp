@@ -5,9 +5,12 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import com.example.bankjatahapp.data.model.MasterBank
 import com.example.bankjatahapp.data.model.NasabahData
 import com.example.bankjatahapp.data.model.User
 import com.example.bankjatahapp.data.remote.SupabaseClient.client
@@ -22,6 +25,10 @@ class PengaturanAkunFragment : Fragment() {
     private var _binding: FragmentPengaturanAkunBinding? = null
     private val binding get() = _binding!!
     private var idUser: String? = null
+
+    // Variabel baru untuk Bank
+    private var listBank: List<MasterBank> = emptyList()
+    private var bankDipilih: String? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -54,7 +61,39 @@ class PengaturanAkunFragment : Fragment() {
                     .select { filter { eq("id_nasabah", idUser!!) } }
                     .decodeSingle<NasabahData>()
 
-                // ===== AVATAR INISIAL dari nama =====
+                // ===== LOAD MASTER BANK =====
+                try {
+                    listBank = client.postgrest.from("master_bank")
+                        .select { filter { eq("status_bank", "aktif") } }
+                        .decodeList<MasterBank>()
+
+                    val namaBank = listBank.map { it.namaBank }
+                    val adapterBank = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, namaBank)
+                    adapterBank.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+                    binding.spinnerBank.adapter = adapterBank
+
+                    // Set pilihan sesuai data existing
+                    val indexBank = listBank.indexOfFirst { it.kodeBank == nasabah.bankCode }
+                    if (indexBank >= 0) {
+                        binding.spinnerBank.setSelection(indexBank)
+                        bankDipilih = nasabah.bankCode
+                    }
+
+                    binding.spinnerBank.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+                        override fun onItemSelected(p: AdapterView<*>?, v: View?, pos: Int, id: Long) {
+                            bankDipilih = listBank[pos].kodeBank
+                        }
+                        override fun onNothingSelected(p: AdapterView<*>?) {}
+                    }
+                } catch (e: Exception) {
+                    Toast.makeText(requireContext(), "Gagal memuat daftar bank", Toast.LENGTH_SHORT).show()
+                }
+
+                // ===== SET DATA REKENING =====
+                binding.etNoRekening.setText(nasabah.noRekening ?: "")
+                binding.etAtasNama.setText(nasabah.atasNamaRekening ?: "")
+
+                // ===== AVATAR INISIAL =====
                 AvatarUtils.pasangKeImageView(binding.ivFotoProfil, user.namaLengkap, 300)
 
                 // Field yang bisa diubah
@@ -62,7 +101,7 @@ class PengaturanAkunFragment : Fragment() {
                 binding.etNoTelp.setText(user.noTelp ?: "")
                 binding.etAlamat.setText(nasabah.alamatRumah ?: "")
 
-                // Kode referral sponsor — tampilkan kode bukan UUID
+                // Kode referral sponsor
                 if (!nasabah.idSponsor.isNullOrEmpty()) {
                     try {
                         val sponsor = client.postgrest
@@ -109,7 +148,6 @@ class PengaturanAkunFragment : Fragment() {
         binding.btnSimpan.setOnClickListener {
             simpanPerubahan()
         }
-        // ===== SHARE KODE REFERRAL =====
         binding.tvBagikanKeTeman.setOnClickListener {
             val kodeReferral = binding.tvKodeReferralValue.text.toString()
             if (kodeReferral == "-" || kodeReferral.isEmpty()) {
@@ -145,6 +183,10 @@ class PengaturanAkunFragment : Fragment() {
         val alamat         = binding.etAlamat.text.toString().trim()
         val kodeRefSponsor = binding.etKodeReferralSponsor.text.toString().trim()
 
+        // Data Rekening
+        val noRekening     = binding.etNoRekening.text.toString().trim()
+        val atasNama       = binding.etAtasNama.text.toString().trim()
+
         if (nama.isEmpty()) {
             binding.tilNama.error = "Nama tidak boleh kosong"
             return
@@ -157,7 +199,6 @@ class PengaturanAkunFragment : Fragment() {
             try {
                 val id = idUser ?: throw Exception("Session tidak ditemukan")
 
-                // Resolusi kode referral sponsor → UUID
                 var idSponsorBaru: String? = null
                 if (kodeRefSponsor.isNotEmpty()) {
                     try {
@@ -173,7 +214,7 @@ class PengaturanAkunFragment : Fragment() {
                     }
                 }
 
-                // Update tabel users — tanpa url_foto_profil
+                // Update tabel users
                 client.postgrest.from("users").update(
                     mapOf(
                         "nama_lengkap" to nama,
@@ -181,15 +222,17 @@ class PengaturanAkunFragment : Fragment() {
                     )
                 ) { filter { eq("id_user", id) } }
 
-                // Update tabel nasabah_data
+                // Update tabel nasabah_data (Termasuk Rekening Bank)
                 client.postgrest.from("nasabah_data").update(
                     mapOf(
-                        "alamat_rumah" to alamat.ifEmpty { null },
-                        "id_sponsor"   to idSponsorBaru
+                        "alamat_rumah"       to alamat.ifEmpty { null },
+                        "id_sponsor"         to idSponsorBaru,
+                        "bank_code"          to bankDipilih,
+                        "no_rekening"        to noRekening.ifEmpty { null },
+                        "atas_nama_rekening" to atasNama.ifEmpty { null }
                     )
                 ) { filter { eq("id_nasabah", id) } }
 
-                // Update avatar sesuai nama baru
                 AvatarUtils.pasangKeImageView(binding.ivFotoProfil, nama, 300)
 
                 setLoading(false)
