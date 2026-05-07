@@ -219,7 +219,7 @@ class RiwayatFragment : Fragment() {
                         totalBerat += berat
                         totalSaldo += total
                         tambahkanItemRiwayat(
-                            "💧", "Setor Minyak Jelantah",
+                            "", "Setor Minyak Jelantah",
                             "$berat Kg  •  ${formatRupiah(total)}", tgl, kode, status, "setoran",
                             buktiTransfer = null
                         )
@@ -256,7 +256,7 @@ class RiwayatFragment : Fragment() {
                             else              -> "Tabungan Minyak"
                         }
                         tambahkanItemRiwayat(
-                            "🏦", "Penarikan $labelSumber",
+                            "", "Penarikan $labelSumber",
                             "${formatRupiah(jumlah)}  •  $bank $noRek  •  Diterima ${formatRupiah(bersih)}",
                             tgl, kode, status, "pencairan",
                             buktiTransfer = buktiTransfer
@@ -522,7 +522,7 @@ class RiwayatFragment : Fragment() {
             gravity     = Gravity.CENTER_VERTICAL
         }
         val tvIcon = TextView(requireContext()).apply {
-            text = "🎁"; textSize = 18f
+            text = ""; textSize = 18f
             setPadding(0, 0, dp8, 0)
         }
         val tvJudul = TextView(requireContext()).apply {
@@ -563,7 +563,7 @@ class RiwayatFragment : Fragment() {
         }
 
         val btnLihatQr = TextView(requireContext()).apply {
-            text = "🔍 Lihat QR Redeem"
+            text = "Lihat QR Redeem"
             textSize = 12f
             setTypeface(null, Typeface.BOLD)
             setTextColor(requireContext().getColor(R.color.orange_primary))

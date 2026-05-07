@@ -103,11 +103,6 @@ class ProfilUnitBisnisFragment : Fragment() {
 
         // ===== AVATAR INISIAL =====
         AvatarUtils.pasangKeImageView(binding.ivFotoProfil, user.namaLengkap, 300)
-
-        val bonus = dompet.saldoUnit ?: 0.0
-        val poin = dompet.poinReward ?: 0
-        binding.tvBonus.text = "Rp ${String.format("%,.0f", bonus)}"
-        binding.tvPoin.text = "$poin pts"
         binding.tvJumlahAfiliasi.text = "$jumlahAfiliasi orang"
     }
 
@@ -181,10 +176,6 @@ class ProfilUnitBisnisFragment : Fragment() {
 
         binding.menuBantuan.setOnClickListener {
             Toast.makeText(requireContext(), "Bantuan & FAQ", Toast.LENGTH_SHORT).show()
-        }
-
-        binding.btnTukarPoin.setOnClickListener {
-            Toast.makeText(requireContext(), "Tukar Poin", Toast.LENGTH_SHORT).show()
         }
 
         binding.menuLogout.setOnClickListener {

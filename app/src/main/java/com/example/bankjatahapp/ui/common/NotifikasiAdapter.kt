@@ -32,7 +32,7 @@ class NotifikasiAdapter(
 
         // Icon & background berdasarkan type
         val (iconRes, bgRes) = when (notif.type) {
-            "success" -> Pair(R.drawable.ic_nav_reward,  R.drawable.ic_bg_status_berhasil)
+            "success" -> Pair(R.drawable.ic_stat_name,  R.drawable.ic_bg_status_berhasil)
             "warning" -> Pair(R.drawable.ic_notifikasi,  R.drawable.ic_bg_status_pending)
             "error"   -> Pair(R.drawable.ic_notifikasi,  R.drawable.ic_bg_status_gagal)
             else      -> Pair(R.drawable.ic_notifikasi,  R.drawable.ic_bg_aktivitas_orange)

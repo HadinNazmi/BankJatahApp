@@ -186,14 +186,14 @@ class HomeUnitBisnisFragment : Fragment() {
     }
 
     private fun labelLevel(level: Int): String = when (level) {
-        1 -> "⭐ Level 1 - Pemula"
-        2 -> "⭐⭐ Level 2 - Penabung"
-        3 -> "⭐⭐⭐ Level 3 - Aktif"
-        4 -> "⭐⭐⭐⭐ Level 4 - Mahir"
-        5 -> "⭐⭐⭐⭐⭐ Level 5 - Veteran"
-        6 -> "⭐⭐⭐⭐⭐⭐ Level 6 - Pakar"
-        7 -> "⭐⭐⭐⭐⭐⭐⭐ Level 7 - Master"
-        8 -> "⭐⭐⭐⭐⭐⭐⭐⭐ Level 8 - Legenda"
+        1 -> "⭐ Level 1"
+        2 -> "⭐ Level 2"
+        3 -> "⭐ Level 3"
+        4 -> "⭐ Level 4"
+        5 -> "⭐ Level 5"
+        6 -> "⭐ Level 6"
+        7 -> "⭐ Level 7"
+        8 -> "⭐ Level 8"
         else -> "Level $level"
     }
 

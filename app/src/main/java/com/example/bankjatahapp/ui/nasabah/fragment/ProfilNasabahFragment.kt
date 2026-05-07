@@ -102,11 +102,6 @@ class ProfilNasabahFragment : Fragment() {
 
         // ===== AVATAR INISIAL — tidak pakai storage/foto =====
         AvatarUtils.pasangKeImageView(binding.ivFotoProfil, user.namaLengkap, 300)
-
-        val saldo = dompet.saldoNasabah ?: 0.0
-        val poin = dompet.poinReward ?: 0
-        binding.tvSaldoWallet.text = "Rp ${String.format("%,.0f", saldo)}"
-        binding.tvPoin.text = "$poin pts"
         binding.tvJumlahAfiliasi.text = "$jumlahAfiliasi orang"
     }
 
@@ -182,9 +177,6 @@ class ProfilNasabahFragment : Fragment() {
             Toast.makeText(requireContext(), "Bantuan & FAQ", Toast.LENGTH_SHORT).show()
         }
 
-        binding.btnTukarPoin.setOnClickListener {
-            Toast.makeText(requireContext(), "Tukar Poin", Toast.LENGTH_SHORT).show()
-        }
 
         binding.menuLogout.setOnClickListener {
             lifecycleScope.launch {

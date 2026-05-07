@@ -218,7 +218,7 @@ class RiwayatUnitBisnisFragment : Fragment() {
                         totalBerat  += berat
                         totalKomisi += komisi
                         tambahkanItemRiwayat(
-                            "💧", "Penerimaan Setoran",
+                            "", "Penerimaan Setoran",
                             "$berat Kg  •  Komisi ${formatRupiah(komisi)}",
                             tgl, kode, status, "setoran",
                             buktiTransfer = null
@@ -256,7 +256,7 @@ class RiwayatUnitBisnisFragment : Fragment() {
                             else              -> "Tabungan Minyak"
                         }
                         tambahkanItemRiwayat(
-                            "🏦", "Penarikan $labelSumber",
+                            "", "Penarikan $labelSumber",
                             "${formatRupiah(jumlah)}  •  $bank $noRek  •  Diterima ${formatRupiah(bersih)}",
                             tgl, kode, status, "pencairan",
                             buktiTransfer = buktiTransfer
@@ -399,7 +399,7 @@ class RiwayatUnitBisnisFragment : Fragment() {
                 setBackgroundColor(requireContext().getColor(R.color.gray_border))
             }
             val btnBukti = TextView(requireContext()).apply {
-                text = "🧾 Lihat Bukti Transfer"
+                text = "Lihat Bukti Transfer"
                 textSize = 12f
                 setTypeface(null, Typeface.BOLD)
                 setTextColor(requireContext().getColor(R.color.orange_primary))
@@ -517,7 +517,7 @@ class RiwayatUnitBisnisFragment : Fragment() {
             gravity     = Gravity.CENTER_VERTICAL
         }
         val tvIcon = TextView(requireContext()).apply {
-            text = "🎁"; textSize = 18f; setPadding(0, 0, dp8, 0)
+            text = ""; textSize = 18f; setPadding(0, 0, dp8, 0)
         }
         val tvJudul = TextView(requireContext()).apply {
             text = "Penukaran Reward"; textSize = 13f
@@ -555,7 +555,7 @@ class RiwayatUnitBisnisFragment : Fragment() {
         }
 
         val btnLihatQr = TextView(requireContext()).apply {
-            text = "🔍 Lihat QR Redeem"; textSize = 12f
+            text = " Lihat QR Redeem"; textSize = 12f
             setTypeface(null, Typeface.BOLD)
             setTextColor(requireContext().getColor(R.color.orange_primary))
             gravity = Gravity.CENTER
