@@ -151,9 +151,6 @@ class ProfilUnitBisnisFragment : Fragment() {
             tampilkanDialogQr()
         }
 
-        binding.ivEdit.setOnClickListener {
-            Toast.makeText(requireContext(), "Edit Profil", Toast.LENGTH_SHORT).show()
-        }
 
         // Tombol card List Afiliasi
         binding.cardListAfiliasi.setOnClickListener {

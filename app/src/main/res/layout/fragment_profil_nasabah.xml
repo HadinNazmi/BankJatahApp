@@ -36,15 +36,7 @@
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent" />
 
-            <ImageView
-                android:id="@+id/ivEdit"
-                android:layout_width="28dp"
-                android:layout_height="28dp"
-                android:src="@android:drawable/ic_menu_edit"
-                android:scaleType="centerInside"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintBottom_toBottomOf="parent" />
+
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -111,7 +103,7 @@
                     <ImageView
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:src="@android:drawable/ic_menu_camera"
+                        android:src="@drawable/ic_qr_icon"
                         android:padding="6dp"
                         android:scaleType="centerInside" />
 
@@ -221,6 +213,7 @@
                         android:id="@+id/ivIconPengaturan"
                         android:layout_width="28dp"
                         android:layout_height="28dp"
+                        android:src="@drawable/ic_nav_profile"
                         android:background="@drawable/ic_bg_aktivitas_orange"
                         android:padding="6dp"
                         android:scaleType="centerInside"
