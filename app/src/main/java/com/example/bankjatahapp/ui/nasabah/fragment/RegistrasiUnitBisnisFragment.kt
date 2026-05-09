@@ -1,6 +1,7 @@
 package com.example.bankjatahapp.ui.nasabah.fragment
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.location.Location
@@ -241,6 +242,21 @@ class RegistrasiUnitBisnisFragment : Fragment() {
         }
         binding.btnAjukanKemitraan.setOnClickListener {
             validasiDanAjukan()
+        }
+        // ===== FAB WHATSAPP SUPPORT =====
+        binding.fabWhatsapp.setOnClickListener {
+            val nomorAdmin = "6282283884373"
+            val pesan = "Halo Admin, saya ingin bertanya mengenai pendaftaran Unit Bisnis Bank Jatah."
+            val url = "https://wa.me/$nomorAdmin?text=${Uri.encode(pesan)}"
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+            startActivity(intent)
+        }
+
+        binding.tvHubungiWa.setOnClickListener {
+            val nomorAdmin = "6281234567890" // sama dengan nomor FAB
+            val pesan = "Halo Admin, wilayah saya belum tersedia dalam daftar pilihan pendaftaran Unit Bisnis Bank Jatah. Mohon bantuannya."
+            val url = "https://wa.me/$nomorAdmin?text=${Uri.encode(pesan)}"
+            startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
         }
     }
 

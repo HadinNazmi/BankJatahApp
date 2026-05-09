@@ -1,10 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView
+<FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@color/background">
+    android:layout_height="match_parent">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/background">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -241,6 +245,48 @@
                     android:layout_marginBottom="16dp"
                     android:background="@drawable/ic_bg_tab_inactive"
                     android:padding="12dp" />
+
+                <!-- Petunjuk wilayah tidak tersedia -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:background="#FFF3E0"
+                    android:padding="10dp"
+                    android:layout_marginTop="4dp"
+                    android:layout_marginBottom="16dp">
+
+                    <ImageView
+                        android:layout_width="16dp"
+                        android:layout_height="16dp"
+                        android:src="@android:drawable/ic_menu_info_details"
+                        android:scaleType="centerInside" />
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Jika wilayah Anda tidak ada dalam daftar, "
+                        android:textSize="11sp"
+                        android:textColor="@color/black"
+                        android:fontFamily="@font/poppins_regular"
+                        android:layout_marginStart="8dp" />
+
+                    <TextView
+                        android:id="@+id/tvHubungiWa"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="hubungi kami via WhatsApp"
+                        android:textSize="11sp"
+                        android:textColor="#25D366"
+                        android:fontFamily="@font/poppins_semibold"
+                        android:textStyle="bold"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:background="?attr/selectableItemBackgroundBorderless" />
+
+                </LinearLayout>
 
                 <!-- Alamat Lengkap -->
                 <TextView
@@ -726,5 +772,22 @@
             android:layout_marginTop="20dp"
             app:cornerRadius="14dp" />
 
-    </LinearLayout>
-</ScrollView>
+        </LinearLayout>
+    </ScrollView>
+
+    <!-- ===== FAB WHATSAPP SUPPORT ===== -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabWhatsapp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="20dp"
+        android:src="@android:drawable/ic_menu_call"
+        android:contentDescription="Chat WhatsApp Support"
+        app:backgroundTint="#25D366"
+        app:tint="@color/white"
+        app:fabSize="normal"
+        app:elevation="8dp" />
+
+</FrameLayout>
+
