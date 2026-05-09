@@ -8,37 +8,29 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.bankjatahapp.data.model.NasabahData
-import com.example.bankjatahapp.data.model.User
+import com.example.bankjatahapp.data.model.DownlineItem
 import com.example.bankjatahapp.data.remote.SupabaseClient.client
 import com.example.bankjatahapp.databinding.FragmentListAfiliasiUnitBisnisBinding
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.postgrest.postgrest
+import io.github.jan.supabase.postgrest.query.Columns
 import kotlinx.coroutines.launch
+import java.util.Locale
 
 class ListAfiliasiUnitBisnisFragment : Fragment() {
 
     private var _binding: FragmentListAfiliasiUnitBisnisBinding? = null
     private val binding get() = _binding!!
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FragmentListAfiliasiUnitBisnisBinding.inflate(inflater, container, false)
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
         binding.rvAfiliasi.layoutManager = LinearLayoutManager(requireContext())
-
-        binding.btnBack.setOnClickListener {
-            parentFragmentManager.popBackStack()
-        }
-
+        binding.btnBack.setOnClickListener { parentFragmentManager.popBackStack() }
         loadAfiliasi()
     }
 
@@ -47,46 +39,59 @@ class ListAfiliasiUnitBisnisFragment : Fragment() {
             try {
                 binding.progressBar.visibility = View.VISIBLE
                 binding.rvAfiliasi.visibility = View.GONE
-                binding.tvKosong.visibility = View.GONE
 
                 val idUser = client.auth.currentUserOrNull()?.id ?: return@launch
 
-                // Ambil semua nasabah yang id_sponsornya adalah unit bisnis ini
-                val listNasabah = client.postgrest
-                    .from("nasabah_data")
-                    .select { filter { eq("id_sponsor", idUser) } }
-                    .decodeList<NasabahData>()
+                // Query mengambil data dari tabel nasabah_data berdasarkan id_sponsor unit bisnis
+                val hasil = client.postgrest.from("nasabah_data").select(columns = Columns.raw("""
+                    id_nasabah, level_bintang, kategori_nasabah, total_setoran_lifetime, created_at,
+                    users!id_nasabah (nama_lengkap, url_foto_profil),
+                    downlines:nasabah_data!id_sponsor (
+                        id_nasabah, level_bintang, kategori_nasabah, total_setoran_lifetime, created_at,
+                        users!id_nasabah (nama_lengkap, url_foto_profil),
+                        downlines:nasabah_data!id_sponsor (
+                            id_nasabah, level_bintang, kategori_nasabah, total_setoran_lifetime, created_at,
+                            users!id_nasabah (nama_lengkap, url_foto_profil)
+                        )
+                    )
+                """.trimIndent())) {
+                    filter { eq("id_sponsor", idUser) }
+                }.decodeList<DownlineItem>()
 
-                if (listNasabah.isEmpty()) {
-                    binding.progressBar.visibility = View.GONE
-                    binding.tvKosong.visibility = View.VISIBLE
-                    binding.tvJumlah.text = "0 afiliasi"
-                    return@launch
+                // Kalkulasi total statistik
+                val totalG1 = hasil.size
+                val totalG2 = hasil.sumOf { it.downlines?.size ?: 0 }
+                val totalG3 = hasil.sumOf { g1 -> g1.downlines?.sumOf { it.downlines?.size ?: 0 } ?: 0 }
+                val totalSemua = totalG1 + totalG2 + totalG3
+
+                val totalOmset = hasil.sumOf { g1 ->
+                    (g1.totalSetoranLifetime ?: 0.0) +
+                            (g1.downlines?.sumOf { g2 ->
+                                (g2.totalSetoranLifetime ?: 0.0) +
+                                        (g2.downlines?.sumOf { it.totalSetoranLifetime ?: 0.0 } ?: 0.0)
+                            } ?: 0.0)
                 }
 
-                // Ambil data user (nama) untuk setiap nasabah
-                val idList = listNasabah.map { it.idNasabah }
-                val listUser = mutableListOf<User>()
-                for (id in idList) {
-                    try {
-                        val u = client.postgrest
-                            .from("users")
-                            .select { filter { eq("id_user", id) } }
-                            .decodeSingle<User>()
-                        listUser.add(u)
-                    } catch (_: Exception) {}
-                }
+                // Update UI Summary
+                binding.tvJumlah.text = "$totalSemua afiliasi"
+                binding.tvTotalJaringan.text = totalSemua.toString()
+                binding.tvTotalOmset.text = "${String.format(Locale.US, "%,.1f", totalOmset)} Kg"
+                binding.tvJumlahG1.text = "G1: $totalG1"
+                binding.tvJumlahG2.text = "G2: $totalG2"
+                binding.tvJumlahG3.text = "G3: $totalG3"
 
-                binding.tvJumlah.text = "${listNasabah.size} afiliasi"
                 binding.progressBar.visibility = View.GONE
-                binding.rvAfiliasi.visibility = View.VISIBLE
-
-                val adapter = AfiliasiUnitBisnisAdapter(listUser, listNasabah)
-                binding.rvAfiliasi.adapter = adapter
+                if (hasil.isEmpty()) {
+                    binding.tvKosong.visibility = View.VISIBLE
+                } else {
+                    binding.rvAfiliasi.visibility = View.VISIBLE
+                    // MENGGUNAKAN ADAPTER KHUSUS UNIT BISNIS
+                    binding.rvAfiliasi.adapter = DownlineTreeAdapterUB(hasil)
+                }
 
             } catch (e: Exception) {
                 binding.progressBar.visibility = View.GONE
-                Toast.makeText(requireContext(), "Gagal memuat data: ${e.message}", Toast.LENGTH_LONG).show()
+                Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_LONG).show()
             }
         }
     }

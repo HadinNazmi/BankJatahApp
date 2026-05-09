@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:layout_marginBottom="4dp"
+    android:background="#FFF1E8"
+    android:paddingStart="10dp"
+    android:paddingEnd="10dp"
+    android:paddingTop="7dp"
+    android:paddingBottom="7dp">
+
+    <!-- Dot kecil sebagai penanda G3 -->
+    <View
+        android:layout_width="6dp"
+        android:layout_height="6dp"
+        android:background="@color/orange_primary"
+        android:layout_marginEnd="8dp" />
+
+    <!-- Inisial mini -->
+    <LinearLayout
+        android:layout_width="28dp"
+        android:layout_height="28dp"
+        android:background="@color/orange_light"
+        android:gravity="center">
+
+        <TextView
+            android:id="@+id/tvInisialG3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="A"
+            android:textSize="11sp"
+            android:textStyle="bold"
+            android:textColor="@color/orange_primary"
+            android:fontFamily="@font/poppins_bold" />
+
+    </LinearLayout>
+
+    <!-- Nama + info -->
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:layout_marginStart="8dp">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:id="@+id/tvNamaG3"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Nama"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:textColor="@color/black"
+                android:fontFamily="@font/poppins_semibold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text=" G3"
+                android:textSize="9sp"
+                android:textColor="@color/gray_text"
+                android:fontFamily="@font/poppins_regular"
+                android:layout_marginStart="3dp" />
+
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/tvInfoG3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="B1 • Pasif"
+            android:textSize="10sp"
+            android:textColor="@color/gray_text"
+            android:fontFamily="@font/poppins_regular" />
+
+    </LinearLayout>
+
+    <!-- Setoran G3 -->
+    <TextView
+        android:id="@+id/tvSetoranG3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="0 Kg"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        android:textColor="@color/orange_primary"
+        android:fontFamily="@font/poppins_bold" />
+
+</LinearLayout>

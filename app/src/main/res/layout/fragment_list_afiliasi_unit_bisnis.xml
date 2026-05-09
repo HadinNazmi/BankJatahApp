@@ -5,17 +5,14 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="@color/background">
+    android:background="#F8F9FA">
 
-    <!-- ===== HEADER ===== -->
+    <!-- HEADER -->
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/white"
-        android:paddingStart="16dp"
-        android:paddingEnd="20dp"
-        android:paddingTop="16dp"
-        android:paddingBottom="16dp">
+        android:padding="16dp">
 
         <ImageView
             android:id="@+id/btnBack"
@@ -23,10 +20,7 @@
             android:layout_height="36dp"
             android:src="@android:drawable/ic_media_previous"
             android:padding="6dp"
-            android:scaleType="centerInside"
             android:background="?attr/selectableItemBackgroundBorderless"
-            android:clickable="true"
-            android:focusable="true"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent" />
@@ -34,85 +28,102 @@
         <TextView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="List Afiliasi"
+            android:text="List Afiliasi Unit Bisnis"
             android:textSize="17sp"
-            android:textStyle="bold"
-            android:textColor="@color/black"
             android:fontFamily="@font/poppins_bold"
+            android:textColor="@color/black"
             android:layout_marginStart="8dp"
             app:layout_constraintStart_toEndOf="@+id/btnBack"
-            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent" />
-
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <!-- ===== SUB HEADER JUMLAH ===== -->
-    <LinearLayout
+    <!-- CARD RINGKASAN (ID-ID Penting Ada di Sini) -->
+    <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:paddingStart="20dp"
-        android:paddingEnd="20dp"
-        android:paddingTop="14dp"
-        android:paddingBottom="10dp"
-        android:gravity="center_vertical">
+        android:layout_margin="16dp"
+        app:cardCornerRadius="12dp"
+        app:cardElevation="2dp">
 
-        <TextView
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Jaringan Referral Anda"
-            android:textSize="14sp"
-            android:textStyle="bold"
-            android:textColor="@color/black"
-            android:fontFamily="@font/poppins_bold"
-            android:layout_weight="1" />
+            android:orientation="vertical"
+            android:padding="16dp">
 
-        <TextView
-            android:id="@+id/tvJumlah"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="0 afiliasi"
-            android:textSize="12sp"
-            android:textColor="@color/orange_primary"
-            android:fontFamily="@font/poppins_regular" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
 
-    </LinearLayout>
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Total Jaringan" android:textSize="12sp" />
+                    <TextView android:id="@+id/tvTotalJaringan" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="0" android:textStyle="bold" android:textSize="20sp" android:textColor="@color/black" />
+                </LinearLayout>
 
-    <!-- ===== LOADING ===== -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:gravity="end">
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Total Omset" android:textSize="12sp" />
+                    <TextView android:id="@+id/tvTotalOmset" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="0 Kg" android:textStyle="bold" android:textSize="20sp" android:textColor="@color/orange_primary" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#EEEEEE" android:layout_marginVertical="12dp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center">
+                <TextView android:id="@+id/tvJumlahG1" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="G1: 0" android:layout_marginEnd="12dp" />
+                <TextView android:id="@+id/tvJumlahG2" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="G2: 0" android:layout_marginEnd="12dp" />
+                <TextView android:id="@+id/tvJumlahG3" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="G3: 0" />
+            </LinearLayout>
+
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
+
+    <TextView
+        android:id="@+id/tvJumlah"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingHorizontal="20dp"
+        android:text="0 afiliasi"
+        android:gravity="end"
+        android:textColor="@color/orange_primary" />
+
+    <!-- LOADING & STATE -->
     <ProgressBar
         android:id="@+id/progressBar"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:layout_marginTop="40dp"
-        android:visibility="gone"
-        android:indeterminateTint="@color/orange_primary" />
+        android:visibility="gone" />
 
-    <!-- ===== KOSONG STATE ===== -->
     <TextView
         android:id="@+id/tvKosong"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Belum ada afiliasi di bawah Anda"
-        android:textSize="14sp"
-        android:textColor="@color/gray_text"
-        android:fontFamily="@font/poppins_regular"
+        android:text="Belum ada nasabah di bawah unit bisnis Anda"
         android:gravity="center"
-        android:layout_marginTop="60dp"
+        android:layout_marginTop="30dp"
         android:visibility="gone" />
 
-    <!-- ===== RECYCLER VIEW ===== -->
+    <!-- RECYCLER VIEW -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvAfiliasi"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:paddingStart="16dp"
-        android:paddingEnd="16dp"
-        android:paddingTop="4dp"
-        android:paddingBottom="16dp"
-        android:clipToPadding="false"
-        android:visibility="gone" />
+        android:layout_height="match_parent"
+        android:padding="8dp"
+        android:clipToPadding="false" />
 
 </LinearLayout>

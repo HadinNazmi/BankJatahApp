@@ -1,118 +1,56 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="@color/background">
+    android:background="#F8F9FA">
 
-    <!-- ===== HEADER ===== -->
+    <!-- Header -->
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/white"
-        android:paddingStart="16dp"
-        android:paddingEnd="20dp"
-        android:paddingTop="16dp"
-        android:paddingBottom="16dp">
-
-        <ImageView
-            android:id="@+id/btnBack"
-            android:layout_width="36dp"
-            android:layout_height="36dp"
-            android:src="@android:drawable/ic_media_previous"
-            android:padding="6dp"
-            android:scaleType="centerInside"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:clickable="true"
-            android:focusable="true"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent" />
-
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:text="List Afiliasi"
-            android:textSize="17sp"
-            android:textStyle="bold"
-            android:textColor="@color/black"
-            android:fontFamily="@font/poppins_bold"
-            android:layout_marginStart="8dp"
-            app:layout_constraintStart_toEndOf="@+id/btnBack"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent" />
-
+        android:padding="16dp">
+        <ImageView android:id="@+id/btnBack" android:layout_width="36dp" android:layout_height="36dp"
+            android:src="@android:drawable/ic_media_previous" android:padding="6dp"
+            app:layout_constraintStart_toStartOf="parent" app:layout_constraintTop_toTopOf="parent" />
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:text="List Afiliasi" android:textSize="17sp" android:fontFamily="@font/poppins_bold"
+            android:layout_marginStart="12dp" app:layout_constraintStart_toEndOf="@id/btnBack"
+            app:layout_constraintTop_toTopOf="@id/btnBack" app:layout_constraintBottom_toBottomOf="@id/btnBack" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <!-- ===== SUB HEADER JUMLAH ===== -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:paddingStart="20dp"
-        android:paddingEnd="20dp"
-        android:paddingTop="14dp"
-        android:paddingBottom="10dp"
-        android:gravity="center_vertical">
+    <!-- Stat Card -->
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:layout_margin="16dp" app:cardCornerRadius="12dp">
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:orientation="vertical" android:padding="16dp">
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Total Jaringan" />
+            <TextView android:id="@+id/tvTotalJaringan" android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="0" android:textSize="24sp" android:fontFamily="@font/poppins_bold" />
+            <TextView android:id="@+id/tvTotalOmset" android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="0 Kg" android:textColor="@color/orange_primary" />
+            <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#EEE" android:layout_marginVertical="12dp" />
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal">
+                <TextView android:id="@+id/tvJumlahG1" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="G1: 0" />
+                <TextView android:id="@+id/tvJumlahG2" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="G2: 0" />
+                <TextView android:id="@+id/tvJumlahG3" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="G3: 0" />
+            </LinearLayout>
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Jaringan Referral Anda"
-            android:textSize="14sp"
-            android:textStyle="bold"
-            android:textColor="@color/black"
-            android:fontFamily="@font/poppins_bold"
-            android:layout_weight="1" />
+    <TextView android:id="@+id/tvJumlah" android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:paddingHorizontal="16dp" android:text="0 afiliasi" android:gravity="end" />
 
-        <TextView
-            android:id="@+id/tvJumlah"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="0 afiliasi"
-            android:textSize="12sp"
-            android:textColor="@color/orange_primary"
-            android:fontFamily="@font/poppins_regular" />
+    <ProgressBar android:id="@+id/progressBar" android:layout_width="wrap_content" android:layout_height="wrap_content"
+        android:layout_gravity="center" android:visibility="gone" />
 
-    </LinearLayout>
+    <TextView android:id="@+id/tvKosong" android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:text="Belum ada data" android:gravity="center" android:visibility="gone" android:layout_marginTop="20dp" />
 
-    <!-- ===== LOADING ===== -->
-    <ProgressBar
-        android:id="@+id/progressBar"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_marginTop="40dp"
-        android:visibility="gone"
-        android:indeterminateTint="@color/orange_primary" />
-
-    <!-- ===== KOSONG STATE ===== -->
-    <TextView
-        android:id="@+id/tvKosong"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Belum ada afiliasi di bawah Anda"
-        android:textSize="14sp"
-        android:textColor="@color/gray_text"
-        android:fontFamily="@font/poppins_regular"
-        android:gravity="center"
-        android:layout_marginTop="60dp"
-        android:visibility="gone" />
-
-    <!-- ===== RECYCLER VIEW ===== -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rvAfiliasi"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:paddingStart="16dp"
-        android:paddingEnd="16dp"
-        android:paddingTop="4dp"
-        android:paddingBottom="16dp"
-        android:clipToPadding="false"
-        android:visibility="gone" />
+    <androidx.recyclerview.widget.RecyclerView android:id="@+id/rvAfiliasi"
+        android:layout_width="match_parent" android:layout_height="match_parent" android:padding="8dp" />
 
 </LinearLayout>
