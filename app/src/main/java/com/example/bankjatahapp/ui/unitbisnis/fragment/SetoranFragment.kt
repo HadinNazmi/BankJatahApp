@@ -183,6 +183,19 @@ class SetoranFragment : Fragment() {
         binding.switchJemput.isEnabled   = enabled
     }
 
+    private fun kompresGambar(bytes: ByteArray, maxSizeKb: Int = 2048): ByteArray {
+        val bitmap = android.graphics.BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+        var quality = 90
+        var hasil: ByteArray
+        do {
+            val out = java.io.ByteArrayOutputStream()
+            bitmap.compress(android.graphics.Bitmap.CompressFormat.JPEG, quality, out)
+            hasil = out.toByteArray()
+            quality -= 10
+        } while (hasil.size > maxSizeKb * 1024 && quality > 10)
+        return hasil
+    }
+
     private fun setupListeners() {
         binding.frameQrScanner.setOnClickListener {
             mintaIzinDanScan()
@@ -555,7 +568,7 @@ class SetoranFragment : Fragment() {
                 val foto = fotoFile
                 if (foto != null && foto.exists() && foto.length() > 0) {
                     try {
-                        val bytes    = foto.readBytes()
+                        val bytes = kompresGambar(foto.readBytes())
                         val namaFile = "bukti-ub/${idUnit}/${kodeTransaksi}.jpg"
                         client.storage["evidence"].upload(namaFile, bytes) { upsert = true }
                         urlFotoBukti = client.storage.from("evidence").publicUrl(namaFile)

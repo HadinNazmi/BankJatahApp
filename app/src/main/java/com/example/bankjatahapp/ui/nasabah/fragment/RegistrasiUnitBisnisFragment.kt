@@ -229,6 +229,19 @@ class RegistrasiUnitBisnisFragment : Fragment() {
         }
     }
 
+    private fun kompresGambar(bytes: ByteArray, maxSizeKb: Int = 2048): ByteArray {
+        val bitmap = android.graphics.BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+        var quality = 90
+        var hasil: ByteArray
+        do {
+            val out = java.io.ByteArrayOutputStream()
+            bitmap.compress(android.graphics.Bitmap.CompressFormat.JPEG, quality, out)
+            hasil = out.toByteArray()
+            quality -= 10
+        } while (hasil.size > maxSizeKb * 1024 && quality > 10)
+        return hasil
+    }
+
     // ===== SETUP LISTENERS =====
     private fun setupClickListeners() {
         binding.btnBack.setOnClickListener {
@@ -356,7 +369,7 @@ class RegistrasiUnitBisnisFragment : Fragment() {
                 val uriBukti    = uriBuktiBayar!!
                 val inputStream = requireContext().contentResolver.openInputStream(uriBukti)
                     ?: throw Exception("Gagal membaca file foto")
-                val fotoBytes   = inputStream.readBytes()
+                val fotoBytes = kompresGambar(inputStream.readBytes())
                 inputStream.close()
 
                 // ✅ Path: bukti-pendaftaran-ub/{idUser}/{uuid}.jpg
