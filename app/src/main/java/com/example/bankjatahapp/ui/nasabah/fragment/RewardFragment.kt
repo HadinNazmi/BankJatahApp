@@ -15,9 +15,11 @@ import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
+import com.example.bankjatahapp.R // Pastikan import R untuk akses warna
 import com.example.bankjatahapp.data.model.NasabahData
 import com.example.bankjatahapp.data.model.ProdukReward
 import com.example.bankjatahapp.data.model.RedeemReward
+import com.example.bankjatahapp.data.model.SystemConfig
 import com.example.bankjatahapp.data.remote.SupabaseClient.client
 import com.example.bankjatahapp.databinding.FragmentRewardBinding
 import com.example.bankjatahapp.databinding.DialogQrRedeemBinding
@@ -38,6 +40,10 @@ class RewardFragment : Fragment() {
     private lateinit var adapter: ProdukRewardAdapter
     private var poinSaatIni: Int = 0
     private var nasabahData: NasabahData? = null
+
+    // Variabel Config Baru
+    private var minBintangRedeem: Int = 0
+    private var minKgPribadiRedeem: Double = 0.0
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -73,7 +79,20 @@ class RewardFragment : Fragment() {
             try {
                 val idUser = client.auth.currentUserOrNull()?.id ?: return@launch
 
-                // Ambil poin & data nasabah
+                // 1. Ambil Config System (Baru)
+                val config = client.postgrest
+                    .from("system_config")
+                    .select { filter { eq("id_config", 1) } }
+                    .decodeSingle<SystemConfig>()
+
+                minBintangRedeem = config.minBintangRedeem
+                minKgPribadiRedeem = config.minKgPribadiRedeem
+
+                // Update UI info syarat
+                binding.tvSyaratRedeem.text =
+                    "Syarat: Min. Bintang $minBintangRedeem • Min. ${minKgPribadiRedeem.toInt()} Kg setor"
+
+                // 2. Ambil poin
                 val dompet = client.postgrest
                     .from("dompet_user")
                     .select { filter { eq("id_dompet", idUser) } }
@@ -81,12 +100,13 @@ class RewardFragment : Fragment() {
                 poinSaatIni = extractPoin(dompet)
                 binding.tvTotalPoin.text = formatAngka(poinSaatIni)
 
+                // 3. Ambil data nasabah (level & lifetime setoran)
                 nasabahData = client.postgrest
                     .from("nasabah_data")
                     .select { filter { eq("id_nasabah", idUser) } }
                     .decodeSingle<NasabahData>()
 
-                // Ambil produk reward aktif
+                // 4. Ambil produk reward aktif
                 val produkList = client.postgrest
                     .from("produk_reward")
                     .select { filter { eq("status_produk", "aktif") } }
@@ -114,14 +134,72 @@ class RewardFragment : Fragment() {
         }
     }
 
-    // ===== KLIK TUKAR =====
+    // ===== KLIK TUKAR (Updated with Validations) =====
     private fun onTukarKlik(produk: ProdukReward) {
         if (produk.stok <= 0) {
             Toast.makeText(requireContext(), "Stok produk habis", Toast.LENGTH_SHORT).show()
             return
         }
 
-        // Dialog konfirmasi sebelum tukar
+        val nasabah = nasabahData
+        val levelSaatIni = nasabah?.levelBintang ?: 1
+        val kgPribadi    = nasabah?.totalSetoranLifetime ?: 0.0
+
+        // 1. Cek syarat level bintang
+        if (levelSaatIni < minBintangRedeem) {
+            AlertDialog.Builder(requireContext())
+                .setTitle("Syarat Tidak Terpenuhi")
+                .setMessage(
+                    "Penukaran reward membutuhkan minimal Bintang $minBintangRedeem.\n\n" +
+                            "Level kamu saat ini: Bintang $levelSaatIni\n" +
+                            "Terus setor minyak untuk naik level!"
+                )
+                .setPositiveButton("OK", null)
+                .show()
+                .also {
+                    it.getButton(AlertDialog.BUTTON_POSITIVE)
+                        ?.setTextColor(requireContext().getColor(R.color.orange_primary))
+                }
+            return
+        }
+
+        // 2. Cek syarat kg pribadi
+        if (kgPribadi < minKgPribadiRedeem) {
+            AlertDialog.Builder(requireContext())
+                .setTitle("Syarat Tidak Terpenuhi")
+                .setMessage(
+                    "Penukaran reward membutuhkan minimal ${minKgPribadiRedeem.toInt()} Kg setor pribadi.\n\n" +
+                            "Total setor kamu: ${kgPribadi} Kg\n" +
+                            "Kekurangan: ${(minKgPribadiRedeem - kgPribadi)} Kg lagi"
+                )
+                .setPositiveButton("OK", null)
+                .show()
+                .also {
+                    it.getButton(AlertDialog.BUTTON_POSITIVE)
+                        ?.setTextColor(requireContext().getColor(R.color.orange_primary))
+                }
+            return
+        }
+
+        // 3. Cek poin cukup
+        if (poinSaatIni < produk.poinDibutuhkan) {
+            AlertDialog.Builder(requireContext())
+                .setTitle("Poin Tidak Cukup")
+                .setMessage(
+                    "Poin kamu: ${formatAngka(poinSaatIni)}\n" +
+                            "Dibutuhkan: ${formatAngka(produk.poinDibutuhkan)}\n\n" +
+                            "Kekurangan: ${formatAngka(produk.poinDibutuhkan - poinSaatIni)} poin lagi"
+                )
+                .setPositiveButton("OK", null)
+                .show()
+                .also {
+                    it.getButton(AlertDialog.BUTTON_POSITIVE)
+                        ?.setTextColor(requireContext().getColor(R.color.orange_primary))
+                }
+            return
+        }
+
+        // 4. Semua syarat terpenuhi — tampilkan dialog konfirmasi
         AlertDialog.Builder(requireContext())
             .setTitle("Tukar Poin")
             .setMessage(
@@ -129,16 +207,17 @@ class RewardFragment : Fragment() {
                         "\"${produk.namaProduk}\"?\n\n" +
                         "Poin kamu saat ini: ${formatAngka(poinSaatIni)}"
             )
-            .setPositiveButton("Ya, Tukar") { _, _ ->
-                ajukanRedeem(produk)
-            }
+            .setPositiveButton("Ya, Tukar") { _, _ -> ajukanRedeem(produk) }
             .setNegativeButton("Batal", null)
             .show()
+            .also { dialog ->
+                dialog.getButton(AlertDialog.BUTTON_POSITIVE)
+                    ?.setTextColor(requireContext().getColor(R.color.orange_primary))
+                dialog.getButton(AlertDialog.BUTTON_NEGATIVE)
+                    ?.setTextColor(requireContext().getColor(R.color.gray_text))
+            }
     }
 
-    // ===== SUBMIT REDEEM =====
-    // Android hanya insert ke redeem_reward
-    // Trigger DB yang handle: validasi bintang, validasi kg, validasi poin, potong poin
     private fun ajukanRedeem(produk: ProdukReward) {
         lifecycleScope.launch {
             try {
@@ -152,26 +231,21 @@ class RewardFragment : Fragment() {
                     put("status_redeem","menunggu")
                 }
 
-                // Insert — trigger DB validasi + potong poin otomatis
                 val result = client.postgrest
                     .from("redeem_reward")
                     .insert(payload) { select() }
                     .decodeSingle<RedeemReward>()
 
-                // Update poin di UI
                 poinSaatIni -= produk.poinDibutuhkan
                 binding.tvTotalPoin.text = formatAngka(poinSaatIni)
 
-                // Tampilkan dialog QR code
                 tampilkanQrRedeem(result, produk)
 
             } catch (e: Exception) {
                 val pesan = when {
-                    e.message?.contains("Bintang") == true       -> e.message!!
+                    e.message?.contains("Bintang") == true -> e.message!!
                     e.message?.contains("setoran pribadi") == true -> e.message!!
                     e.message?.contains("Poin tidak mencukupi") == true -> e.message!!
-                    e.message?.contains("row-level security") == true ->
-                        "Akses ditolak. Pastikan Anda sudah login."
                     else -> "Gagal menukar poin: ${e.message}"
                 }
                 Toast.makeText(requireContext(), pesan, Toast.LENGTH_LONG).show()
@@ -179,21 +253,16 @@ class RewardFragment : Fragment() {
         }
     }
 
-    // ===== TAMPILKAN QR CODE =====
     private fun tampilkanQrRedeem(redeem: RedeemReward, produk: ProdukReward) {
         val dialogBinding = DialogQrRedeemBinding.inflate(layoutInflater)
-
-        // Generate QR dari id_redeem
         val qrBitmap = generateQrBitmap(redeem.idRedeem, 600)
         dialogBinding.ivQrCode.setImageBitmap(qrBitmap)
 
-        // Info redeem
         dialogBinding.tvNamaProduk.text     = produk.namaProduk
         dialogBinding.tvPoinDipakai.text    = "${formatAngka(produk.poinDibutuhkan)} poin"
         dialogBinding.tvKodeRedeem.text     = "ID: ${redeem.idRedeem.take(8).uppercase()}..."
         dialogBinding.tvStatusRedeem.text   = "Status: Menunggu Verifikasi"
-        dialogBinding.tvInfoQr.text         =
-            "Tunjukkan QR ini kepada petugas untuk menukarkan reward Anda."
+        dialogBinding.tvInfoQr.text         = "Tunjukkan QR ini kepada petugas untuk menukarkan reward Anda."
 
         val dialog = AlertDialog.Builder(requireContext())
             .setView(dialogBinding.root)
@@ -202,22 +271,18 @@ class RewardFragment : Fragment() {
 
         dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
 
-        // Tombol simpan ke galeri
         dialogBinding.btnSimpanQr.setOnClickListener {
             simpanQrKeGaleri(qrBitmap, redeem.idRedeem)
         }
 
-        // Tombol tutup
         dialogBinding.btnTutup.setOnClickListener {
             dialog.dismiss()
-            // Reload data agar poin update
             loadData()
         }
 
         dialog.show()
     }
 
-    // ===== GENERATE QR BITMAP =====
     private fun generateQrBitmap(content: String, size: Int): Bitmap {
         val writer = QRCodeWriter()
         val bitMatrix = writer.encode(content, BarcodeFormat.QR_CODE, size, size)
@@ -230,19 +295,16 @@ class RewardFragment : Fragment() {
         return bitmap
     }
 
-    // ===== SIMPAN QR KE GALERI =====
     private fun simpanQrKeGaleri(bitmap: Bitmap, idRedeem: String) {
         try {
             val namaFile = "QR_Redeem_${idRedeem.take(8).uppercase()}.png"
-
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 val values = ContentValues().apply {
                     put(MediaStore.Images.Media.DISPLAY_NAME, namaFile)
                     put(MediaStore.Images.Media.MIME_TYPE, "image/png")
                     put(MediaStore.Images.Media.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + "/BankJatah")
                 }
-                val uri = requireContext().contentResolver
-                    .insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values)
+                val uri = requireContext().contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values)
                 uri?.let {
                     requireContext().contentResolver.openOutputStream(it)?.use { os ->
                         bitmap.compress(Bitmap.CompressFormat.PNG, 100, os)
@@ -250,14 +312,10 @@ class RewardFragment : Fragment() {
                 }
             } else {
                 @Suppress("DEPRECATION")
-                val dir = java.io.File(
-                    Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
-                    "BankJatah"
-                ).apply { mkdirs() }
+                val dir = java.io.File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), "BankJatah").apply { mkdirs() }
                 val file = java.io.File(dir, namaFile)
                 file.outputStream().use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
             }
-
             Toast.makeText(requireContext(), "✓ QR disimpan ke Galeri / BankJatah", Toast.LENGTH_LONG).show()
         } catch (e: Exception) {
             Toast.makeText(requireContext(), "Gagal menyimpan: ${e.message}", Toast.LENGTH_SHORT).show()

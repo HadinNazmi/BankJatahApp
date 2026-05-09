@@ -16,7 +16,6 @@
             android:orientation="vertical"
             android:paddingBottom="24dp">
 
-            <!-- ===== HEADER dengan Back ===== -->
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -52,7 +51,6 @@
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 
-            <!-- ===== CARD POIN ===== -->
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -158,10 +156,23 @@
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintTop_toBottomOf="@+id/divider" />
 
+                    <TextView
+                        android:id="@+id/tvSyaratRedeem"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:text="Syarat: Memuat data..."
+                        android:textSize="10sp"
+                        android:textColor="@color/orange_primary"
+                        android:fontFamily="@font/poppins_regular"
+                        android:layout_marginStart="8dp"
+                        android:layout_marginTop="2dp"
+                        app:layout_constraintStart_toEndOf="@+id/ivInfo"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toBottomOf="@+id/tvInfoPoin" />
+
                 </androidx.constraintlayout.widget.ConstraintLayout>
             </androidx.cardview.widget.CardView>
 
-            <!-- ===== HEADER KATALOG ===== -->
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -195,7 +206,6 @@
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 
-            <!-- Loading -->
             <ProgressBar
                 android:id="@+id/progressBar"
                 android:layout_width="wrap_content"
@@ -205,7 +215,6 @@
                 android:indeterminateTint="@color/orange_primary"
                 android:visibility="gone" />
 
-            <!-- Empty state -->
             <LinearLayout
                 android:id="@+id/layoutEmpty"
                 android:layout_width="match_parent"
@@ -232,7 +241,6 @@
 
             </LinearLayout>
 
-            <!-- ===== RECYCLERVIEW GRID 2 KOLOM ===== -->
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rvProdukReward"
                 android:layout_width="match_parent"
