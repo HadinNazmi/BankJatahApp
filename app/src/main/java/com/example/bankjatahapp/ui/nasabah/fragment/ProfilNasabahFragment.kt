@@ -144,6 +144,29 @@ class ProfilNasabahFragment : Fragment() {
         dialog.show()
     }
 
+    private fun tampilkanKonfirmasiLogout() {
+        val dialog = androidx.appcompat.app.AlertDialog.Builder(requireContext())
+            .setTitle("Konfirmasi Logout")
+            .setMessage("Apakah Anda yakin ingin keluar dari akun ini?")
+            .setPositiveButton("Ya, Logout") { _, _ ->
+                lifecycleScope.launch {
+                    try { client.auth.signOut() } catch (_: Exception) {}
+                }
+                val intent = Intent(requireContext(), LoginActivity::class.java)
+                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                startActivity(intent)
+            }
+            .setNegativeButton("Batal", null)
+            .show()
+
+        dialog.getButton(androidx.appcompat.app.AlertDialog.BUTTON_POSITIVE)
+            ?.setTextColor(requireContext().getColor(R.color.orange_primary))
+        dialog.getButton(androidx.appcompat.app.AlertDialog.BUTTON_NEGATIVE)
+            ?.setTextColor(requireContext().getColor(R.color.gray_text))
+    }
+
+
+
     private fun setupClickListeners() {
 
         binding.btnTampilkanQr.setOnClickListener {
@@ -175,15 +198,10 @@ class ProfilNasabahFragment : Fragment() {
 
 
         binding.menuLogout.setOnClickListener {
-            lifecycleScope.launch {
-                try {
-                    client.auth.signOut()
-                } catch (_: Exception) {}
-            }
-            val intent = Intent(requireContext(), LoginActivity::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-            startActivity(intent)
+            tampilkanKonfirmasiLogout()
         }
+
+
     }
 
     private fun bukaFormAjukanBerhenti() {
