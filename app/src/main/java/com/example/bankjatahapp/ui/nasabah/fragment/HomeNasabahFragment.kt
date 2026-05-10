@@ -7,12 +7,14 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.bankjatahapp.R
 import com.example.bankjatahapp.data.model.DompetUser
 import com.example.bankjatahapp.data.model.NasabahData
 import com.example.bankjatahapp.data.model.Notification
 import com.example.bankjatahapp.data.model.ProdukReward
 import com.example.bankjatahapp.data.model.SystemConfig
+import com.example.bankjatahapp.data.model.UnitBisnisData
 import com.example.bankjatahapp.data.model.User
 import com.example.bankjatahapp.data.remote.SupabaseClient.client
 import com.example.bankjatahapp.databinding.FragmentHomeNasabahBinding
@@ -145,6 +147,8 @@ class HomeNasabahFragment : Fragment() {
                     .select { filter { eq("id_nasabah", idUser) } }
                     .decodeSingle<NasabahData>()
 
+                loadUnitBisnisPreview() // ← tambah di sini
+
                 systemConfig = client.postgrest
                     .from("system_config")
                     .select { filter { eq("id_config", 1) } }
@@ -161,6 +165,40 @@ class HomeNasabahFragment : Fragment() {
             } catch (e: Exception) {
                 Toast.makeText(requireContext(), "Gagal memuat data: ${e.message}", Toast.LENGTH_LONG).show()
             }
+        }
+    }
+
+    private fun loadUnitBisnisPreview() {
+        lifecycleScope.launch {
+            try {
+                val listUnit = client.postgrest
+                    .from("unit_bisnis_data")
+                    .select()
+                    .decodeList<UnitBisnisData>()
+                    .take(5)
+
+                val listWithNama = listUnit.map { unit ->
+                    val nama = if (!unit.namaUsaha.isNullOrEmpty()) {
+                        unit.namaUsaha!!
+                    } else {
+                        try {
+                            val user = client.postgrest
+                                .from("users")
+                                .select { filter { eq("id_user", unit.idUnitBisnis) } }
+                                .decodeSingle<User>()
+                            user.namaLengkap
+                        } catch (_: Exception) { "Unit Bisnis" }
+                    }
+                    unit to nama
+                }
+
+                if (_binding == null) return@launch
+                binding.rvUnitBisnisPreview.layoutManager =
+                    LinearLayoutManager(requireContext())
+                binding.rvUnitBisnisPreview.adapter =
+                    LokasiUnitBisnisAdapter(listWithNama)
+
+            } catch (_: Exception) {}
         }
     }
 
@@ -229,6 +267,18 @@ class HomeNasabahFragment : Fragment() {
         }
         binding.btnRiwayat.setOnClickListener {
             (activity as? NasabahActivity)?.navigateTo(R.id.nav_riwayat)
+        }
+        binding.tvLihatSemuaUB.setOnClickListener {
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.fragmentContainer, LokasiUnitBisnisFragment())
+                .addToBackStack(null)
+                .commit()
+        }
+        binding.tvLihatSemuaUB.setOnClickListener {
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.fragmentContainer, LokasiUnitBisnisFragment())
+                .addToBackStack(null)
+                .commit()
         }
         binding.btnRequestPenarikan.setOnClickListener {
             parentFragmentManager.beginTransaction()
