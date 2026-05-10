@@ -12,6 +12,7 @@ import com.example.bankjatahapp.data.model.DompetUser
 import com.example.bankjatahapp.data.model.NasabahData
 import com.example.bankjatahapp.data.model.Notification
 import com.example.bankjatahapp.data.model.ProdukReward
+import com.example.bankjatahapp.data.model.UnitBisnisData
 import com.example.bankjatahapp.data.model.User
 import com.example.bankjatahapp.data.remote.SupabaseClient.client
 import com.example.bankjatahapp.databinding.FragmentHomeUnitBisnisBinding
@@ -31,6 +32,9 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import java.text.NumberFormat
 import java.util.Locale
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.bankjatahapp.ui.nasabah.fragment.LokasiUnitBisnisAdapter
+import com.example.bankjatahapp.ui.nasabah.fragment.LokasiUnitBisnisUBFragment
 
 class HomeUnitBisnisFragment : Fragment() {
 
@@ -142,6 +146,8 @@ class HomeUnitBisnisFragment : Fragment() {
                     .select { filter { eq("id_nasabah", idUser) } }
                     .decodeSingle<NasabahData>()
 
+                loadUnitBisnisPreview() // ← tambah di sini
+
                 val produkList = client.postgrest
                     .from("produk_reward")
                     .select { filter { eq("status_produk", "aktif") } }
@@ -153,6 +159,40 @@ class HomeUnitBisnisFragment : Fragment() {
             } catch (e: Exception) {
                 Toast.makeText(requireContext(), "Gagal memuat data: ${e.message}", Toast.LENGTH_LONG).show()
             }
+        }
+    }
+
+    private fun loadUnitBisnisPreview() {
+        lifecycleScope.launch {
+            try {
+                val listUnit = client.postgrest
+                    .from("unit_bisnis_data")
+                    .select()
+                    .decodeList<UnitBisnisData>()
+                    .take(5)
+
+                val listWithNama = listUnit.map { unit ->
+                    val nama = if (!unit.namaUsaha.isNullOrEmpty()) {
+                        unit.namaUsaha!!
+                    } else {
+                        try {
+                            val user = client.postgrest
+                                .from("users")
+                                .select { filter { eq("id_user", unit.idUnitBisnis) } }
+                                .decodeSingle<User>()
+                            user.namaLengkap
+                        } catch (_: Exception) { "Unit Bisnis" }
+                    }
+                    unit to nama
+                }
+
+                if (_binding == null) return@launch
+                binding.rvUnitBisnisPreview.layoutManager =
+                    LinearLayoutManager(requireContext())
+                binding.rvUnitBisnisPreview.adapter =
+                    LokasiUnitBisnisAdapter(listWithNama)
+
+            } catch (_: Exception) {}
         }
     }
 
@@ -224,6 +264,12 @@ class HomeUnitBisnisFragment : Fragment() {
         }
         binding.btnRiwayat.setOnClickListener {
             (activity as? UnitBisnisActivity)?.navigateTo(R.id.nav_riwayat)
+        }
+        binding.tvLihatSemuaUB.setOnClickListener {
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.fragmentContainer, LokasiUnitBisnisUBFragment())
+                .addToBackStack(null)
+                .commit()
         }
         binding.btnRequestPenarikan.setOnClickListener {
             parentFragmentManager.beginTransaction()

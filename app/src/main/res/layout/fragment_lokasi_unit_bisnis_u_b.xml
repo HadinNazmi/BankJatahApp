@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/background">
+
+    <!-- HEADER dengan btnBack -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/white"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingTop="16dp"
+        android:paddingBottom="16dp"
+        android:elevation="4dp">
+
+        <ImageView
+            android:id="@+id/btnBack"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:src="@drawable/ic_back"
+            android:scaleType="centerInside"
+            android:clickable="true"
+            android:focusable="true"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Lokasi Unit Bisnis"
+            android:textSize="17sp"
+            android:textStyle="bold"
+            android:textColor="@color/black"
+            android:fontFamily="@font/poppins_bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <!-- INFO JUMLAH -->
+    <TextView
+        android:id="@+id/tvJumlah"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Memuat..."
+        android:textSize="12sp"
+        android:textColor="@color/gray_text"
+        android:fontFamily="@font/poppins_regular"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="12dp"
+        android:layout_marginBottom="8dp" />
+
+    <!-- PROGRESS BAR -->
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:indeterminateTint="@color/orange_primary"
+        android:visibility="gone" />
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <!-- RecyclerView list UB -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvUnitBisnis"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:clipToPadding="false"
+            android:visibility="gone" />
+
+        <!-- Teks kosong -->
+        <TextView
+            android:id="@+id/tvKosong"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="60dp"
+            android:fontFamily="@font/poppins_regular"
+            android:gravity="center"
+            android:text="Belum ada unit bisnis tersedia"
+            android:textColor="@color/gray_text"
+            android:textSize="13sp"
+            android:visibility="gone" />
+
+    </LinearLayout>
+
+</LinearLayout>

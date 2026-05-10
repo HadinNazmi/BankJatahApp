@@ -414,42 +414,60 @@
             android:layout_marginTop="8dp" android:paddingStart="20dp" android:paddingEnd="20dp"
             android:clipToPadding="false" android:orientation="horizontal"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
-
-        <!-- AKTIVITAS TERBARU -->
-        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-            android:text="Aktivitas Terbaru" android:textSize="15sp" android:textStyle="bold"
-            android:textColor="@color/black" android:fontFamily="@font/poppins_bold"
-            android:layout_marginStart="20dp" android:layout_marginTop="20dp" />
-
         <androidx.cardview.widget.CardView
-            android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:layout_marginStart="20dp" android:layout_marginEnd="20dp" android:layout_marginTop="10dp"
-            app:cardCornerRadius="12dp" app:cardElevation="2dp" app:cardBackgroundColor="@color/white">
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:layout_width="match_parent" android:layout_height="wrap_content" android:padding="14dp">
-                <ImageView android:id="@+id/ivIconSetor"
-                    android:layout_width="36dp" android:layout_height="36dp"
-                    android:src="@drawable/ic_nav_setor" android:background="@drawable/ic_bg_aktivitas_orange"
-                    android:padding="8dp" android:scaleType="centerInside"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" app:layout_constraintBottom_toBottomOf="parent" />
-                <TextView android:id="@+id/tvAktivitasSetor"
-                    android:layout_width="0dp" android:layout_height="wrap_content"
-                    android:text="Penerimaan Setoran" android:textSize="13sp" android:textStyle="bold"
-                    android:textColor="@color/black" android:fontFamily="@font/poppins_semibold"
-                    android:layout_marginStart="12dp"
-                    app:layout_constraintStart_toEndOf="@+id/ivIconSetor"
-                    app:layout_constraintTop_toTopOf="parent" app:layout_constraintEnd_toEndOf="parent" />
-                <TextView android:id="@+id/tvJumlahSetor"
-                    android:layout_width="0dp" android:layout_height="wrap_content"
-                    android:text="Belum ada setoran diterima" android:textSize="12sp"
-                    android:textColor="@color/gray_text" android:fontFamily="@font/poppins_regular"
-                    android:layout_marginStart="12dp"
-                    app:layout_constraintStart_toEndOf="@+id/ivIconSetor"
-                    app:layout_constraintTop_toBottomOf="@+id/tvAktivitasSetor"
-                    app:layout_constraintEnd_toEndOf="parent" />
-            </androidx.constraintlayout.widget.ConstraintLayout>
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_marginEnd="20dp"
+            android:layout_marginTop="16dp"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="3dp"
+            app:cardBackgroundColor="@color/white">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:background="@color/orange_primary"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp"
+                    android:paddingTop="10dp"
+                    android:paddingBottom="10dp">
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Unit Bisnis Terdekat"
+                        android:textSize="13sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/white"
+                        android:fontFamily="@font/poppins_bold" />
+                    <TextView
+                        android:id="@+id/tvLihatSemuaUB"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Lihat Semua →"
+                        android:textSize="11sp"
+                        android:textColor="@color/white"
+                        android:fontFamily="@font/poppins_regular"
+                        android:alpha="0.85"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:background="?attr/selectableItemBackgroundBorderless" />
+                </LinearLayout>
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rvUnitBisnisPreview"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:nestedScrollingEnabled="false"
+                    android:clipToPadding="false" />
+            </LinearLayout>
         </androidx.cardview.widget.CardView>
+
 
     </LinearLayout>
 </ScrollView>
