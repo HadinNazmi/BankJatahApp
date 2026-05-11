@@ -13,7 +13,7 @@
         android:background="@color/white"
         android:padding="16dp">
         <ImageView android:id="@+id/btnBack" android:layout_width="36dp" android:layout_height="36dp"
-            android:src="@android:drawable/ic_media_previous" android:padding="6dp"
+            android:src="@drawable/ic_back" android:padding="6dp"
             app:layout_constraintStart_toStartOf="parent" app:layout_constraintTop_toTopOf="parent" />
         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
             android:text="List Afiliasi" android:textSize="17sp" android:fontFamily="@font/poppins_bold"

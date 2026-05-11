@@ -237,14 +237,96 @@
                     android:textColor="@color/black"
                     android:fontFamily="@font/poppins_semibold" />
 
+                <!-- Provinsi -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Provinsi"
+                    android:textSize="12sp"
+                    android:textColor="@color/gray_text"
+                    android:fontFamily="@font/poppins_regular" />
+
                 <Spinner
-                    android:id="@+id/spinnerWilayah"
+                    android:id="@+id/spinnerProvinsi"
                     android:layout_width="match_parent"
                     android:layout_height="52dp"
                     android:layout_marginTop="6dp"
-                    android:layout_marginBottom="16dp"
-                    android:background="@drawable/ic_bg_tab_inactive"
-                    android:padding="12dp" />
+                    android:layout_marginBottom="16dp" />
+
+                <!-- Kabupaten — muncul setelah provinsi dipilih -->
+                <LinearLayout
+                    android:id="@+id/layoutKabupaten"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:visibility="gone">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Kabupaten / Kota"
+                        android:textSize="12sp"
+                        android:textColor="@color/gray_text"
+                        android:fontFamily="@font/poppins_regular" />
+
+                    <Spinner
+                        android:id="@+id/spinnerKabupaten"
+                        android:layout_width="match_parent"
+                        android:layout_height="52dp"
+                        android:layout_marginTop="6dp"
+                        android:layout_marginBottom="16dp" />
+
+                </LinearLayout>
+
+                <!-- Kecamatan — muncul setelah kabupaten dipilih (hanya UB Kelurahan) -->
+                <LinearLayout
+                    android:id="@+id/layoutKecamatan"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:visibility="gone">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Kecamatan"
+                        android:textSize="12sp"
+                        android:textColor="@color/gray_text"
+                        android:fontFamily="@font/poppins_regular" />
+
+                    <Spinner
+                        android:id="@+id/spinnerKecamatan"
+                        android:layout_width="match_parent"
+                        android:layout_height="52dp"
+                        android:layout_marginTop="6dp"
+                        android:layout_marginBottom="16dp" />
+
+                </LinearLayout>
+
+                <!-- Wilayah/Kelurahan — muncul setelah kecamatan dipilih (hanya UB Kelurahan) -->
+                <LinearLayout
+                    android:id="@+id/layoutWilayah"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:visibility="gone">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Wilayah / Kelurahan"
+                        android:textSize="12sp"
+                        android:textColor="@color/gray_text"
+                        android:fontFamily="@font/poppins_regular" />
+
+                    <Spinner
+                        android:id="@+id/spinnerWilayah"
+                        android:layout_width="match_parent"
+                        android:layout_height="52dp"
+                        android:layout_marginTop="6dp"
+                        android:layout_marginBottom="16dp" />
+
+                </LinearLayout>
 
                 <!-- Petunjuk wilayah tidak tersedia -->
                 <LinearLayout
