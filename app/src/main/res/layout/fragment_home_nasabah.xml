@@ -217,14 +217,14 @@
                     android:orientation="horizontal"
                     android:layout_marginTop="16dp">
 
-                    <LinearLayout android:id="@+id/btnSetorMinyak"
+                    <LinearLayout android:id="@+id/btnCariUB"
                         android:layout_width="0dp" android:layout_height="wrap_content"
                         android:layout_weight="1" android:orientation="vertical" android:gravity="center">
                         <ImageView android:layout_width="40dp" android:layout_height="40dp"
-                            android:src="@drawable/ic_nav_setor" android:background="@drawable/ic_bg_menu_aksi"
+                            android:src="@drawable/ic_lokasi" android:background="@drawable/ic_bg_menu_aksi"
                             android:padding="10dp" android:scaleType="centerInside" />
                         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="Setor\nMinyak" android:textColor="@color/white"
+                            android:text="Lokasi\nUB" android:textColor="@color/white"
                             android:textSize="10sp" android:gravity="center"
                             android:fontFamily="@font/poppins_regular" android:layout_marginTop="6dp" />
                     </LinearLayout>

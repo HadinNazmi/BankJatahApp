@@ -259,8 +259,11 @@ class HomeNasabahFragment : Fragment() {
 
     private fun setupClickListeners() {
         binding.ivNotifikasi.setOnClickListener { bukaHalamanNotifikasi() }
-        binding.btnSetorMinyak.setOnClickListener {
-            (activity as? NasabahActivity)?.navigateTo(R.id.nav_riwayat)
+        binding.btnCariUB.setOnClickListener {
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.fragmentContainer, LokasiUnitBisnisFragment())
+                .addToBackStack(null)
+                .commit()
         }
         binding.btnReward.setOnClickListener {
             (activity as? NasabahActivity)?.navigateTo(R.id.nav_reward)

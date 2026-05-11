@@ -269,8 +269,6 @@ class RiwayatUnitBisnisFragment : Fragment() {
             } catch (e: Exception) { tambahkanLabel("Penukaran Reward"); tambahkanInfoKosong("Gagal memuat data") }
         }
 
-        binding.tvTotalSetor.text = "$totalBerat Kg"
-        binding.tvSaldo.text      = formatRupiah(totalKomisi)
     }
 
     // --- SISANYA ADALAH LOGIKA UI ASLI ANDA (TIDAK ADA PERUBAHAN) ---

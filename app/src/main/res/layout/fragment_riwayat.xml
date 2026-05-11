@@ -145,72 +145,7 @@
         </LinearLayout>
     </HorizontalScrollView>
 
-    <!-- RINGKASAN -->
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:paddingStart="20dp"
-        android:paddingEnd="20dp"
-        android:paddingTop="16dp"
-        android:paddingBottom="12dp">
 
-        <TextView
-            android:id="@+id/tvRingkasanLabel"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Ringkasan"
-            android:textSize="13sp"
-            android:textColor="@color/gray_text"
-            android:fontFamily="@font/poppins_regular"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <TextView
-            android:id="@+id/tvTotalSetor"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="0 Kg"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:textColor="@color/orange_primary"
-            android:fontFamily="@font/poppins_bold"
-            android:layout_marginTop="8dp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/tvRingkasanLabel" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Total Setor"
-            android:textSize="11sp"
-            android:textColor="@color/gray_text"
-            android:fontFamily="@font/poppins_regular"
-            app:layout_constraintStart_toStartOf="@+id/tvTotalSetor"
-            app:layout_constraintTop_toBottomOf="@+id/tvTotalSetor" />
-
-        <TextView
-            android:id="@+id/tvSaldo"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Rp 0"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:textColor="@color/orange_primary"
-            android:fontFamily="@font/poppins_bold"
-            android:layout_marginTop="8dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/tvRingkasanLabel" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Total Saldo"
-            android:textSize="11sp"
-            android:textColor="@color/gray_text"
-            android:fontFamily="@font/poppins_regular"
-            app:layout_constraintEnd_toEndOf="@+id/tvSaldo"
-            app:layout_constraintTop_toBottomOf="@+id/tvSaldo" />
-    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <!-- DAFTAR RIWAYAT -->
     <ScrollView

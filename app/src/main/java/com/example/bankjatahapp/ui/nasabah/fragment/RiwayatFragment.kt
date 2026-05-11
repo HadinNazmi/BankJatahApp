@@ -283,8 +283,7 @@ class RiwayatFragment : Fragment() {
             } catch (e: Exception) { /* skip */ }
         }
 
-        binding.tvTotalSetor.text = "$totalBerat Kg"
-        binding.tvSaldo.text      = formatRupiah(totalSaldo)
+
     }
 
     // --- LOGIKA UI (tambahkanItemRiwayat, Dialogs, dll) ---
