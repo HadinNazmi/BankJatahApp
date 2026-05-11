@@ -8,856 +8,647 @@
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@color/background">
+        android:background="@color/background"
+        android:fillViewport="true">
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:paddingBottom="40dp">
-
-        <!-- ===== HEADER ===== -->
-        <androidx.constraintlayout.widget.ConstraintLayout
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@color/white"
-            android:paddingStart="20dp"
-            android:paddingEnd="20dp"
-            android:paddingTop="16dp"
-            android:paddingBottom="16dp">
-
-            <ImageView
-                android:id="@+id/btnBack"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
-                android:src="@drawable/ic_back"
-                android:scaleType="centerInside"
-                android:clickable="true"
-                android:focusable="true"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintBottom_toBottomOf="parent" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Pendaftaran Kemitraan"
-                android:textSize="17sp"
-                android:textStyle="bold"
-                android:textColor="@color/black"
-                android:fontFamily="@font/poppins_bold"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintBottom_toBottomOf="parent" />
-
-        </androidx.constraintlayout.widget.ConstraintLayout>
-
-        <!-- ===== BANNER INFO ===== -->
-        <androidx.cardview.widget.CardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="20dp"
-            android:layout_marginEnd="20dp"
-            android:layout_marginTop="16dp"
-            app:cardCornerRadius="16dp"
-            app:cardElevation="4dp"
-            app:cardBackgroundColor="#1E1B4B">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="20dp">
-
-                <ImageView
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:src="@drawable/ic_nav_setor"
-                    android:background="@drawable/ic_bg_aktivitas_orange"
-                    android:padding="10dp"
-                    android:scaleType="centerInside"
-                    android:layout_gravity="center_horizontal" />
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Halo, Calon Mitra!"
-                    android:textSize="20sp"
-                    android:textStyle="bold"
-                    android:textColor="@color/white"
-                    android:fontFamily="@font/poppins_bold"
-                    android:gravity="center"
-                    android:layout_marginTop="12dp" />
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Ambang pintu kemitraan Bank Jatah telah terbuka. Dengan menjadi Unit Bisnis, Anda akan menjadi perpanjangan tangan kami dalam mengumpulkan dan me-manage sampah yang bisa didaur ulang di kawasan Anda."
-                    android:textSize="12sp"
-                    android:textColor="#CCFFFFFF"
-                    android:fontFamily="@font/poppins_regular"
-                    android:gravity="center"
-                    android:layout_marginTop="8dp" />
-
-                <!-- Keuntungan Mitra -->
-                <androidx.cardview.widget.CardView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
-                    app:cardCornerRadius="12dp"
-                    app:cardElevation="0dp"
-                    app:cardBackgroundColor="#2D2B5F">
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:padding="14dp">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="✦ Keuntungan Mitra"
-                            android:textSize="13sp"
-                            android:textStyle="bold"
-                            android:textColor="@color/orange_primary"
-                            android:fontFamily="@font/poppins_semibold" />
-
-                        <TextView
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:text="• Komisi ekstra dari setiap kg setoran nasabah di bawah naungan Unit Anda."
-                            android:textSize="12sp"
-                            android:textColor="@color/white"
-                            android:fontFamily="@font/poppins_regular"
-                            android:layout_marginTop="8dp" />
-
-                        <TextView
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:text="• Akses ke dashboard khusus untuk monitoring dan validasi setoran skala besar."
-                            android:textSize="12sp"
-                            android:textColor="@color/white"
-                            android:fontFamily="@font/poppins_regular"
-                            android:layout_marginTop="6dp" />
-
-                        <TextView
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:text="• Dukungan logistik penjemputan dari pusat."
-                            android:textSize="12sp"
-                            android:textColor="@color/white"
-                            android:fontFamily="@font/poppins_regular"
-                            android:layout_marginTop="6dp" />
-
-                    </LinearLayout>
-                </androidx.cardview.widget.CardView>
-
-            </LinearLayout>
-        </androidx.cardview.widget.CardView>
-
-        <!-- ===== FORM REGISTRASI ===== -->
-        <androidx.cardview.widget.CardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="20dp"
-            android:layout_marginEnd="20dp"
-            android:layout_marginTop="16dp"
-            app:cardCornerRadius="16dp"
-            app:cardElevation="4dp"
-            app:cardBackgroundColor="@color/white">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="16dp">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Formulir Registrasi"
-                    android:textSize="16sp"
-                    android:textStyle="bold"
-                    android:textColor="@color/black"
-                    android:fontFamily="@font/poppins_bold" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Lengkapi detail informasi calon unit bisnis Anda"
-                    android:textSize="12sp"
-                    android:textColor="@color/gray_text"
-                    android:fontFamily="@font/poppins_regular"
-                    android:layout_marginTop="4dp"
-                    android:layout_marginBottom="16dp" />
-
-                <!-- Nama Usaha -->
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Nama Usaha / Nama Outlet"
-                    android:textSize="13sp"
-                    android:textColor="@color/black"
-                    android:fontFamily="@font/poppins_semibold" />
-
-                <com.google.android.material.textfield.TextInputLayout
-                    android:id="@+id/tilNamaUsaha"
-                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="6dp"
-                    android:layout_marginBottom="16dp"
-                    app:boxCornerRadiusTopStart="10dp"
-                    app:boxCornerRadiusTopEnd="10dp"
-                    app:boxCornerRadiusBottomStart="10dp"
-                    app:boxCornerRadiusBottomEnd="10dp"
-                    app:boxStrokeColor="@color/orange_primary"
-                    app:hintEnabled="false">
-
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/etNamaUsaha"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:hint="Contoh: Outlet Suka Maju"
-                        android:textSize="14sp"
-                        android:fontFamily="@font/poppins_regular"
-                        android:textColor="@color/black"
-                        android:inputType="textCapWords" />
-
-                </com.google.android.material.textfield.TextInputLayout>
-
-                <!-- Wilayah Operasional -->
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Wilayah Operasional Utama"
-                    android:textSize="13sp"
-                    android:textColor="@color/black"
-                    android:fontFamily="@font/poppins_semibold" />
-
-                <!-- Provinsi -->
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Provinsi"
-                    android:textSize="12sp"
-                    android:textColor="@color/gray_text"
-                    android:fontFamily="@font/poppins_regular" />
-
-                <Spinner
-                    android:id="@+id/spinnerProvinsi"
-                    android:layout_width="match_parent"
-                    android:layout_height="52dp"
-                    android:layout_marginTop="6dp"
-                    android:layout_marginBottom="16dp" />
-
-                <!-- Kabupaten — muncul setelah provinsi dipilih -->
-                <LinearLayout
-                    android:id="@+id/layoutKabupaten"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:visibility="gone">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Kabupaten / Kota"
-                        android:textSize="12sp"
-                        android:textColor="@color/gray_text"
-                        android:fontFamily="@font/poppins_regular" />
-
-                    <Spinner
-                        android:id="@+id/spinnerKabupaten"
-                        android:layout_width="match_parent"
-                        android:layout_height="52dp"
-                        android:layout_marginTop="6dp"
-                        android:layout_marginBottom="16dp" />
-
-                </LinearLayout>
-
-                <!-- Kecamatan — muncul setelah kabupaten dipilih (hanya UB Kelurahan) -->
-                <LinearLayout
-                    android:id="@+id/layoutKecamatan"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:visibility="gone">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Kecamatan"
-                        android:textSize="12sp"
-                        android:textColor="@color/gray_text"
-                        android:fontFamily="@font/poppins_regular" />
-
-                    <Spinner
-                        android:id="@+id/spinnerKecamatan"
-                        android:layout_width="match_parent"
-                        android:layout_height="52dp"
-                        android:layout_marginTop="6dp"
-                        android:layout_marginBottom="16dp" />
-
-                </LinearLayout>
-
-                <!-- Wilayah/Kelurahan — muncul setelah kecamatan dipilih (hanya UB Kelurahan) -->
-                <LinearLayout
-                    android:id="@+id/layoutWilayah"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:visibility="gone">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Wilayah / Kelurahan"
-                        android:textSize="12sp"
-                        android:textColor="@color/gray_text"
-                        android:fontFamily="@font/poppins_regular" />
-
-                    <Spinner
-                        android:id="@+id/spinnerWilayah"
-                        android:layout_width="match_parent"
-                        android:layout_height="52dp"
-                        android:layout_marginTop="6dp"
-                        android:layout_marginBottom="16dp" />
-
-                </LinearLayout>
-
-                <!-- Petunjuk wilayah tidak tersedia -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:background="#FFF3E0"
-                    android:padding="10dp"
-                    android:layout_marginTop="4dp"
-                    android:layout_marginBottom="16dp">
-
-                    <ImageView
-                        android:layout_width="16dp"
-                        android:layout_height="16dp"
-                        android:src="@android:drawable/ic_menu_info_details"
-                        android:scaleType="centerInside" />
-
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="Jika wilayah Anda tidak ada dalam daftar, "
-                        android:textSize="11sp"
-                        android:textColor="@color/black"
-                        android:fontFamily="@font/poppins_regular"
-                        android:layout_marginStart="8dp" />
-
-                    <TextView
-                        android:id="@+id/tvHubungiWa"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="hubungi kami via WhatsApp"
-                        android:textSize="11sp"
-                        android:textColor="#25D366"
-                        android:fontFamily="@font/poppins_semibold"
-                        android:textStyle="bold"
-                        android:clickable="true"
-                        android:focusable="true"
-                        android:background="?attr/selectableItemBackgroundBorderless" />
-
-                </LinearLayout>
-
-                <!-- Alamat Lengkap -->
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Alamat Lengkap Unit Bisnis"
-                    android:textSize="13sp"
-                    android:textColor="@color/black"
-                    android:fontFamily="@font/poppins_semibold" />
-
-                <com.google.android.material.textfield.TextInputLayout
-                    android:id="@+id/tilAlamat"
-                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="6dp"
-                    android:layout_marginBottom="4dp"
-                    app:boxCornerRadiusTopStart="10dp"
-                    app:boxCornerRadiusTopEnd="10dp"
-                    app:boxCornerRadiusBottomStart="10dp"
-                    app:boxCornerRadiusBottomEnd="10dp"
-                    app:boxStrokeColor="@color/orange_primary"
-                    app:hintEnabled="false">
-
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/etAlamat"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:hint="Masukkan alamat selengkap mungkin (Gg, Patokan, Warna Rumah, Kode Pos dsb.)"
-                        android:textSize="13sp"
-                        android:fontFamily="@font/poppins_regular"
-                        android:textColor="@color/black"
-                        android:inputType="textMultiLine"
-                        android:minLines="2"
-                        android:maxLines="4"
-                        android:gravity="top" />
-
-                </com.google.android.material.textfield.TextInputLayout>
-
-            </LinearLayout>
-        </androidx.cardview.widget.CardView>
-
-        <!-- ===== CARD KOORDINAT LOKASI + MAP PICKER ===== -->
-        <androidx.cardview.widget.CardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="20dp"
-            android:layout_marginEnd="20dp"
-            android:layout_marginTop="12dp"
-            app:cardCornerRadius="16dp"
-            app:cardElevation="4dp"
-            app:cardBackgroundColor="@color/white">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="16dp">
-
-                <!-- Judul -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical">
-
-                    <ImageView
-                        android:layout_width="32dp"
-                        android:layout_height="32dp"
-                        android:src="@drawable/ic_bintang"
-                        android:background="@drawable/ic_bg_aktivitas_orange"
-                        android:padding="7dp"
-                        android:scaleType="centerInside" />
-
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:orientation="vertical"
-                        android:layout_marginStart="10dp">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Koordinat Lokasi di Peta"
-                            android:textSize="14sp"
-                            android:textStyle="bold"
-                            android:textColor="@color/black"
-                            android:fontFamily="@font/poppins_semibold" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Tap peta untuk memilih lokasi unit bisnis Anda."
-                            android:textSize="11sp"
-                            android:textColor="@color/gray_text"
-                            android:fontFamily="@font/poppins_regular"
-                            android:layout_marginTop="2dp" />
-
-                    </LinearLayout>
-                </LinearLayout>
-
-                <!-- Info hint peta -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:background="#EEF2FF"
-                    android:padding="10dp"
-                    android:layout_marginTop="12dp">
-
-                    <ImageView
-                        android:layout_width="16dp"
-                        android:layout_height="16dp"
-                        android:src="@android:drawable/ic_menu_info_details"
-                        android:scaleType="centerInside"
-                        android:layout_marginTop="1dp" />
-
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="Tap di titik mana saja pada peta untuk menentukan lokasi. Gunakan tombol di bawah peta untuk langsung pakai GPS Anda."
-                        android:textSize="11sp"
-                        android:textColor="@color/black"
-                        android:fontFamily="@font/poppins_regular"
-                        android:layout_marginStart="8dp" />
-
-                </LinearLayout>
-
-                <!-- MapView OSMDroid -->
-                <org.osmdroid.views.MapView
-                    android:id="@+id/mapView"
-                    android:layout_width="match_parent"
-                    android:layout_height="260dp"
-                    android:layout_marginTop="12dp"
-                    android:focusable="true" />
-
-                <!-- Label koordinat yang dipilih -->
-                <TextView
-                    android:id="@+id/tvKoordinatDipilih"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="📍 Tap peta untuk memilih lokasi"
-                    android:textSize="12sp"
-                    android:textColor="@color/gray_text"
-                    android:fontFamily="@font/poppins_regular"
-                    android:gravity="center"
-                    android:layout_marginTop="8dp" />
-
-                <!-- Tombol GPS -->
-                <Button
-                    android:id="@+id/btnGunakanLokasiSaya"
-                    android:layout_width="match_parent"
-                    android:layout_height="44dp"
-                    android:text="📍 Gunakan Lokasi Saya Sekarang"
-                    android:textSize="13sp"
-                    android:textColor="@color/white"
-                    android:fontFamily="@font/poppins_semibold"
-                    android:backgroundTint="@color/orange_primary"
-                    android:layout_marginTop="10dp"
-                    app:cornerRadius="10dp" />
-
-                <!-- Divider -->
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:background="#F0F0F0"
-                    android:layout_marginTop="16dp"
-                    android:layout_marginBottom="4dp" />
-
-                <!-- Label koordinat terpilih -->
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Koordinat Terpilih"
-                    android:textSize="12sp"
-                    android:textColor="@color/gray_text"
-                    android:fontFamily="@font/poppins_semibold"
-                    android:layout_marginTop="8dp"
-                    android:layout_marginBottom="6dp" />
-
-                <!-- Lat & Long fields (read-only, terisi otomatis dari peta) -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal">
-
-                    <!-- Latitude -->
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:orientation="vertical"
-                        android:layout_marginEnd="8dp">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="LATITUDE"
-                            android:textSize="11sp"
-                            android:textStyle="bold"
-                            android:textColor="@color/gray_text"
-                            android:fontFamily="@font/poppins_semibold" />
-
-                        <com.google.android.material.textfield.TextInputLayout
-                            android:id="@+id/tilLatitude"
-                            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="4dp"
-                            app:boxCornerRadiusTopStart="10dp"
-                            app:boxCornerRadiusTopEnd="10dp"
-                            app:boxCornerRadiusBottomStart="10dp"
-                            app:boxCornerRadiusBottomEnd="10dp"
-                            app:boxStrokeColor="@color/orange_primary"
-                            app:hintEnabled="false">
-
-                            <com.google.android.material.textfield.TextInputEditText
-                                android:id="@+id/etLatitude"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:hint="-0.000000"
-                                android:textSize="12sp"
-                                android:fontFamily="@font/poppins_regular"
-                                android:textColor="@color/black"
-                                android:focusable="false"
-                                android:clickable="false"
-                                android:cursorVisible="false"
-                                android:inputType="none"
-                                android:background="@null" />
-
-                        </com.google.android.material.textfield.TextInputLayout>
-                    </LinearLayout>
-
-                    <!-- Longitude -->
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:orientation="vertical"
-                        android:layout_marginStart="8dp">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="LONGITUDE"
-                            android:textSize="11sp"
-                            android:textStyle="bold"
-                            android:textColor="@color/gray_text"
-                            android:fontFamily="@font/poppins_semibold" />
-
-                        <com.google.android.material.textfield.TextInputLayout
-                            android:id="@+id/tilLongitude"
-                            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="4dp"
-                            app:boxCornerRadiusTopStart="10dp"
-                            app:boxCornerRadiusTopEnd="10dp"
-                            app:boxCornerRadiusBottomStart="10dp"
-                            app:boxCornerRadiusBottomEnd="10dp"
-                            app:boxStrokeColor="@color/orange_primary"
-                            app:hintEnabled="false">
-
-                            <com.google.android.material.textfield.TextInputEditText
-                                android:id="@+id/etLongitude"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:hint="100.000000"
-                                android:textSize="12sp"
-                                android:fontFamily="@font/poppins_regular"
-                                android:textColor="@color/black"
-                                android:focusable="false"
-                                android:clickable="false"
-                                android:cursorVisible="false"
-                                android:inputType="none"
-                                android:background="@null" />
-
-                        </com.google.android.material.textfield.TextInputLayout>
-                    </LinearLayout>
-
-                </LinearLayout>
-            </LinearLayout>
-        </androidx.cardview.widget.CardView>
-
-        <!-- ===== CARD BUKTI PEMBAYARAN BIAYA PENDAFTARAN ===== -->
-        <androidx.cardview.widget.CardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="20dp"
-            android:layout_marginEnd="20dp"
-            android:layout_marginTop="12dp"
-            app:cardCornerRadius="16dp"
-            app:cardElevation="4dp"
-            app:cardBackgroundColor="@color/white">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="16dp">
-
-                <!-- Judul card -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical">
-
-                    <ImageView
-                        android:layout_width="32dp"
-                        android:layout_height="32dp"
-                        android:src="@drawable/ic_request"
-                        android:background="@drawable/ic_bg_aktivitas_orange"
-                        android:padding="7dp"
-                        android:scaleType="centerInside" />
-
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:orientation="vertical"
-                        android:layout_marginStart="10dp">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Bukti Pembayaran Pendaftaran"
-                            android:textSize="14sp"
-                            android:textStyle="bold"
-                            android:textColor="@color/black"
-                            android:fontFamily="@font/poppins_semibold" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Upload bukti transfer biaya pendaftaran. Wajib dilampirkan."
-                            android:textSize="11sp"
-                            android:textColor="@color/gray_text"
-                            android:fontFamily="@font/poppins_regular"
-                            android:layout_marginTop="2dp" />
-
-                    </LinearLayout>
-                </LinearLayout>
-
-                <!-- Info box kuning -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:background="#FFF3E0"
-                    android:padding="10dp"
-                    android:layout_marginTop="12dp">
-
-                    <ImageView
-                        android:layout_width="16dp"
-                        android:layout_height="16dp"
-                        android:src="@android:drawable/ic_menu_info_details"
-                        android:scaleType="centerInside"
-                        android:layout_marginTop="1dp" />
-
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:text="Foto bukti pembayaran akan disimpan dan diverifikasi oleh tim admin. Pastikan foto jelas, tidak blur, dan tidak terpotong."
-                        android:textSize="11sp"
-                        android:textColor="@color/black"
-                        android:fontFamily="@font/poppins_regular"
-                        android:layout_marginStart="8dp" />
-
-                </LinearLayout>
-
-                <!-- Preview foto yang dipilih (awalnya GONE) -->
-                <ImageView
-                    android:id="@+id/ivPreviewBuktiBayar"
-                    android:layout_width="match_parent"
-                    android:layout_height="180dp"
-                    android:scaleType="centerCrop"
-                    android:background="@color/gray_border"
-                    android:layout_marginTop="12dp"
-                    android:visibility="gone" />
-
-                <!-- Status teks foto -->
-                <TextView
-                    android:id="@+id/tvBuktiBayarStatus"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Belum ada foto yang dipilih"
-                    android:textSize="12sp"
-                    android:textColor="@color/gray_text"
-                    android:fontFamily="@font/poppins_regular"
-                    android:gravity="center"
-                    android:layout_marginTop="8dp" />
-
-                <!-- Tombol pilih foto dari galeri -->
-                <Button
-                    android:id="@+id/btnPilihBuktiBayar"
-                    android:layout_width="match_parent"
-                    android:layout_height="44dp"
-                    android:text="📷 Pilih Foto Bukti Pembayaran"
-                    android:textSize="13sp"
-                    android:textColor="@color/white"
-                    android:fontFamily="@font/poppins_semibold"
-                    android:backgroundTint="@color/orange_primary"
-                    android:layout_marginTop="12dp"
-                    app:cornerRadius="10dp" />
-
-            </LinearLayout>
-        </androidx.cardview.widget.CardView>
-
-        <!-- ===== CARD BUTUH BANTUAN ===== -->
-        <androidx.cardview.widget.CardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="20dp"
-            android:layout_marginEnd="20dp"
-            android:layout_marginTop="12dp"
-            app:cardCornerRadius="12dp"
-            app:cardElevation="2dp"
-            app:cardBackgroundColor="@color/white">
+            android:orientation="vertical"
+            android:paddingBottom="40dp">
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:padding="14dp">
+                android:background="@color/white"
+                android:paddingStart="20dp"
+                android:paddingEnd="20dp"
+                android:paddingTop="16dp"
+                android:paddingBottom="16dp">
 
                 <ImageView
-                    android:id="@+id/ivIconBantuan"
-                    android:layout_width="36dp"
-                    android:layout_height="36dp"
-                    android:src="@drawable/ic_notifikasi"
-                    android:background="@drawable/ic_bg_aktivitas_orange"
-                    android:padding="8dp"
+                    android:id="@+id/btnBack"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:src="@drawable/ic_back"
                     android:scaleType="centerInside"
+                    android:clickable="true"
+                    android:focusable="true"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintBottom_toBottomOf="parent" />
 
                 <TextView
-                    android:id="@+id/tvBantuanJudul"
-                    android:layout_width="0dp"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Butuh Bantuan?"
-                    android:textSize="13sp"
+                    android:text="Pendaftaran Kemitraan"
+                    android:textSize="17sp"
                     android:textStyle="bold"
                     android:textColor="@color/black"
-                    android:fontFamily="@font/poppins_semibold"
-                    android:layout_marginStart="12dp"
-                    app:layout_constraintStart_toEndOf="@+id/ivIconBantuan"
+                    android:fontFamily="@font/poppins_bold"
+                    app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
-
-                <TextView
-                    android:id="@+id/tvBantuanDesc"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:text="Tim kemitraan kami siap membantu proses pengajuan Anda. Hubungi kami pada jam kerja."
-                    android:textSize="12sp"
-                    android:textColor="@color/gray_text"
-                    android:fontFamily="@font/poppins_regular"
-                    android:layout_marginStart="12dp"
-                    app:layout_constraintStart_toEndOf="@+id/ivIconBantuan"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/tvBantuanJudul" />
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent" />
 
             </androidx.constraintlayout.widget.ConstraintLayout>
-        </androidx.cardview.widget.CardView>
 
-        <!-- ===== TOMBOL AJUKAN ===== -->
-        <Button
-            android:id="@+id/btnAjukanKemitraan"
-            android:layout_width="match_parent"
-            android:layout_height="52dp"
-            android:text="Ajukan Kemitraan Final"
-            android:textSize="15sp"
-            android:textColor="@color/white"
-            android:fontFamily="@font/poppins_semibold"
-            android:backgroundTint="@color/black"
-            android:layout_marginStart="20dp"
-            android:layout_marginEnd="20dp"
-            android:layout_marginTop="20dp"
-            app:cornerRadius="14dp" />
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="20dp"
+                android:layout_marginTop="16dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="4dp"
+                app:cardBackgroundColor="#1E1B4B">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="20dp">
+
+                    <ImageView
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:src="@drawable/ic_nav_setor"
+                        android:background="@drawable/ic_bg_aktivitas_orange"
+                        android:padding="10dp"
+                        android:scaleType="centerInside"
+                        android:layout_gravity="center_horizontal" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Halo, Calon Mitra!"
+                        android:textSize="20sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/white"
+                        android:fontFamily="@font/poppins_bold"
+                        android:gravity="center"
+                        android:layout_marginTop="12dp" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Ambang pintu kemitraan Bank Jatah telah terbuka. Dengan menjadi Unit Bisnis, Anda akan menjadi perpanjangan tangan kami dalam mengumpulkan dan me-manage sampah yang bisa didaur ulang di kawasan Anda."
+                        android:textSize="12sp"
+                        android:textColor="#CCFFFFFF"
+                        android:fontFamily="@font/poppins_regular"
+                        android:gravity="center"
+                        android:layout_marginTop="8dp" />
+
+                    <androidx.cardview.widget.CardView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        app:cardCornerRadius="12dp"
+                        app:cardElevation="0dp"
+                        app:cardBackgroundColor="#2D2B5F">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:padding="14dp">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="✦ Keuntungan Mitra"
+                                android:textSize="13sp"
+                                android:textStyle="bold"
+                                android:textColor="@color/orange_primary"
+                                android:fontFamily="@font/poppins_semibold" />
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="• Komisi ekstra dari setiap kg setoran nasabah di bawah naungan Unit Anda."
+                                android:textSize="12sp"
+                                android:textColor="@color/white"
+                                android:fontFamily="@font/poppins_regular"
+                                android:layout_marginTop="8dp" />
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="• Akses ke dashboard khusus untuk monitoring dan validasi setoran skala besar."
+                                android:textSize="12sp"
+                                android:textColor="@color/white"
+                                android:fontFamily="@font/poppins_regular"
+                                android:layout_marginTop="6dp" />
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="• Dukungan logistik penjemputan dari pusat."
+                                android:textSize="12sp"
+                                android:textColor="@color/white"
+                                android:fontFamily="@font/poppins_regular"
+                                android:layout_marginTop="6dp" />
+
+                        </LinearLayout>
+                    </androidx.cardview.widget.CardView>
+
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="20dp"
+                android:layout_marginTop="16dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="4dp"
+                app:cardBackgroundColor="@color/white">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Formulir Registrasi"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/black"
+                        android:fontFamily="@font/poppins_bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Lengkapi detail informasi calon unit bisnis Anda"
+                        android:textSize="12sp"
+                        android:textColor="@color/gray_text"
+                        android:fontFamily="@font/poppins_regular"
+                        android:layout_marginTop="4dp"
+                        android:layout_marginBottom="16dp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Nama Usaha / Nama Outlet"
+                        android:textSize="13sp"
+                        android:textColor="@color/black"
+                        android:fontFamily="@font/poppins_semibold" />
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/tilNamaUsaha"
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:layout_marginBottom="16dp"
+                        app:boxCornerRadiusTopStart="10dp"
+                        app:boxCornerRadiusTopEnd="10dp"
+                        app:boxCornerRadiusBottomStart="10dp"
+                        app:boxCornerRadiusBottomEnd="10dp"
+                        app:boxStrokeColor="@color/orange_primary"
+                        app:hintEnabled="false">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/etNamaUsaha"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:hint="Contoh: Outlet Suka Maju"
+                            android:textSize="14sp"
+                            android:fontFamily="@font/poppins_regular"
+                            android:textColor="@color/black"
+                            android:inputType="textCapWords" />
+
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Wilayah Operasional Utama"
+                        android:textSize="13sp"
+                        android:textColor="@color/black"
+                        android:fontFamily="@font/poppins_semibold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Provinsi"
+                        android:textSize="12sp"
+                        android:textColor="@color/gray_text"
+                        android:fontFamily="@font/poppins_regular" />
+
+                    <Spinner
+                        android:id="@+id/spinnerProvinsi"
+                        android:layout_width="match_parent"
+                        android:layout_height="52dp"
+                        android:layout_marginTop="6dp"
+                        android:layout_marginBottom="16dp" />
+
+                    <LinearLayout
+                        android:id="@+id/layoutKabupaten"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:visibility="gone">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Kabupaten / Kota"
+                            android:textSize="12sp"
+                            android:textColor="@color/gray_text"
+                            android:fontFamily="@font/poppins_regular" />
+
+                        <Spinner
+                            android:id="@+id/spinnerKabupaten"
+                            android:layout_width="match_parent"
+                            android:layout_height="52dp"
+                            android:layout_marginTop="6dp"
+                            android:layout_marginBottom="16dp" />
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/layoutKecamatan"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:visibility="gone">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Kecamatan"
+                            android:textSize="12sp"
+                            android:textColor="@color/gray_text"
+                            android:fontFamily="@font/poppins_regular" />
+
+                        <Spinner
+                            android:id="@+id/spinnerKecamatan"
+                            android:layout_width="match_parent"
+                            android:layout_height="52dp"
+                            android:layout_marginTop="6dp"
+                            android:layout_marginBottom="16dp" />
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/layoutWilayah"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:visibility="gone">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Wilayah / Kelurahan"
+                            android:textSize="12sp"
+                            android:textColor="@color/gray_text"
+                            android:fontFamily="@font/poppins_regular" />
+
+                        <Spinner
+                            android:id="@+id/spinnerWilayah"
+                            android:layout_width="match_parent"
+                            android:layout_height="52dp"
+                            android:layout_marginTop="6dp"
+                            android:layout_marginBottom="16dp" />
+
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/tvHargaLoading"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Memuat harga wilayah..."
+                        android:textSize="12sp"
+                        android:textColor="@color/gray_text"
+                        android:fontFamily="@font/poppins_regular"
+                        android:layout_marginTop="8dp"
+                        android:visibility="gone" />
+
+                    <androidx.cardview.widget.CardView
+                        android:id="@+id/cardHargaWilayah"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:visibility="gone"
+                        app:cardCornerRadius="12dp"
+                        app:cardElevation="3dp"
+                        app:cardBackgroundColor="@color/orange_primary">
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:padding="16dp">
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="💰 Harga Minyak di Wilayah Ini"
+                                android:textSize="13sp"
+                                android:textStyle="bold"
+                                android:textColor="@color/white"
+                                android:fontFamily="@font/poppins_bold" />
+                            <TextView
+                                android:id="@+id/tvHargaPerKg"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Rp 0 / Kg"
+                                android:textSize="26sp"
+                                android:textStyle="bold"
+                                android:textColor="@color/white"
+                                android:fontFamily="@font/poppins_bold"
+                                android:layout_marginTop="4dp" />
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:layout_marginTop="8dp">
+                                <TextView
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:text="Kelurahan/Wilayah"
+                                    android:textSize="11sp"
+                                    android:textColor="#CCFFFFFF"
+                                    android:fontFamily="@font/poppins_regular" />
+                                <TextView
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:text="Kecamatan"
+                                    android:textSize="11sp"
+                                    android:textColor="#CCFFFFFF"
+                                    android:fontFamily="@font/poppins_regular" />
+                            </LinearLayout>
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:layout_marginTop="2dp">
+                                <TextView
+                                    android:id="@+id/tvWilayahHarga"
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:text="-"
+                                    android:textSize="13sp"
+                                    android:textStyle="bold"
+                                    android:textColor="@color/white"
+                                    android:fontFamily="@font/poppins_semibold" />
+                                <TextView
+                                    android:id="@+id/tvKecamatanHarga"
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:text="-"
+                                    android:textSize="13sp"
+                                    android:textStyle="bold"
+                                    android:textColor="@color/white"
+                                    android:fontFamily="@font/poppins_semibold" />
+                            </LinearLayout>
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="Harga ini yang akan berlaku untuk setoran minyak jelantah di wilayah Anda."
+                                android:textSize="11sp"
+                                android:textColor="#CCFFFFFF"
+                                android:fontFamily="@font/poppins_regular"
+                                android:layout_marginTop="8dp" />
+                        </LinearLayout>
+                    </androidx.cardview.widget.CardView>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:background="#FFF3E0"
+                        android:padding="10dp"
+                        android:layout_marginTop="16dp"
+                        android:layout_marginBottom="16dp">
+
+                        <ImageView
+                            android:layout_width="16dp"
+                            android:layout_height="16dp"
+                            android:src="@android:drawable/ic_menu_info_details"
+                            android:scaleType="centerInside" />
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Jika wilayah Anda tidak ada dalam daftar, "
+                            android:textSize="11sp"
+                            android:textColor="@color/black"
+                            android:fontFamily="@font/poppins_regular"
+                            android:layout_marginStart="8dp" />
+
+                        <TextView
+                            android:id="@+id/tvHubungiWa"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="hubungi WhatsApp"
+                            android:textSize="11sp"
+                            android:textColor="#25D366"
+                            android:fontFamily="@font/poppins_semibold"
+                            android:clickable="true"
+                            android:focusable="true" />
+
+                    </LinearLayout>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Alamat Lengkap Unit Bisnis"
+                        android:textSize="13sp"
+                        android:textColor="@color/black"
+                        android:fontFamily="@font/poppins_semibold" />
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/tilAlamat"
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        app:boxCornerRadiusTopStart="10dp"
+                        app:boxCornerRadiusTopEnd="10dp"
+                        app:boxCornerRadiusBottomStart="10dp"
+                        app:boxCornerRadiusBottomEnd="10dp"
+                        app:boxStrokeColor="@color/orange_primary"
+                        app:hintEnabled="false">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/etAlamat"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:hint="Masukkan alamat selengkap mungkin"
+                            android:textSize="13sp"
+                            android:fontFamily="@font/poppins_regular"
+                            android:textColor="@color/black"
+                            android:inputType="textMultiLine"
+                            android:minLines="2"
+                            android:maxLines="4"
+                            android:gravity="top" />
+
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="20dp"
+                android:layout_marginTop="12dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="4dp"
+                app:cardBackgroundColor="@color/white">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Koordinat Lokasi di Peta"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/black"
+                        android:fontFamily="@font/poppins_semibold" />
+
+                    <org.osmdroid.views.MapView
+                        android:id="@+id/mapView"
+                        android:layout_width="match_parent"
+                        android:layout_height="260dp"
+                        android:layout_marginTop="12dp"
+                        android:focusable="true" />
+
+                    <TextView
+                        android:id="@+id/tvKoordinatDipilih"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Tap peta untuk memilih lokasi"
+                        android:textSize="12sp"
+                        android:textColor="@color/gray_text"
+                        android:fontFamily="@font/poppins_regular"
+                        android:gravity="center"
+                        android:layout_marginTop="8dp" />
+
+                    <Button
+                        android:id="@+id/btnGunakanLokasiSaya"
+                        android:layout_width="match_parent"
+                        android:layout_height="44dp"
+                        android:text="Gunakan Lokasi Saya Sekarang"
+                        android:textSize="13sp"
+                        android:textColor="@color/white"
+                        android:fontFamily="@font/poppins_semibold"
+                        android:backgroundTint="@color/orange_primary"
+                        android:layout_marginTop="10dp"
+                        app:cornerRadius="10dp" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginTop="12dp">
+                        <EditText
+                            android:id="@+id/etLatitude"
+                            android:layout_width="0dp" android:layout_height="wrap_content"
+                            android:layout_weight="1" android:hint="Lat" android:textSize="12sp"
+                            android:focusable="false" android:layout_marginEnd="4dp" />
+                        <EditText
+                            android:id="@+id/etLongitude"
+                            android:layout_width="0dp" android:layout_height="wrap_content"
+                            android:layout_weight="1" android:hint="Long" android:textSize="12sp"
+                            android:focusable="false" android:layout_marginStart="4dp" />
+                    </LinearLayout>
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="20dp"
+                android:layout_marginTop="12dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="4dp"
+                app:cardBackgroundColor="@color/white">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Bukti Pembayaran Pendaftaran"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/black"
+                        android:fontFamily="@font/poppins_semibold" />
+
+                    <ImageView
+                        android:id="@+id/ivPreviewBuktiBayar"
+                        android:layout_width="match_parent"
+                        android:layout_height="180dp"
+                        android:scaleType="centerCrop"
+                        android:background="@color/gray_border"
+                        android:layout_marginTop="12dp"
+                        android:visibility="gone" />
+
+                    <TextView
+                        android:id="@+id/tvBuktiBayarStatus"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Belum ada foto yang dipilih"
+                        android:textSize="12sp"
+                        android:textColor="@color/gray_text"
+                        android:gravity="center"
+                        android:layout_marginTop="8dp" />
+
+                    <Button
+                        android:id="@+id/btnPilihBuktiBayar"
+                        android:layout_width="match_parent"
+                        android:layout_height="44dp"
+                        android:text="Pilih Foto Bukti Pembayaran"
+                        android:textSize="13sp"
+                        android:textColor="@color/white"
+                        android:fontFamily="@font/poppins_semibold"
+                        android:backgroundTint="@color/orange_primary"
+                        android:layout_marginTop="12dp"
+                        app:cornerRadius="10dp" />
+
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <Button
+                android:id="@+id/btnAjukanKemitraan"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:text="Ajukan Kemitraan Final"
+                android:textSize="15sp"
+                android:textColor="@color/white"
+                android:fontFamily="@font/poppins_semibold"
+                android:backgroundTint="@color/black"
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="20dp"
+                android:layout_marginTop="20dp"
+                app:cornerRadius="14dp" />
 
         </LinearLayout>
     </ScrollView>
 
-    <!-- ===== FAB WHATSAPP SUPPORT ===== -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fabWhatsapp"
         android:layout_width="wrap_content"
@@ -865,11 +656,8 @@
         android:layout_gravity="bottom|end"
         android:layout_margin="20dp"
         android:src="@android:drawable/ic_menu_call"
-        android:contentDescription="Chat WhatsApp Support"
         app:backgroundTint="#25D366"
         app:tint="@color/white"
-        app:fabSize="normal"
         app:elevation="8dp" />
 
 </FrameLayout>
-

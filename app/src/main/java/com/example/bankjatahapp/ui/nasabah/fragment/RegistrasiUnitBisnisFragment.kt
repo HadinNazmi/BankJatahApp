@@ -22,6 +22,7 @@ import com.example.bankjatahapp.data.model.MasterKabupaten
 import com.example.bankjatahapp.data.model.MasterKecamatan
 import com.example.bankjatahapp.data.model.MasterProvinsi
 import com.example.bankjatahapp.data.model.MasterWilayah
+import com.example.bankjatahapp.data.model.HargaMinyak
 import com.example.bankjatahapp.data.remote.SupabaseClient.client
 import com.example.bankjatahapp.databinding.FragmentRegistrasiUnitBisnisBinding
 import com.google.android.gms.location.LocationServices
@@ -57,6 +58,7 @@ class RegistrasiUnitBisnisFragment : Fragment() {
     private var kabupatenDipilih : MasterKabupaten? = null
     private var kecamatanDipilih : MasterKecamatan? = null
     private var wilayahDipilih   : MasterWilayah?   = null
+    private var hargaWilayah     : Double?           = null
 
     // Koordinat dari peta
     private var latDipilih: Double? = null
@@ -219,7 +221,6 @@ class RegistrasiUnitBisnisFragment : Fragment() {
                 binding.spinnerProvinsi.isEnabled = true
 
             } catch (e: Exception) {
-                // Retry otomatis 1x jika gagal
                 try {
                     delay(1500)
                     val hasil = client.postgrest
@@ -266,7 +267,6 @@ class RegistrasiUnitBisnisFragment : Fragment() {
                 binding.spinnerKabupaten.adapter = adapter
                 binding.layoutKabupaten.visibility = View.VISIBLE
 
-                // Reset level di bawahnya
                 binding.layoutKecamatan.visibility = View.GONE
                 binding.layoutWilayah.visibility   = View.GONE
                 listKecamatan.clear()
@@ -300,7 +300,6 @@ class RegistrasiUnitBisnisFragment : Fragment() {
                 binding.spinnerKecamatan.adapter = adapter
                 binding.layoutKecamatan.visibility = View.VISIBLE
 
-                // Reset wilayah
                 binding.layoutWilayah.visibility = View.GONE
                 listWilayah.clear()
                 wilayahDipilih = null
@@ -340,6 +339,48 @@ class RegistrasiUnitBisnisFragment : Fragment() {
         }
     }
 
+    private fun loadHargaWilayah(idWilayah: String) {
+        lifecycleScope.launch {
+            try {
+                binding.cardHargaWilayah.visibility = View.GONE
+                binding.tvHargaLoading.visibility   = View.VISIBLE
+                val listHarga = client.postgrest
+                    .from("harga_minyak")
+                    .select {
+                        filter {
+                            eq("id_wilayah", idWilayah)
+                            eq("status_harga", true)
+                        }
+                    }
+                    .decodeList<HargaMinyak>()
+                if (_binding == null) return@launch
+                binding.tvHargaLoading.visibility = View.GONE
+                if (listHarga.isNotEmpty()) {
+                    val harga = listHarga.first()
+                    hargaWilayah = harga.hargaPerKg
+                    binding.cardHargaWilayah.visibility = View.VISIBLE
+                    binding.tvHargaPerKg.text = formatRupiah(harga.hargaPerKg)
+                    binding.tvWilayahHarga.text = wilayahDipilih?.namaWilayah ?: "-"
+                    binding.tvKecamatanHarga.text = kecamatanDipilih?.namaKecamatan ?: "-"
+                } else {
+                    binding.cardHargaWilayah.visibility = View.VISIBLE
+                    binding.tvHargaPerKg.text = "Belum diatur"
+                    binding.tvWilayahHarga.text = wilayahDipilih?.namaWilayah ?: "-"
+                    binding.tvKecamatanHarga.text = kecamatanDipilih?.namaKecamatan ?: "-"
+                    hargaWilayah = null
+                }
+            } catch (e: Exception) {
+                if (_binding == null) return@launch
+                binding.tvHargaLoading.visibility   = View.GONE
+                binding.cardHargaWilayah.visibility = View.GONE
+            }
+        }
+    }
+
+    private fun formatRupiah(nominal: Double): String =
+        java.text.NumberFormat.getCurrencyInstance(java.util.Locale("id", "ID"))
+            .format(nominal).replace(",00", "")
+
     // ===== KOMPRESI GAMBAR =====
     private fun kompresGambar(bytes: ByteArray, maxSizeKb: Int = 2048): ByteArray {
         val bitmap = android.graphics.BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
@@ -369,7 +410,6 @@ class RegistrasiUnitBisnisFragment : Fragment() {
             validasiDanAjukan()
         }
 
-        // FAB WhatsApp Support
         binding.fabWhatsapp.setOnClickListener {
             val nomorAdmin = "6282283884373"
             val pesan = "Halo Admin, saya ingin bertanya mengenai pendaftaran Unit Bisnis Bank Jatah."
@@ -384,7 +424,6 @@ class RegistrasiUnitBisnisFragment : Fragment() {
             startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
         }
 
-        // ===== SPINNER PROVINSI =====
         binding.spinnerProvinsi.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, pos: Int, id: Long) {
                 if (listProvinsi.isEmpty()) return
@@ -397,7 +436,6 @@ class RegistrasiUnitBisnisFragment : Fragment() {
             override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
 
-        // ===== SPINNER KABUPATEN =====
         binding.spinnerKabupaten.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, pos: Int, id: Long) {
                 if (listKabupaten.isEmpty()) return
@@ -409,7 +447,6 @@ class RegistrasiUnitBisnisFragment : Fragment() {
             override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
 
-        // ===== SPINNER KECAMATAN =====
         binding.spinnerKecamatan.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, pos: Int, id: Long) {
                 if (listKecamatan.isEmpty()) return
@@ -420,17 +457,16 @@ class RegistrasiUnitBisnisFragment : Fragment() {
             override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
 
-        // ===== SPINNER WILAYAH =====
         binding.spinnerWilayah.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, pos: Int, id: Long) {
                 if (listWilayah.isEmpty()) return
                 wilayahDipilih = listWilayah[pos]
+                loadHargaWilayah(listWilayah[pos].idWilayah)
             }
             override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
     }
 
-    // ===== VALIDASI FORM =====
     private fun validasiDanAjukan() {
         val namaUsaha = binding.etNamaUsaha.text.toString().trim()
         val alamat    = binding.etAlamat.text.toString().trim()
@@ -447,56 +483,24 @@ class RegistrasiUnitBisnisFragment : Fragment() {
         }
         binding.tilAlamat.error = null
 
-        // Validasi wilayah bertingkat (Wajib sampai kelurahan/wilayah)
-        if (provinsiDipilih == null) {
-            Toast.makeText(requireContext(), "Pilih provinsi", Toast.LENGTH_SHORT).show()
-            return
-        }
-        if (kabupatenDipilih == null) {
-            Toast.makeText(requireContext(), "Pilih kabupaten/kota", Toast.LENGTH_SHORT).show()
-            return
-        }
-        if (kecamatanDipilih == null) {
-            Toast.makeText(requireContext(), "Pilih kecamatan", Toast.LENGTH_SHORT).show()
-            return
-        }
-        if (wilayahDipilih == null) {
-            Toast.makeText(requireContext(), "Pilih wilayah/kelurahan", Toast.LENGTH_SHORT).show()
+        if (provinsiDipilih == null || kabupatenDipilih == null || kecamatanDipilih == null || wilayahDipilih == null) {
+            Toast.makeText(requireContext(), "Lengkapi data wilayah", Toast.LENGTH_SHORT).show()
             return
         }
 
-        // Validasi koordinat peta
         if (latDipilih == null || lonDipilih == null) {
-            binding.tvKoordinatDipilih.text = "⚠ Belum memilih lokasi di peta!"
-            binding.tvKoordinatDipilih.setTextColor(Color.RED)
-            Toast.makeText(
-                requireContext(),
-                "Pilih lokasi unit bisnis di peta.",
-                Toast.LENGTH_LONG
-            ).show()
+            Toast.makeText(requireContext(), "Pilih lokasi di peta", Toast.LENGTH_SHORT).show()
             return
         }
 
-        // Validasi foto bukti pembayaran
         if (uriBuktiBayar == null) {
-            Toast.makeText(
-                requireContext(),
-                "⚠ Foto bukti pembayaran biaya pendaftaran wajib dilampirkan.",
-                Toast.LENGTH_LONG
-            ).show()
+            Toast.makeText(requireContext(), "Lampirkan bukti pembayaran", Toast.LENGTH_LONG).show()
             return
         }
 
-        ajukanKemitraan(
-            namaUsaha,
-            alamat,
-            latDipilih!!,
-            lonDipilih!!,
-            wilayahDipilih!!
-        )
+        ajukanKemitraan(namaUsaha, alamat, latDipilih!!, lonDipilih!!, wilayahDipilih!!)
     }
 
-    // ===== SUBMIT PENGAJUAN =====
     private fun ajukanKemitraan(
         namaUsaha: String,
         alamat: String,
@@ -508,10 +512,8 @@ class RegistrasiUnitBisnisFragment : Fragment() {
 
         lifecycleScope.launch {
             try {
-                val idUser = client.auth.currentUserOrNull()?.id
-                    ?: throw Exception("Session tidak ditemukan, silakan login ulang")
+                val idUser = client.auth.currentUserOrNull()?.id ?: throw Exception("Session habis")
 
-                // 1. Cek sudah pernah mengajukan
                 val existing = client.postgrest
                     .from("unit_bisnis_data")
                     .select { filter { eq("id_unit_bisnis", idUser) } }
@@ -519,18 +521,12 @@ class RegistrasiUnitBisnisFragment : Fragment() {
 
                 if (existing != "[]" && existing.isNotBlank()) {
                     setLoading(false)
-                    Toast.makeText(
-                        requireContext(),
-                        "Anda sudah pernah mengajukan kemitraan.\nTunggu proses verifikasi dari admin.",
-                        Toast.LENGTH_LONG
-                    ).show()
+                    Toast.makeText(requireContext(), "Anda sudah pernah mengajukan", Toast.LENGTH_LONG).show()
                     return@launch
                 }
 
-                // 2. Upload foto bukti pembayaran ke bucket 'evidence'
                 val uriBukti    = uriBuktiBayar!!
-                val inputStream = requireContext().contentResolver.openInputStream(uriBukti)
-                    ?: throw Exception("Gagal membaca file foto")
+                val inputStream = requireContext().contentResolver.openInputStream(uriBukti) ?: throw Exception("Gagal baca foto")
                 val fotoBytes = kompresGambar(inputStream.readBytes())
                 inputStream.close()
 
@@ -539,11 +535,9 @@ class RegistrasiUnitBisnisFragment : Fragment() {
                 bucket.upload(namaFile, fotoBytes) { upsert = false }
                 val fotoUrl = bucket.publicUrl(namaFile)
 
-                // 3. Catat timestamp pembayaran
                 val sdf      = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX", Locale.getDefault())
                 val tglBayar = sdf.format(Date())
 
-                // 4. Insert ke unit_bisnis_data
                 val payload = buildJsonObject {
                     put("id_unit_bisnis",          idUser)
                     put("nama_usaha",              namaUsaha)
@@ -551,7 +545,7 @@ class RegistrasiUnitBisnisFragment : Fragment() {
                     put("lokasi_lat",              lat)
                     put("lokasi_long",             lon)
                     put("status_verifikasi_unit",  "menunggu")
-                    put("tipe_unit",               "kelurahan") // Selalu kelurahan saat awal daftar
+                    put("tipe_unit",               "kelurahan")
                     put("transaksi_harian",        0)
                     put("bukti_bayar_pendaftaran", fotoUrl)
                     put("tgl_bayar_pendaftaran",   tglBayar)
@@ -561,27 +555,12 @@ class RegistrasiUnitBisnisFragment : Fragment() {
                 client.postgrest.from("unit_bisnis_data").insert(payload)
 
                 setLoading(false)
-                Toast.makeText(
-                    requireContext(),
-                    "✓ Pengajuan kemitraan berhasil dikirim!\nTim kami akan menghubungi Anda segera.",
-                    Toast.LENGTH_LONG
-                ).show()
-
+                Toast.makeText(requireContext(), "Pengajuan berhasil dikirim!", Toast.LENGTH_LONG).show()
                 parentFragmentManager.popBackStack()
 
             } catch (e: Exception) {
                 setLoading(false)
-                val pesan = when {
-                    e.message?.contains("duplicate") == true ||
-                            e.message?.contains("unique") == true ->
-                        "Anda sudah pernah mengajukan kemitraan."
-                    e.message?.contains("row-level security") == true ->
-                        "Akses ditolak. Pastikan Anda sudah login."
-                    e.message?.contains("Gagal membaca") == true ->
-                        "Gagal membaca file foto. Coba pilih foto lain."
-                    else -> "Gagal mengajukan: ${e.message}"
-                }
-                Toast.makeText(requireContext(), pesan, Toast.LENGTH_LONG).show()
+                Toast.makeText(requireContext(), "Gagal: ${e.message}", Toast.LENGTH_LONG).show()
             }
         }
     }

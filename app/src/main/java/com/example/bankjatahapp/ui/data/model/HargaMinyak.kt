@@ -12,6 +12,9 @@ data class HargaMinyak(
     @SerialName("id_wilayah")
     val idWilayah: String = "",
 
+    @SerialName("kecamatan_id")
+    val kecamatanId: String? = null,
+
     @SerialName("harga_per_kg")
     val hargaPerKg: Double = 0.0,
 
