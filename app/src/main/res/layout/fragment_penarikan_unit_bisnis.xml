@@ -48,6 +48,64 @@
                 app:layout_constraintBottom_toBottomOf="parent" />
         </androidx.constraintlayout.widget.ConstraintLayout>
 
+        <!-- CARD INFO SALDO DIPILIH -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_marginEnd="20dp"
+            android:layout_marginTop="12dp"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="4dp"
+            app:cardBackgroundColor="@color/orange_primary">
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="16dp">
+
+                <TextView
+                    android:id="@+id/tvJenisSaldoLabel"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:text="Saldo Tabungan Tersedia"
+                    android:textSize="12sp"
+                    android:textColor="#CCFFFFFF"
+                    android:fontFamily="@font/poppins_regular"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <TextView
+                    android:id="@+id/tvSaldoTersedia"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:text="Rp 0"
+                    android:textSize="28sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/white"
+                    android:fontFamily="@font/poppins_bold"
+                    android:layout_marginTop="4dp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/tvJenisSaldoLabel" />
+
+                <TextView
+                    android:id="@+id/tvMinimumInfo"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:text="Minimum penarikan: Rp 50.000"
+                    android:textSize="11sp"
+                    android:textColor="#CCFFFFFF"
+                    android:fontFamily="@font/poppins_regular"
+                    android:layout_marginTop="6dp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/tvSaldoTersedia"
+                    app:layout_constraintBottom_toBottomOf="parent" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+        </androidx.cardview.widget.CardView>
+
         <!-- CARD PILIH JENIS SALDO -->
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
@@ -245,63 +303,7 @@
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
-        <!-- CARD INFO SALDO DIPILIH -->
-        <androidx.cardview.widget.CardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="20dp"
-            android:layout_marginEnd="20dp"
-            android:layout_marginTop="12dp"
-            app:cardCornerRadius="16dp"
-            app:cardElevation="4dp"
-            app:cardBackgroundColor="@color/orange_primary">
 
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:padding="16dp">
-
-                <TextView
-                    android:id="@+id/tvJenisSaldoLabel"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:text="Saldo Tabungan Tersedia"
-                    android:textSize="12sp"
-                    android:textColor="#CCFFFFFF"
-                    android:fontFamily="@font/poppins_regular"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
-
-                <TextView
-                    android:id="@+id/tvSaldoTersedia"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:text="Rp 0"
-                    android:textSize="28sp"
-                    android:textStyle="bold"
-                    android:textColor="@color/white"
-                    android:fontFamily="@font/poppins_bold"
-                    android:layout_marginTop="4dp"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/tvJenisSaldoLabel" />
-
-                <TextView
-                    android:id="@+id/tvMinimumInfo"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:text="Minimum penarikan: Rp 50.000"
-                    android:textSize="11sp"
-                    android:textColor="#CCFFFFFF"
-                    android:fontFamily="@font/poppins_regular"
-                    android:layout_marginTop="6dp"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/tvSaldoTersedia"
-                    app:layout_constraintBottom_toBottomOf="parent" />
-            </androidx.constraintlayout.widget.ConstraintLayout>
-        </androidx.cardview.widget.CardView>
 
         <!-- CARD FORM NOMINAL -->
         <androidx.cardview.widget.CardView

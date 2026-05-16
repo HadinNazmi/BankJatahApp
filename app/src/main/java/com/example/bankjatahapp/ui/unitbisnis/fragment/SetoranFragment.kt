@@ -42,7 +42,6 @@ import java.util.UUID
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
-// ✅ Data class untuk cek status sponsor
 @Serializable
 data class NasabahSponsorInfo(
     @SerialName("id_sponsor") val idSponsor: String? = null
@@ -60,6 +59,7 @@ class SetoranFragment : Fragment() {
 
     private var hargaPerKg: Double? = null
     private var komisiPerKg: Double? = null
+    private var idUnitSaatIni: String? = null  // ← simpan id unit bisnis yang login
 
     // ===== UPAH JEMPUT =====
     private var isJemput: Boolean = false
@@ -86,15 +86,12 @@ class SetoranFragment : Fragment() {
     private val requestKameraPermission = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { granted ->
-        if (granted) {
-            bukaScanner()
-        } else {
-            Toast.makeText(
-                requireContext(),
-                "Izin kamera diperlukan untuk scan QR",
-                Toast.LENGTH_LONG
-            ).show()
-        }
+        if (granted) bukaScanner()
+        else Toast.makeText(
+            requireContext(),
+            "Izin kamera diperlukan untuk scan QR",
+            Toast.LENGTH_LONG
+        ).show()
     }
 
     override fun onCreateView(
@@ -121,6 +118,9 @@ class SetoranFragment : Fragment() {
             try {
                 val idUnit = client.auth.currentUserOrNull()?.id
                     ?: throw Exception("Session tidak ditemukan, silakan login ulang.")
+
+                // Simpan id unit untuk dipakai di tampilkanUser()
+                idUnitSaatIni = idUnit
 
                 val unitData = client.postgrest
                     .from("unit_bisnis_data")
@@ -152,12 +152,10 @@ class SetoranFragment : Fragment() {
                     else        -> config.bonusUbKelurahan
                 }
 
-                // ===== LOAD BIAYA JEMPUT =====
                 biayaJemputPerKg = config.biayaJemputPerKg
 
                 binding.tvJemputSub.text =
                     "Nasabah -${formatRupiah(biayaJemputPerKg)}/kg • UB +${formatRupiah(biayaJemputPerKg)}/kg"
-
                 binding.tvPoinNilai.text = "${formatRupiah(harga.hargaPerKg)}/Kg"
 
                 setFormEnabled(true)
@@ -197,32 +195,19 @@ class SetoranFragment : Fragment() {
     }
 
     private fun setupListeners() {
-        binding.frameQrScanner.setOnClickListener {
-            mintaIzinDanScan()
-        }
-
-        binding.btnTutupKamera.setOnClickListener {
-            tutupScanner()
-        }
+        binding.frameQrScanner.setOnClickListener { mintaIzinDanScan() }
+        binding.btnTutupKamera.setOnClickListener { tutupScanner() }
 
         binding.btnCekNasabah.setOnClickListener {
             val inputId = binding.etIdNasabah.text.toString().trim()
             if (inputId.isEmpty()) {
-                Toast.makeText(
-                    requireContext(),
-                    "Masukkan ID nasabah terlebih dahulu",
-                    Toast.LENGTH_SHORT
-                ).show()
+                Toast.makeText(requireContext(), "Masukkan ID nasabah terlebih dahulu", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
-            if (inputId.length == 36 && inputId.contains("-")) {
-                cekUserByUuid(inputId)
-            } else {
-                cekUserManual(inputId)
-            }
+            if (inputId.length == 36 && inputId.contains("-")) cekUserByUuid(inputId)
+            else cekUserManual(inputId)
         }
 
-        // ===== TOGGLE UPAH JEMPUT =====
         binding.switchJemput.setOnCheckedChangeListener { _, checked ->
             isJemput = checked
             hitungUlangEstimasi()
@@ -231,16 +216,13 @@ class SetoranFragment : Fragment() {
         binding.etJumlah.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-            override fun afterTextChanged(s: Editable?) {
-                hitungUlangEstimasi()
-            }
+            override fun afterTextChanged(s: Editable?) { hitungUlangEstimasi() }
         })
 
         binding.btnBukaKamera.setOnClickListener { bukaKameraFoto() }
         binding.btnKonfirmasi.setOnClickListener { validasiDanSubmit() }
     }
 
-    // ===== KALKULASI ESTIMASI =====
     private fun hitungUlangEstimasi() {
         val berat = binding.etJumlah.text.toString().trim().toDoubleOrNull()
         val harga = hargaPerKg
@@ -251,21 +233,18 @@ class SetoranFragment : Fragment() {
 
             binding.tvEstimasiRupiah.text      = formatRupiah(totalNasabah)
             binding.layoutKalkulasi.visibility = View.VISIBLE
-
-            binding.tvSaldoNilai.text  = formatRupiah(totalNasabah)
-            binding.tvPoinNilai.text   = if (isJemput)
+            binding.tvSaldoNilai.text          = formatRupiah(totalNasabah)
+            binding.tvPoinNilai.text           = if (isJemput)
                 "${formatRupiah(hargaNasabah)}/Kg (-${formatRupiah(biayaJemputPerKg)})"
-            else
-                "${formatRupiah(harga)}/Kg"
+            else "${formatRupiah(harga)}/Kg"
 
             if (isJemput) {
                 binding.tvInfoJemput.visibility = View.VISIBLE
                 binding.tvInfoJemput.text =
-                    "Harga nasabah: ${formatRupiah(hargaNasabah)}/kg (dipotong ${formatRupiah(biayaJemputPerKg)}/kg untuk biaya jemput)"
+                    "Harga nasabah: ${formatRupiah(hargaNasabah)}/kg (dipotong ${formatRupiah(biayaJemputPerKg)}/kg)"
             } else {
                 binding.tvInfoJemput.visibility = View.GONE
             }
-
         } else {
             binding.tvEstimasiRupiah.text      = "Rp 0"
             binding.tvSaldoNilai.text          = "Rp 0"
@@ -277,14 +256,9 @@ class SetoranFragment : Fragment() {
 
     // ===== QR SCANNER =====
     private fun mintaIzinDanScan() {
-        if (ContextCompat.checkSelfPermission(
-                requireContext(), Manifest.permission.CAMERA
-            ) == PackageManager.PERMISSION_GRANTED
-        ) {
-            bukaScanner()
-        } else {
-            requestKameraPermission.launch(Manifest.permission.CAMERA)
-        }
+        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA)
+            == PackageManager.PERMISSION_GRANTED) bukaScanner()
+        else requestKameraPermission.launch(Manifest.permission.CAMERA)
     }
 
     private fun bukaScanner() {
@@ -301,65 +275,41 @@ class SetoranFragment : Fragment() {
         val cameraProviderFuture = ProcessCameraProvider.getInstance(requireContext())
         cameraProviderFuture.addListener({
             cameraProvider = cameraProviderFuture.get()
-
             val preview = Preview.Builder().build().also {
                 it.setSurfaceProvider(binding.cameraPreview.surfaceProvider)
             }
-
             val imageAnalysis = ImageAnalysis.Builder()
                 .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
-                .build()
-                .also { analysis ->
+                .build().also { analysis ->
                     analysis.setAnalyzer(cameraExecutor) { imageProxy ->
-                        if (sudahDipindai) {
-                            imageProxy.close()
-                            return@setAnalyzer
-                        }
-
+                        if (sudahDipindai) { imageProxy.close(); return@setAnalyzer }
                         val mediaImage = imageProxy.image
                         if (mediaImage != null) {
-                            val image = InputImage.fromMediaImage(
-                                mediaImage,
-                                imageProxy.imageInfo.rotationDegrees
-                            )
-                            BarcodeScanning.getClient()
-                                .process(image)
+                            val image = InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
+                            BarcodeScanning.getClient().process(image)
                                 .addOnSuccessListener { barcodes ->
                                     for (barcode in barcodes) {
                                         val hasil = barcode.rawValue ?: continue
                                         if (hasil.isNotEmpty() && !sudahDipindai) {
                                             sudahDipindai = true
-                                            requireActivity().runOnUiThread {
-                                                onQrTerpindai(hasil.trim())
-                                            }
+                                            requireActivity().runOnUiThread { onQrTerpindai(hasil.trim()) }
                                             break
                                         }
                                     }
                                 }
                                 .addOnCompleteListener { imageProxy.close() }
-                        } else {
-                            imageProxy.close()
-                        }
+                        } else imageProxy.close()
                     }
                 }
-
             try {
                 cameraProvider?.unbindAll()
                 cameraProvider?.bindToLifecycle(
-                    viewLifecycleOwner,
-                    CameraSelector.DEFAULT_BACK_CAMERA,
-                    preview,
-                    imageAnalysis
+                    viewLifecycleOwner, CameraSelector.DEFAULT_BACK_CAMERA, preview, imageAnalysis
                 )
             } catch (e: Exception) {
-                Toast.makeText(
-                    requireContext(),
-                    "Gagal membuka kamera: ${e.message}",
-                    Toast.LENGTH_SHORT
-                ).show()
+                Toast.makeText(requireContext(), "Gagal membuka kamera: ${e.message}", Toast.LENGTH_SHORT).show()
                 tutupScanner()
             }
-
         }, ContextCompat.getMainExecutor(requireContext()))
     }
 
@@ -367,7 +317,6 @@ class SetoranFragment : Fragment() {
         isScannerActive = false
         sudahDipindai   = false
         cameraProvider?.unbindAll()
-
         binding.frameQrScanner.visibility  = View.VISIBLE
         binding.cameraPreview.visibility   = View.GONE
         binding.qrOverlay.visibility       = View.GONE
@@ -381,32 +330,21 @@ class SetoranFragment : Fragment() {
         cekUserByUuid(uuid)
     }
 
-    // ===== CEK USER — ✅ UPDATE dengan cek sponsor =====
+    // ===== CEK USER =====
     private fun cekUserByUuid(uuid: String) {
         setTombolCek(loading = true)
         lifecycleScope.launch {
             try {
                 val user = client.postgrest
                     .from("users")
-                    .select {
-                        filter {
-                            eq("id_user", uuid)
-                            eq("status_akun", "aktif")
-                        }
-                    }
+                    .select { filter { eq("id_user", uuid); eq("status_akun", "aktif") } }
                     .decodeSingle<User>()
 
-                // ✅ Cek status sponsor setelah user ditemukan
                 val sponsorInfo = cekStatusSponsor(uuid)
                 tampilkanUser(user, uuid.take(8), sponsorInfo)
-
             } catch (e: Exception) {
                 userTidakDitemukan()
-                Toast.makeText(
-                    requireContext(),
-                    "User tidak ditemukan: ${e.message}",
-                    Toast.LENGTH_LONG
-                ).show()
+                Toast.makeText(requireContext(), "User tidak ditemukan: ${e.message}", Toast.LENGTH_LONG).show()
             } finally {
                 setTombolCek(loading = false)
             }
@@ -426,10 +364,8 @@ class SetoranFragment : Fragment() {
                     it.idUser.startsWith(inputId, ignoreCase = true)
                 } ?: throw Exception("User dengan ID $inputId tidak ditemukan.")
 
-                // ✅ Cek status sponsor setelah user ditemukan
                 val sponsorInfo = cekStatusSponsor(user.idUser)
                 tampilkanUser(user, inputId, sponsorInfo)
-
             } catch (e: Exception) {
                 userTidakDitemukan()
                 Toast.makeText(requireContext(), "${e.message}", Toast.LENGTH_SHORT).show()
@@ -439,20 +375,15 @@ class SetoranFragment : Fragment() {
         }
     }
 
-    // ✅ Fungsi baru: query nasabah_data untuk cek id_sponsor
     private suspend fun cekStatusSponsor(idUser: String): NasabahSponsorInfo? {
         return try {
             client.postgrest
                 .from("nasabah_data")
                 .select { filter { eq("id_nasabah", idUser) } }
                 .decodeSingle<NasabahSponsorInfo>()
-        } catch (e: Exception) {
-            // Bukan nasabah (mungkin role lain), return null
-            null
-        }
+        } catch (_: Exception) { null }
     }
 
-    // ✅ Update tampilkanUser untuk terima sponsorInfo
     private fun tampilkanUser(user: User, displayId: String, sponsorInfo: NasabahSponsorInfo?) {
         idNasabahDipilih   = user.idUser
         namaNasabahDipilih = user.namaLengkap
@@ -467,35 +398,41 @@ class SetoranFragment : Fragment() {
         }
         binding.tvIdNasabahInfo.text = "ID: $displayId • $labelRole"
 
-        // ===== TAMPILKAN STATUS SPONSOR =====
+        // ===== STATUS SPONSOR =====
         if (sponsorInfo != null) {
-            // User adalah nasabah, tampilkan info sponsor
-            if (sponsorInfo.idSponsor == null) {
-                binding.tvStatusSponsor.visibility = View.VISIBLE
-                binding.tvStatusSponsor.text = "⚠️ Belum ada sponsor — UB ini akan jadi sponsor saat setoran dikonfirmasi"
-                binding.tvStatusSponsor.setTextColor(
-                    ContextCompat.getColor(requireContext(), android.R.color.holo_orange_dark)
-                )
-            } else {
-                binding.tvStatusSponsor.visibility = View.VISIBLE
-                binding.tvStatusSponsor.text = "✓ Sudah memiliki sponsor"
-                binding.tvStatusSponsor.setTextColor(
-                    ContextCompat.getColor(requireContext(), android.R.color.holo_green_dark)
-                )
+            binding.tvStatusSponsor.visibility = View.VISIBLE
+
+            when {
+                // Nasabah setor ke dirinya sendiri (dia adalah UB)
+                user.idUser == idUnitSaatIni -> {
+                    binding.tvStatusSponsor.text = "⚠️ Ini akun Anda sendiri — sponsor tidak bisa diassign ke diri sendiri"
+                    binding.tvStatusSponsor.setTextColor(
+                        ContextCompat.getColor(requireContext(), android.R.color.holo_orange_dark)
+                    )
+                }
+                // Nasabah belum punya sponsor — UB ini akan jadi sponsor
+                sponsorInfo.idSponsor == null -> {
+                    binding.tvStatusSponsor.text = "⚠️ Nasabah belum memiliki sponsor — UB ini akan otomatis menjadi sponsornya"
+                    binding.tvStatusSponsor.setTextColor(
+                        ContextCompat.getColor(requireContext(), android.R.color.holo_orange_dark)
+                    )
+                }
+                // Sudah punya sponsor
+                else -> {
+                    binding.tvStatusSponsor.text = "✓ Nasabah sudah memiliki sponsor"
+                    binding.tvStatusSponsor.setTextColor(
+                        ContextCompat.getColor(requireContext(), android.R.color.holo_green_dark)
+                    )
+                }
             }
         } else {
-            // Bukan nasabah (unit_bisnis / internal), sembunyikan info sponsor
+            // Bukan nasabah (unit_bisnis / internal)
             binding.tvStatusSponsor.visibility = View.GONE
         }
 
-        Toast.makeText(
-            requireContext(),
-            "Ditemukan: ${user.namaLengkap} ($labelRole)",
-            Toast.LENGTH_SHORT
-        ).show()
+        Toast.makeText(requireContext(), "Ditemukan: ${user.namaLengkap} ($labelRole)", Toast.LENGTH_SHORT).show()
     }
 
-    // ✅ Update userTidakDitemukan — sembunyikan tvStatusSponsor juga
     private fun userTidakDitemukan() {
         idNasabahDipilih   = null
         namaNasabahDipilih = null
@@ -521,19 +458,11 @@ class SetoranFragment : Fragment() {
 
     private fun validasiDanSubmit() {
         if (hargaPerKg == null || komisiPerKg == null) {
-            Toast.makeText(
-                requireContext(),
-                "Data harga belum termuat. Tunggu sebentar atau buka ulang halaman ini.",
-                Toast.LENGTH_SHORT
-            ).show()
+            Toast.makeText(requireContext(), "Data harga belum termuat.", Toast.LENGTH_SHORT).show()
             return
         }
         if (idNasabahDipilih == null) {
-            Toast.makeText(
-                requireContext(),
-                "Scan QR atau masukkan ID pengguna terlebih dahulu.",
-                Toast.LENGTH_SHORT
-            ).show()
+            Toast.makeText(requireContext(), "Scan QR atau masukkan ID pengguna terlebih dahulu.", Toast.LENGTH_SHORT).show()
             return
         }
         val beratStr = binding.etJumlah.text.toString().trim()
@@ -552,7 +481,6 @@ class SetoranFragment : Fragment() {
 
     private fun submitSetoran(beratKg: Double, catatan: String) {
         setLoading(true)
-
         val catatanValue = catatan.ifEmpty { null }
 
         lifecycleScope.launch {
@@ -563,21 +491,19 @@ class SetoranFragment : Fragment() {
                 val kodeTransaksi = "TRX-${UUID.randomUUID().toString()
                     .replace("-", "").take(16).uppercase()}"
 
-                // ===== UPLOAD FOTO BUKTI KE SUPABASE STORAGE =====
+                // ===== UPLOAD FOTO =====
                 var urlFotoBukti: String? = null
                 val foto = fotoFile
                 if (foto != null && foto.exists() && foto.length() > 0) {
                     try {
-                        val bytes = kompresGambar(foto.readBytes())
+                        val bytes    = kompresGambar(foto.readBytes())
                         val namaFile = "bukti-ub/${idUnit}/${kodeTransaksi}.jpg"
                         client.storage["evidence"].upload(namaFile, bytes) { upsert = true }
                         urlFotoBukti = client.storage.from("evidence").publicUrl(namaFile)
                     } catch (e: Exception) {
-                        Toast.makeText(
-                            requireContext(),
+                        Toast.makeText(requireContext(),
                             "Foto gagal diupload (${e.message}), setoran tetap disimpan",
-                            Toast.LENGTH_SHORT
-                        ).show()
+                            Toast.LENGTH_SHORT).show()
                     }
                 }
 
@@ -596,11 +522,9 @@ class SetoranFragment : Fragment() {
 
                 val pesanJemput = if (isJemput) "\nMode: UB Jemput (+upah jemput)" else ""
                 setLoading(false)
-                Toast.makeText(
-                    requireContext(),
+                Toast.makeText(requireContext(),
                     "✓ Setoran berhasil!\nKode: $kodeTransaksi$pesanJemput\nMenunggu validasi admin.",
-                    Toast.LENGTH_LONG
-                ).show()
+                    Toast.LENGTH_LONG).show()
 
                 resetForm()
 

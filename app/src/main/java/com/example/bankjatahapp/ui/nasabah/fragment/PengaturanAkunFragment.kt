@@ -26,9 +26,11 @@ class PengaturanAkunFragment : Fragment() {
     private val binding get() = _binding!!
     private var idUser: String? = null
 
-    // Variabel baru untuk Bank
     private var listBank: List<MasterBank> = emptyList()
     private var bankDipilih: String? = null
+
+    // ✅ Tambah flag apakah sponsor sudah ada
+    private var sudahAdaSponsor: Boolean = false
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -68,25 +70,31 @@ class PengaturanAkunFragment : Fragment() {
                         .decodeList<MasterBank>()
 
                     val namaBank = listBank.map { it.namaBank }
-                    val adapterBank = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, namaBank)
+                    val adapterBank = ArrayAdapter(
+                        requireContext(),
+                        android.R.layout.simple_spinner_item,
+                        namaBank
+                    )
                     adapterBank.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
                     binding.spinnerBank.adapter = adapterBank
 
-                    // Set pilihan sesuai data existing
                     val indexBank = listBank.indexOfFirst { it.kodeBank == nasabah.bankCode }
                     if (indexBank >= 0) {
                         binding.spinnerBank.setSelection(indexBank)
                         bankDipilih = nasabah.bankCode
                     }
 
-                    binding.spinnerBank.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-                        override fun onItemSelected(p: AdapterView<*>?, v: View?, pos: Int, id: Long) {
-                            bankDipilih = listBank[pos].kodeBank
+                    binding.spinnerBank.onItemSelectedListener =
+                        object : AdapterView.OnItemSelectedListener {
+                            override fun onItemSelected(
+                                p: AdapterView<*>?, v: View?, pos: Int, id: Long
+                            ) { bankDipilih = listBank[pos].kodeBank }
+                            override fun onNothingSelected(p: AdapterView<*>?) {}
                         }
-                        override fun onNothingSelected(p: AdapterView<*>?) {}
-                    }
                 } catch (e: Exception) {
-                    Toast.makeText(requireContext(), "Gagal memuat daftar bank", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        requireContext(), "Gagal memuat daftar bank", Toast.LENGTH_SHORT
+                    ).show()
                 }
 
                 // ===== SET DATA REKENING =====
@@ -101,8 +109,9 @@ class PengaturanAkunFragment : Fragment() {
                 binding.etNoTelp.setText(user.noTelp ?: "")
                 binding.etAlamat.setText(nasabah.alamatRumah ?: "")
 
-                // Kode referral sponsor
-                if (!nasabah.idSponsor.isNullOrEmpty()) {
+                // ===== KODE REFERRAL SPONSOR — ✅ dengan info sponsor sudah ada =====
+                sudahAdaSponsor = !nasabah.idSponsor.isNullOrEmpty()
+                if (sudahAdaSponsor) {
                     try {
                         val sponsor = client.postgrest
                             .from("nasabah_data")
@@ -112,6 +121,15 @@ class PengaturanAkunFragment : Fragment() {
                     } catch (_: Exception) {
                         binding.etKodeReferralSponsor.setText("")
                     }
+                    binding.etKodeReferralSponsor.isEnabled = false
+                    binding.tilKodeReferralSponsor.isEnabled = false  // ✅ tambah ini — disable seluruh layout
+                    binding.tilKodeReferralSponsor.helperText = "✓ Sponsor sudah terdaftar, tidak dapat diubah"
+                    binding.tilKodeReferralSponsor.alpha = 0.6f        // ✅ visual redup
+                } else {
+                    binding.etKodeReferralSponsor.isEnabled = true
+                    binding.tilKodeReferralSponsor.isEnabled = true
+                    binding.tilKodeReferralSponsor.helperText = "Opsional — isi jika Anda memiliki sponsor"
+                    binding.tilKodeReferralSponsor.alpha = 1.0f
                 }
 
                 // Field read-only
@@ -136,7 +154,9 @@ class PengaturanAkunFragment : Fragment() {
 
             } catch (e: Exception) {
                 setFormLoading(false)
-                Toast.makeText(requireContext(), "Gagal memuat: ${e.message}", Toast.LENGTH_LONG).show()
+                Toast.makeText(
+                    requireContext(), "Gagal memuat: ${e.message}", Toast.LENGTH_LONG
+                ).show()
             }
         }
     }
@@ -151,7 +171,9 @@ class PengaturanAkunFragment : Fragment() {
         binding.tvBagikanKeTeman.setOnClickListener {
             val kodeReferral = binding.tvKodeReferralValue.text.toString()
             if (kodeReferral == "-" || kodeReferral.isEmpty()) {
-                Toast.makeText(requireContext(), "Kode referral belum tersedia", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    requireContext(), "Kode referral belum tersedia", Toast.LENGTH_SHORT
+                ).show()
                 return@setOnClickListener
             }
             bagikanKodeReferral(kodeReferral)
@@ -182,8 +204,6 @@ class PengaturanAkunFragment : Fragment() {
         val noTelp         = binding.etNoTelp.text.toString().trim()
         val alamat         = binding.etAlamat.text.toString().trim()
         val kodeRefSponsor = binding.etKodeReferralSponsor.text.toString().trim()
-
-        // Data Rekening
         val noRekening     = binding.etNoRekening.text.toString().trim()
         val atasNama       = binding.etAtasNama.text.toString().trim()
 
@@ -199,8 +219,9 @@ class PengaturanAkunFragment : Fragment() {
             try {
                 val id = idUser ?: throw Exception("Session tidak ditemukan")
 
+                // ✅ Hanya proses sponsor jika field aktif (belum ada sponsor) dan diisi
                 var idSponsorBaru: String? = null
-                if (kodeRefSponsor.isNotEmpty()) {
+                if (!sudahAdaSponsor && kodeRefSponsor.isNotEmpty()) {
                     try {
                         val sponsorData = client.postgrest
                             .from("nasabah_data")
@@ -209,7 +230,11 @@ class PengaturanAkunFragment : Fragment() {
                         idSponsorBaru = sponsorData.idNasabah
                     } catch (_: Exception) {
                         setLoading(false)
-                        Toast.makeText(requireContext(), "Kode referral sponsor tidak ditemukan", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(
+                            requireContext(),
+                            "Kode referral sponsor tidak ditemukan",
+                            Toast.LENGTH_SHORT
+                        ).show()
                         return@launch
                     }
                 }
@@ -222,26 +247,35 @@ class PengaturanAkunFragment : Fragment() {
                     )
                 ) { filter { eq("id_user", id) } }
 
-                // Update tabel nasabah_data (Termasuk Rekening Bank)
-                client.postgrest.from("nasabah_data").update(
-                    mapOf(
-                        "alamat_rumah"       to alamat.ifEmpty { null },
-                        "id_sponsor"         to idSponsorBaru,
-                        "bank_code"          to bankDipilih,
-                        "no_rekening"        to noRekening.ifEmpty { null },
-                        "atas_nama_rekening" to atasNama.ifEmpty { null }
-                    )
-                ) { filter { eq("id_nasabah", id) } }
+                // Update tabel nasabah_data
+                // ✅ id_sponsor hanya diupdate jika belum ada sponsor dan kode valid
+                val updateMap = mutableMapOf<String, Any?>(
+                    "alamat_rumah"       to alamat.ifEmpty { null },
+                    "bank_code"          to bankDipilih,
+                    "no_rekening"        to noRekening.ifEmpty { null },
+                    "atas_nama_rekening" to atasNama.ifEmpty { null }
+                )
+                if (!sudahAdaSponsor && idSponsorBaru != null) {
+                    updateMap["id_sponsor"] = idSponsorBaru
+                }
+
+                client.postgrest.from("nasabah_data").update(updateMap) {
+                    filter { eq("id_nasabah", id) }
+                }
 
                 AvatarUtils.pasangKeImageView(binding.ivFotoProfil, nama, 300)
 
                 setLoading(false)
-                Toast.makeText(requireContext(), "✓ Profil berhasil diperbarui!", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    requireContext(), "✓ Profil berhasil diperbarui!", Toast.LENGTH_SHORT
+                ).show()
                 parentFragmentManager.popBackStack()
 
             } catch (e: Exception) {
                 setLoading(false)
-                Toast.makeText(requireContext(), "Gagal menyimpan: ${e.message}", Toast.LENGTH_LONG).show()
+                Toast.makeText(
+                    requireContext(), "Gagal menyimpan: ${e.message}", Toast.LENGTH_LONG
+                ).show()
             }
         }
     }
