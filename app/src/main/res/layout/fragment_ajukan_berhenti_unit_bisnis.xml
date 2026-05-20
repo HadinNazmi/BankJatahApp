@@ -267,46 +267,57 @@
                         android:layout_marginBottom="12dp" />
 
                     <!-- Radio: Berhenti sebagai Unit Bisnis -->
-                    <LinearLayout
+                    <!-- Ganti dari LinearLayout yang berisi 2 RadioButton menjadi RadioGroup -->
+                    <RadioGroup
+                        android:id="@+id/rgTipePengajuan"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical"
-                        android:paddingTop="8dp"
-                        android:paddingBottom="8dp">
+                        android:orientation="vertical">
 
-                        <RadioButton
-                            android:id="@+id/radioUnitBisnis"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:buttonTint="@color/orange_primary" />
-
+                        <!-- Radio: Berhenti sebagai Unit Bisnis -->
                         <LinearLayout
-                            android:layout_width="0dp"
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:orientation="vertical"
-                            android:layout_marginStart="8dp">
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical"
+                            android:paddingTop="8dp"
+                            android:paddingBottom="8dp">
 
-                            <TextView
+                            <RadioButton
+                                android:id="@+id/radioUnitBisnis"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Berhenti sebagai Unit Bisnis"
-                                android:textSize="14sp"
-                                android:textStyle="bold"
-                                android:textColor="@color/black"
-                                android:fontFamily="@font/poppins_bold" />
+                                android:buttonTint="@color/orange_primary"
+                                android:checked="true" />
 
-                            <TextView
-                                android:layout_width="wrap_content"
+                            <LinearLayout
+                                android:layout_width="0dp"
                                 android:layout_height="wrap_content"
-                                android:text="Akun nasabah tetap aktif"
-                                android:textSize="12sp"
-                                android:textColor="@color/gray_text"
-                                android:fontFamily="@font/poppins_regular" />
+                                android:layout_weight="1"
+                                android:orientation="vertical"
+                                android:layout_marginStart="8dp">
 
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Berhenti sebagai Unit Bisnis"
+                                    android:textSize="14sp"
+                                    android:textStyle="bold"
+                                    android:textColor="@color/black"
+                                    android:fontFamily="@font/poppins_bold" />
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Akun nasabah tetap aktif"
+                                    android:textSize="12sp"
+                                    android:textColor="@color/gray_text"
+                                    android:fontFamily="@font/poppins_regular" />
+
+                            </LinearLayout>
                         </LinearLayout>
-                    </LinearLayout>
+
+                    </RadioGroup>
 
                     <View
                         android:layout_width="match_parent"

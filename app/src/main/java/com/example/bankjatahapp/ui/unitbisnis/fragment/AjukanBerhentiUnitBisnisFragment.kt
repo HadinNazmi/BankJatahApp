@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import com.example.bankjatahapp.R
 import com.example.bankjatahapp.data.model.PengajuanBerhenti
 import com.example.bankjatahapp.data.model.PengajuanBerhentiInsert
 import com.example.bankjatahapp.data.remote.SupabaseClient.client
@@ -47,21 +48,20 @@ class AjukanBerhentiUnitBisnisFragment : Fragment() {
     }
 
     private fun setupRadioTipe() {
-        // Set default
         binding.radioUnitBisnis.isChecked = true
         updateDeskripsiTipe("unit_bisnis")
 
-        binding.radioUnitBisnis.setOnCheckedChangeListener { _, isChecked ->
-            if (isChecked) {
-                tipeTerpilih = "unit_bisnis"
-                updateDeskripsiTipe("unit_bisnis")
-            }
-        }
-
-        binding.radioTotal.setOnCheckedChangeListener { _, isChecked ->
-            if (isChecked) {
-                tipeTerpilih = "total"
-                updateDeskripsiTipe("total")
+        // GANTI: pakai rgTipePengajuan.setOnCheckedChangeListener
+        binding.rgTipePengajuan.setOnCheckedChangeListener { _, checkedId ->
+            when (checkedId) {
+                R.id.radioUnitBisnis -> {
+                    tipeTerpilih = "unit_bisnis"
+                    updateDeskripsiTipe("unit_bisnis")
+                }
+                R.id.radioTotal -> {
+                    tipeTerpilih = "total"
+                    updateDeskripsiTipe("total")
+                }
             }
         }
     }
