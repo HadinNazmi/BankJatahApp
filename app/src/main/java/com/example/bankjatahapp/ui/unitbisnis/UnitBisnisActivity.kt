@@ -14,32 +14,44 @@ class UnitBisnisActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityUnitBisnisBinding
 
+    private var lastNavTime = 0L
+    private var currentNavId = R.id.nav_home
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityUnitBisnisBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        loadFragment(HomeUnitBisnisFragment())
+        if (savedInstanceState == null) {
+            loadFragment(HomeUnitBisnisFragment(), R.id.nav_home)
+        }
         binding.bottomNav.selectedItemId = R.id.nav_home
 
         binding.bottomNav.setOnItemSelectedListener { item ->
+            val now = System.currentTimeMillis()
+            if (now - lastNavTime < 400L) return@setOnItemSelectedListener true
+            lastNavTime = now
+            if (item.itemId == currentNavId) return@setOnItemSelectedListener true
+
             when (item.itemId) {
-                R.id.nav_home    -> loadFragment(HomeUnitBisnisFragment())
-                R.id.nav_setoran -> loadFragment(SetoranFragment())
-                R.id.nav_riwayat -> loadFragment(RiwayatUnitBisnisFragment())
-                R.id.nav_profil  -> loadFragment(ProfilUnitBisnisFragment())
+                R.id.nav_home    -> loadFragment(HomeUnitBisnisFragment(),     R.id.nav_home)
+                R.id.nav_setoran -> loadFragment(SetoranFragment(),            R.id.nav_setoran)
+                R.id.nav_riwayat -> loadFragment(RiwayatUnitBisnisFragment(), R.id.nav_riwayat)
+                R.id.nav_profil  -> loadFragment(ProfilUnitBisnisFragment(),  R.id.nav_profil)
             }
             true
         }
     }
 
     fun navigateTo(navItemId: Int) {
+        if (navItemId == currentNavId) return  // ← TAMBAH ini
         binding.bottomNav.selectedItemId = navItemId
     }
 
-    private fun loadFragment(fragment: Fragment) {
+    private fun loadFragment(fragment: Fragment, navId: Int) {
+        currentNavId = navId
         supportFragmentManager.beginTransaction()
             .replace(R.id.fragmentContainer, fragment)
-            .commit()
+            .commitAllowingStateLoss()
     }
 }

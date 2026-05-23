@@ -77,6 +77,12 @@ class HomeNasabahFragment : Fragment() {
 
                 client.realtime.connect()
 
+                try {
+                    client.realtime.removeChannel(
+                        client.realtime.channel("notifikasi-nasabah-$idUser")
+                    )
+                } catch (_: Exception) {}
+
                 val channel = client.realtime.channel("notifikasi-nasabah-$idUser")
                 realtimeChannel = channel
 

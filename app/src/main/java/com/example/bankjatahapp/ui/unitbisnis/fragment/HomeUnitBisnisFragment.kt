@@ -76,6 +76,12 @@ class HomeUnitBisnisFragment : Fragment() {
 
                 client.realtime.connect()
 
+                try {
+                    client.realtime.removeChannel(
+                        client.realtime.channel("notifikasi-unitbisnis-$idUser")
+                    )
+                } catch (_: Exception) {}
+
                 val channel = client.realtime.channel("notifikasi-unitbisnis-$idUser")
                 realtimeChannel = channel
 

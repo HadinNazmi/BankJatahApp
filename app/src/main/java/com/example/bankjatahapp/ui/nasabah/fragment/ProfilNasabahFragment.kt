@@ -49,11 +49,6 @@ class ProfilNasabahFragment : Fragment() {
         setupClickListeners()
     }
 
-    override fun onResume() {
-        super.onResume()
-        loadData()
-    }
-
     private fun loadData() {
         lifecycleScope.launch {
             try {
