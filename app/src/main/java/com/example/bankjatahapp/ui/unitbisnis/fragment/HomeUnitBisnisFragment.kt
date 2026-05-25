@@ -43,6 +43,12 @@ class HomeUnitBisnisFragment : Fragment() {
 
     private var realtimeChannel: RealtimeChannel? = null
 
+    private var dataUser: User? = null
+    private var dataDompet: DompetUser? = null
+    private var dataNasabah: NasabahData? = null
+    private var dataRewardTersedia: Int = 0
+    private var sudahLoad = false
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -54,9 +60,15 @@ class HomeUnitBisnisFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        loadData()
         setupClickListeners()
         mulaiDengarkanNotifikasi()
+
+        if (sudahLoad && dataUser != null) {
+            tampilkanData(dataUser!!, dataDompet!!, dataNasabah!!, dataRewardTersedia)
+            loadUnitBisnisPreview()
+        } else {
+            loadData()
+        }
     }
 
     override fun onDestroyView() {
@@ -124,6 +136,11 @@ class HomeUnitBisnisFragment : Fragment() {
         }
     }
 
+    fun refreshData() {
+        sudahLoad = false
+        loadData()
+    }
+
     private fun tampilkanPopupNotifikasi(title: String, message: String) {
         if (_binding == null) return
         val snackbar = Snackbar.make(binding.root, "🔔 $title\n$message", Snackbar.LENGTH_LONG)
@@ -159,6 +176,12 @@ class HomeUnitBisnisFragment : Fragment() {
                     .select { filter { eq("status_produk", "aktif") } }
                     .decodeList<ProdukReward>()
                 val rewardTersedia = produkList.count { it.stok > 0 }
+
+                dataUser           = user
+                dataDompet         = dompet
+                dataNasabah        = nasabah
+                dataRewardTersedia = rewardTersedia
+                sudahLoad          = true
 
                 tampilkanData(user, dompet, nasabah, rewardTersedia)
 
@@ -254,7 +277,7 @@ class HomeUnitBisnisFragment : Fragment() {
         parentFragmentManager.beginTransaction()
             .replace(R.id.fragmentContainer, NotifikasiFragment())
             .addToBackStack(null)
-            .commit()
+            .commitAllowingStateLoss()
     }
 
     private fun setupClickListeners() {
@@ -266,7 +289,7 @@ class HomeUnitBisnisFragment : Fragment() {
             parentFragmentManager.beginTransaction()
                 .replace(R.id.fragmentContainer, RewardUnitBisnisFragment())
                 .addToBackStack(null)
-                .commit()
+                .commitAllowingStateLoss()
         }
         binding.btnRiwayat.setOnClickListener {
             (activity as? UnitBisnisActivity)?.navigateTo(R.id.nav_riwayat)
@@ -275,15 +298,25 @@ class HomeUnitBisnisFragment : Fragment() {
             parentFragmentManager.beginTransaction()
                 .replace(R.id.fragmentContainer, LokasiUnitBisnisUBFragment())
                 .addToBackStack(null)
-                .commit()
+                .commitAllowingStateLoss()
         }
         binding.btnRequestPenarikan.setOnClickListener {
             parentFragmentManager.beginTransaction()
                 .replace(R.id.fragmentContainer, PenarikanUnitBisnisFragment())
                 .addToBackStack(null)
-                .commit()
+                .commitAllowingStateLoss()
         }
         binding.tvLihatSemua.setOnClickListener { }
+
+        binding.swipeRefresh.setColorSchemeColors(
+            requireContext().getColor(R.color.orange_primary)
+        )
+        binding.swipeRefresh.setOnRefreshListener {
+            sudahLoad = false
+            loadData()
+            // Matikan loading indicator setelah selesai
+            binding.swipeRefresh.isRefreshing = false
+        }
     }
 
     private fun formatRupiah(nominal: Double): String =

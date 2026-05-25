@@ -17,6 +17,8 @@ class UnitBisnisActivity : AppCompatActivity() {
     private var lastNavTime = 0L
     private var currentNavId = R.id.nav_home
 
+    private var lastResumeTime = 0L
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityUnitBisnisBinding.inflate(layoutInflater)
@@ -41,6 +43,16 @@ class UnitBisnisActivity : AppCompatActivity() {
             }
             true
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        val now = System.currentTimeMillis()
+        if (now - lastResumeTime > 2 * 60 * 1000L && lastResumeTime > 0) {
+            val fragment = supportFragmentManager.findFragmentById(R.id.fragmentContainer)
+            if (fragment is HomeUnitBisnisFragment) fragment.refreshData()
+        }
+        lastResumeTime = now
     }
 
     fun navigateTo(navItemId: Int) {

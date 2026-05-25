@@ -173,14 +173,14 @@ class ProfilUnitBisnisFragment : Fragment() {
             parentFragmentManager.beginTransaction()
                 .replace(R.id.fragmentContainer, ListAfiliasiUnitBisnisFragment())
                 .addToBackStack(null)
-                .commit()
+                .commitAllowingStateLoss()
         }
 
         binding.menuPengaturan.setOnClickListener {
             parentFragmentManager.beginTransaction()
                 .replace(R.id.fragmentContainer, PengaturanUnitBisnisFragment())
                 .addToBackStack(null)
-                .commit()
+                .commitAllowingStateLoss()
         }
 
         binding.menuNotifikasi.setOnClickListener {
@@ -200,7 +200,7 @@ class ProfilUnitBisnisFragment : Fragment() {
         parentFragmentManager.beginTransaction()
             .replace(R.id.fragmentContainer, AjukanBerhentiUnitBisnisFragment())
             .addToBackStack(null)
-            .commit()
+            .commitAllowingStateLoss()
     }
 
     override fun onDestroyView() {

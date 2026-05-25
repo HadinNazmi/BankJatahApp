@@ -173,14 +173,14 @@ class ProfilNasabahFragment : Fragment() {
             parentFragmentManager.beginTransaction()
                 .replace(R.id.fragmentContainer, ListAfiliasiFragment())
                 .addToBackStack(null)
-                .commit()
+                .commitAllowingStateLoss()
         }
 
         binding.menuPengaturan.setOnClickListener {
             parentFragmentManager.beginTransaction()
                 .replace(R.id.fragmentContainer, PengaturanAkunFragment())
                 .addToBackStack(null)
-                .commit()
+                .commitAllowingStateLoss()
         }
 
         binding.menuNotifikasi.setOnClickListener {
@@ -203,7 +203,7 @@ class ProfilNasabahFragment : Fragment() {
         parentFragmentManager.beginTransaction()
             .replace(R.id.fragmentContainer, AjukanBerhentiNasabahFragment())
             .addToBackStack(null)
-            .commit()
+            .commitAllowingStateLoss()
     }
 
     override fun onDestroyView() {

@@ -99,4 +99,6 @@ dependencies {
     implementation("com.github.bumptech.glide:glide:4.16.0")
     implementation("io.github.jan-tennert.supabase:realtime-kt")
 
+    implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
+
 }

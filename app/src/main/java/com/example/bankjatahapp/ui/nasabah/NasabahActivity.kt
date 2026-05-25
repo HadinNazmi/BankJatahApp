@@ -17,6 +17,8 @@ class NasabahActivity : AppCompatActivity() {
     private var lastNavTime = 0L
     private var currentNavId = R.id.nav_home
 
+    private var lastResumeTime = 0L
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityNasabahBinding.inflate(layoutInflater)
@@ -44,6 +46,17 @@ class NasabahActivity : AppCompatActivity() {
             }
             true
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        val now = System.currentTimeMillis()
+        // Auto-refresh jika app sudah di background lebih dari 2 menit
+        if (now - lastResumeTime > 2 * 60 * 1000L && lastResumeTime > 0) {
+            val fragment = supportFragmentManager.findFragmentById(R.id.fragmentContainer)
+            if (fragment is HomeNasabahFragment) fragment.refreshData()
+        }
+        lastResumeTime = now
     }
 
     fun navigateTo(navItemId: Int) {

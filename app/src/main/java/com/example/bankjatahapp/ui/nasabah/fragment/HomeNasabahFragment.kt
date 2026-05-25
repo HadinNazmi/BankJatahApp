@@ -44,6 +44,12 @@ class HomeNasabahFragment : Fragment() {
     private var systemConfig: SystemConfig? = null
     private var realtimeChannel: RealtimeChannel? = null
 
+    private var dataUser: User? = null
+    private var dataDompet: DompetUser? = null
+    private var dataNasabah: NasabahData? = null
+    private var dataRewardTersedia: Int = 0
+    private var sudahLoad = false
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -55,9 +61,16 @@ class HomeNasabahFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        loadData()
         setupClickListeners()
         mulaiDengarkanNotifikasi()
+
+        if (sudahLoad && dataUser != null) {
+            // Pakai cache — tidak fetch ulang
+            tampilkanData(dataUser!!, dataDompet!!, dataNasabah!!, dataRewardTersedia)
+            loadUnitBisnisPreview()
+        } else {
+            loadData()
+        }
     }
 
     override fun onDestroyView() {
@@ -125,6 +138,11 @@ class HomeNasabahFragment : Fragment() {
         }
     }
 
+    fun refreshData() {
+        sudahLoad = false
+        loadData()
+    }
+
     private fun tampilkanPopupNotifikasi(title: String, message: String) {
         if (_binding == null) return
         val snackbar = Snackbar.make(binding.root, "🔔 $title\n$message", Snackbar.LENGTH_LONG)
@@ -165,6 +183,12 @@ class HomeNasabahFragment : Fragment() {
                     .select { filter { eq("status_produk", "aktif") } }
                     .decodeList<ProdukReward>()
                 val rewardTersedia = produkList.count { it.stok > 0 }
+
+                dataUser           = user
+                dataDompet         = dompet
+                dataNasabah        = nasabahData
+                dataRewardTersedia = rewardTersedia
+                sudahLoad          = true
 
                 tampilkanData(user, dompet, nasabahData!!, rewardTersedia)
 
@@ -260,7 +284,7 @@ class HomeNasabahFragment : Fragment() {
         parentFragmentManager.beginTransaction()
             .replace(R.id.fragmentContainer, NotifikasiFragment())
             .addToBackStack(null)
-            .commit()
+            .commitAllowingStateLoss()
     }
 
     private fun setupClickListeners() {
@@ -269,7 +293,7 @@ class HomeNasabahFragment : Fragment() {
             parentFragmentManager.beginTransaction()
                 .replace(R.id.fragmentContainer, LokasiUnitBisnisFragment())
                 .addToBackStack(null)
-                .commit()
+                .commitAllowingStateLoss()
         }
         binding.btnReward.setOnClickListener {
             (activity as? NasabahActivity)?.navigateTo(R.id.nav_reward)
@@ -281,22 +305,32 @@ class HomeNasabahFragment : Fragment() {
             parentFragmentManager.beginTransaction()
                 .replace(R.id.fragmentContainer, LokasiUnitBisnisFragment())
                 .addToBackStack(null)
-                .commit()
+                .commitAllowingStateLoss()
         }
         binding.tvLihatSemuaUB.setOnClickListener {
             parentFragmentManager.beginTransaction()
                 .replace(R.id.fragmentContainer, LokasiUnitBisnisFragment())
                 .addToBackStack(null)
-                .commit()
+                .commitAllowingStateLoss()
         }
         binding.btnRequestPenarikan.setOnClickListener {
             parentFragmentManager.beginTransaction()
                 .replace(R.id.fragmentContainer, PenarikanNasabahFragment())
                 .addToBackStack(null)
-                .commit()
+                .commitAllowingStateLoss()
         }
         binding.tvLihatSemua.setOnClickListener { }
         binding.btnDaftarUnitBisnis.setOnClickListener { cekSyaratDanBukaRegistrasiUB() }
+
+        binding.swipeRefresh.setColorSchemeColors(
+            requireContext().getColor(R.color.orange_primary)
+        )
+        binding.swipeRefresh.setOnRefreshListener {
+            sudahLoad = false
+            loadData()
+            // Matikan loading indicator setelah selesai
+            binding.swipeRefresh.isRefreshing = false
+        }
     }
 
     private fun cekSyaratDanBukaRegistrasiUB() {
@@ -341,7 +375,7 @@ class HomeNasabahFragment : Fragment() {
             parentFragmentManager.beginTransaction()
                 .replace(R.id.fragmentContainer, RegistrasiUnitBisnisFragment())
                 .addToBackStack(null)
-                .commit()
+                .commitAllowingStateLoss()
         }
     }
 
