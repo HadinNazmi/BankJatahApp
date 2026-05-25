@@ -23,7 +23,8 @@ import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
-import java.util.Locale
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
 
 class PengaturanUnitBisnisFragment : Fragment() {
 
@@ -260,18 +261,17 @@ class PengaturanUnitBisnisFragment : Fragment() {
                 ) { filter { eq("id_user", id) } }
 
                 // Update tabel nasabah_data
-                // ✅ id_sponsor hanya diupdate jika belum ada sponsor dan kode valid
-                val updateMap = mutableMapOf<String, Any?>(
-                    "alamat_rumah"       to alamat.ifEmpty { null },
-                    "bank_code"          to bankDipilih,
-                    "no_rekening"        to noRekening.ifEmpty { null },
-                    "atas_nama_rekening" to atasNama.ifEmpty { null }
-                )
-                if (!sudahAdaSponsor && idSponsorBaru != null) {
-                    updateMap["id_sponsor"] = idSponsorBaru
+                val updatePayload = buildJsonObject {
+                    put("alamat_rumah",       alamat.ifEmpty { null })
+                    put("bank_code",          bankDipilih)
+                    put("no_rekening",        noRekening.ifEmpty { null })
+                    put("atas_nama_rekening", atasNama.ifEmpty { null })
+                    if (!sudahAdaSponsor && idSponsorBaru != null) {
+                        put("id_sponsor", idSponsorBaru)
+                    }
                 }
 
-                client.postgrest.from("nasabah_data").update(updateMap) {
+                client.postgrest.from("nasabah_data").update(updatePayload) {
                     filter { eq("id_nasabah", id) }
                 }
 
