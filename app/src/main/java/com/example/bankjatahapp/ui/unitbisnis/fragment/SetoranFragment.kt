@@ -154,6 +154,8 @@ class SetoranFragment : Fragment() {
 
                 biayaJemputPerKg = config.biayaJemputPerKg
 
+                if (_binding == null) return@launch  // ← TAMBAH INI
+
                 binding.tvJemputSub.text =
                     "Nasabah -${formatRupiah(biayaJemputPerKg)}/kg • UB +${formatRupiah(biayaJemputPerKg)}/kg"
                 binding.tvPoinNilai.text = "${formatRupiah(harga.hargaPerKg)}/Kg"
@@ -162,6 +164,7 @@ class SetoranFragment : Fragment() {
                 binding.btnKonfirmasi.text = "Konfirmasi Setor"
 
             } catch (e: Exception) {
+                if (_binding == null) return@launch  // ← TAMBAH INI
                 binding.btnKonfirmasi.text = "Konfirmasi Setor"
                 Toast.makeText(
                     requireContext(),
