@@ -188,7 +188,10 @@ class ProfilUnitBisnisFragment : Fragment() {
         }
 
         binding.menuBantuan.setOnClickListener {
-            Toast.makeText(requireContext(), "Bantuan & FAQ", Toast.LENGTH_SHORT).show()
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.fragmentContainer, BantuanFaqFragment())
+                .addToBackStack(null)
+                .commitAllowingStateLoss()
         }
 
         binding.menuLogout.setOnClickListener {

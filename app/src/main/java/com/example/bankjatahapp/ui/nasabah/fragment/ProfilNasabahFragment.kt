@@ -21,6 +21,7 @@ import com.example.bankjatahapp.data.remote.SupabaseClient.client
 import com.example.bankjatahapp.databinding.FragmentProfilNasabahBinding
 import com.example.bankjatahapp.ui.auth.LoginActivity
 import com.example.bankjatahapp.ui.component.AvatarUtils
+import com.example.bankjatahapp.ui.unitbisnis.fragment.BantuanFaqFragment
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.qrcode.QRCodeWriter
 import io.github.jan.supabase.auth.auth
@@ -187,8 +188,12 @@ class ProfilNasabahFragment : Fragment() {
             bukaFormAjukanBerhenti()
         }
 
+        // Navigasi ke Bantuan FAQ (Package fiturgabungan)
         binding.menuBantuan.setOnClickListener {
-            Toast.makeText(requireContext(), "Bantuan & FAQ", Toast.LENGTH_SHORT).show()
+            parentFragmentManager.beginTransaction()
+                .replace(R.id.fragmentContainer, BantuanFaqFragment())
+                .addToBackStack(null)
+                .commitAllowingStateLoss()
         }
 
 
