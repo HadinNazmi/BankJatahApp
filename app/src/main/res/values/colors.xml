@@ -28,5 +28,5 @@
     <color name="notif_warning_bg">#FFA000</color>
     <color name="notif_info_bg">#2196F3</color>
 
-    <color name="ic_logoapp_background">#FFFFFF</color>
+    <color name="ic_logoapp_background">#000000</color>
 </resources>

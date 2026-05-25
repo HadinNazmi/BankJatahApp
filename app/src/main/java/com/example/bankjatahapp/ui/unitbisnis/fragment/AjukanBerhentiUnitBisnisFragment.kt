@@ -48,21 +48,38 @@ class AjukanBerhentiUnitBisnisFragment : Fragment() {
     }
 
     private fun setupRadioTipe() {
-        binding.radioUnitBisnis.isChecked = true
+        tipeTerpilih = "unit_bisnis"
         updateDeskripsiTipe("unit_bisnis")
+        updateVisualPilihan("unit_bisnis")
 
-        // GANTI: pakai rgTipePengajuan.setOnCheckedChangeListener
-        binding.rgTipePengajuan.setOnCheckedChangeListener { _, checkedId ->
-            when (checkedId) {
-                R.id.radioUnitBisnis -> {
-                    tipeTerpilih = "unit_bisnis"
-                    updateDeskripsiTipe("unit_bisnis")
-                }
-                R.id.radioTotal -> {
-                    tipeTerpilih = "total"
-                    updateDeskripsiTipe("total")
-                }
-            }
+        binding.cardOpsiUnitBisnis.setOnClickListener {
+            tipeTerpilih = "unit_bisnis"
+            updateDeskripsiTipe("unit_bisnis")
+            updateVisualPilihan("unit_bisnis")
+        }
+
+        binding.cardOpsiTotal.setOnClickListener {
+            tipeTerpilih = "total"
+            updateDeskripsiTipe("total")
+            updateVisualPilihan("total")
+        }
+    }
+
+    private fun updateVisualPilihan(terpilih: String) {
+        if (terpilih == "unit_bisnis") {
+            binding.cardOpsiUnitBisnis.setCardBackgroundColor(
+                requireContext().getColor(R.color.orange_primary))
+            binding.ivCheckUnitBisnis.setImageResource(android.R.drawable.checkbox_on_background)
+            binding.cardOpsiTotal.setCardBackgroundColor(
+                requireContext().getColor(R.color.gray_border))
+            binding.ivCheckTotal.setImageResource(android.R.drawable.checkbox_off_background)
+        } else {
+            binding.cardOpsiTotal.setCardBackgroundColor(
+                requireContext().getColor(R.color.red_gagal))
+            binding.ivCheckTotal.setImageResource(android.R.drawable.checkbox_on_background)
+            binding.cardOpsiUnitBisnis.setCardBackgroundColor(
+                requireContext().getColor(R.color.gray_border))
+            binding.ivCheckUnitBisnis.setImageResource(android.R.drawable.checkbox_off_background)
         }
     }
 

@@ -41,15 +41,6 @@
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent" />
 
-        <ImageView
-            android:id="@+id/btnFilter"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:src="@drawable/ic_filter"
-            android:scaleType="centerInside"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <!-- TAB FILTER -->

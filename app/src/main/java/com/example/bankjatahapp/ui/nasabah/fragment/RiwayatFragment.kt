@@ -81,7 +81,6 @@ class RiwayatFragment : Fragment() {
         binding.tabPenarikan.setOnClickListener { toggleFilterKonten("penarikan") }
         binding.tabReward.setOnClickListener { toggleFilterKonten("reward") }
 
-        binding.btnFilter.setOnClickListener { }
     }
 
     private fun toggleFilterKonten(tipe: String) {
