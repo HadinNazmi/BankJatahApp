@@ -178,6 +178,16 @@
                             android:textColor="#CCFFFFFF"
                             android:fontFamily="@font/poppins_regular" />
 
+                        <TextView
+                            android:id="@+id/tvSyaratTabungan"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text=""
+                            android:textSize="10sp"
+                            android:textColor="#CCFFFFFF"
+                            android:fontFamily="@font/poppins_regular"
+                            android:layout_marginTop="4dp" />
+
                     </LinearLayout>
 
                     <TextView
@@ -233,6 +243,16 @@
                             android:textSize="11sp"
                             android:textColor="@color/gray_text"
                             android:fontFamily="@font/poppins_regular" />
+
+                        <TextView
+                            android:id="@+id/tvSyaratAfiliasi"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text=""
+                            android:textSize="10sp"
+                            android:textColor="@color/gray_text"
+                            android:fontFamily="@font/poppins_regular"
+                            android:layout_marginTop="4dp" />
 
                     </LinearLayout>
 

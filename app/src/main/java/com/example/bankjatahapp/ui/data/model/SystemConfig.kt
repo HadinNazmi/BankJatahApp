@@ -35,6 +35,9 @@ data class SystemConfig(
     @SerialName("min_penarikan_komisi")
     val minPenarikanKomisi: Double = 10000.0,
 
+    @SerialName("min_penarikan_afiliasi")
+    val minPenarikanAfiliasi: Double = 10000.0,
+
     // ==========================================
     // TARIF KOMISI AFILIASI
     // ==========================================
@@ -95,11 +98,11 @@ data class SystemConfig(
     // SYARAT PENARIKAN NASABAH AKTIF
     // ==========================================
 
-    @SerialName("threshold_saldo_nasabah_aktif")
-    val thresholdSaldoNasabahAktif: Double = 120000.0,
+    @SerialName("threshold_saldo_nasabah")
+    val thresholdSaldoNasabah: Double = 120000.0,
 
-    @SerialName("min_sisa_saldo_nasabah_aktif")
-    val minSisaSaldoNasabahAktif: Double = 20000.0,
+    @SerialName("min_sisa_saldo_nasabah")
+    val minSisaSaldoNasabah: Double = 20000.0,
 
     // ==========================================
     // SYARAT REDEEM REWARD

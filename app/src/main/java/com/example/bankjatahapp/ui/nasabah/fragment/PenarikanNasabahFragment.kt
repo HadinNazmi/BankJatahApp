@@ -11,7 +11,6 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.example.bankjatahapp.data.model.DompetUser
-import com.example.bankjatahapp.data.model.MasterBank
 import com.example.bankjatahapp.data.model.NasabahData
 import com.example.bankjatahapp.data.model.SystemConfig
 import com.example.bankjatahapp.data.remote.SupabaseClient.client
@@ -30,21 +29,16 @@ class PenarikanNasabahFragment : Fragment() {
     private var _binding: FragmentPenarikanNasabahBinding? = null
     private val binding get() = _binding!!
 
-    // Data dompet
-    private var saldoTabungan: Double = 0.0   // saldo_nasabah
-    private var saldoAfiliasi: Double = 0.0   // saldo_afiliasi / bonus
+    private var saldoTabungan: Double = 0.0
+    private var saldoAfiliasi: Double = 0.0
     private var saldoTerpilih: Double = 0.0
-    private var jenisTerpilih: String = "tabungan" // "tabungan" atau "afiliasi"
+    private var jenisTerpilih: String = "tabungan"
 
-    // Config & nasabah dari DB
-    private var config: SystemConfig?   = null
+    private var config: SystemConfig?     = null
     private var nasabahData: NasabahData? = null
-    private var isAktif: Boolean        = false
+    private var isAktif: Boolean          = false
+    private var biayaAdmin: Double        = 0.0
 
-    // Biaya admin dinamis
-    private var biayaAdmin: Double = 0.0
-
-    // Variabel baru untuk menampung data rekening nasabah (Triple: Kode Bank, No Rek, Atas Nama)
     private var rekeningDipilih: Triple<String, String, String> = Triple("", "", "")
 
     override fun onCreateView(
@@ -60,46 +54,63 @@ class PenarikanNasabahFragment : Fragment() {
         setupListeners()
     }
 
-    // ===== LOAD SEMUA DATA DARI SUPABASE =====
     private fun loadData() {
         lifecycleScope.launch {
             try {
                 val idUser = client.auth.currentUserOrNull()?.id ?: return@launch
 
-                // 1. Dompet user
                 val dompet = client.postgrest
                     .from("dompet_user")
                     .select { filter { eq("id_dompet", idUser) } }
                     .decodeSingle<DompetUser>()
 
-                // 2. Data nasabah (untuk cek aktif/pasif & level bintang & data rekening)
                 nasabahData = client.postgrest
                     .from("nasabah_data")
                     .select { filter { eq("id_nasabah", idUser) } }
                     .decodeSingle<NasabahData>()
 
-                // 3. System config
                 config = client.postgrest
                     .from("system_config")
                     .select { filter { eq("id_config", 1) } }
                     .decodeSingle<SystemConfig>()
 
-                // 4. Update variabel lokal
-                biayaAdmin = config?.biayaAdminPencairan ?: 0.0
-                isAktif = nasabahData?.kategoriNasabah == "aktif"
+                biayaAdmin    = config?.biayaAdminPencairan ?: 0.0
+                isAktif       = nasabahData?.kategoriNasabah == "aktif"
                 saldoTabungan = dompet.saldoNasabah
                 saldoAfiliasi = dompet.saldoAfiliasi
 
-                // Tampilkan nilai saldo di opsi pilihan
                 binding.tvSaldoTabunganNilai.text = formatRupiah(saldoTabungan)
                 binding.tvSaldoAfiliasiNilai.text = formatRupiah(saldoAfiliasi)
 
-                // 5. PERUBAHAN: Setup data rekening nasabah ke Spinner (Tanpa fetch master bank)
-                val noRek = nasabahData?.noRekening ?: ""
-                val bank = nasabahData?.bankCode ?: ""
+                // Tampilkan syarat di bawah card tabungan
+                val cfg = config
+                val threshold  = cfg?.thresholdSaldoNasabah ?: 120000.0
+                val minSisa    = cfg?.minSisaSaldoNasabah ?: 20000.0
+                val minBintang = cfg?.minBintangPenarikan ?: 3
+                val biayaInfo  = if (biayaAdmin > 0) formatRupiah(biayaAdmin) else "Gratis"
+
+                // Syarat saldo tabungan — ditampilkan langsung di card sebagai informasi
+                binding.tvSyaratTabungan.text = buildString {
+                    append("• Saldo min. ${formatRupiah(threshold)} untuk mulai tarik\n")
+                    append("• Sisa saldo min. ${formatRupiah(minSisa)} setelah penarikan\n")
+                    append("• Minimal Bintang $minBintang\n")
+                    append("• Biaya admin: $biayaInfo")
+                }
+
+                // Syarat saldo bonus afiliasi
+                val minAfiliasi = cfg?.minPenarikanAfiliasi ?: 10000.0
+                binding.tvSyaratAfiliasi.text = buildString {
+                    append("• Minimal Bintang $minBintang\n")
+                    append("• Min. penarikan: ${formatRupiah(minAfiliasi)}\n")
+                    append("• Bisa ditarik sampai Rp 0\n")
+                    append("• Biaya admin: $biayaInfo")
+                }
+
+                // Rekening dari profil
+                val noRek    = nasabahData?.noRekening ?: ""
+                val bank     = nasabahData?.bankCode ?: ""
                 val atasNama = nasabahData?.atasNamaRekening ?: ""
 
-                // Isi spinner dengan 1 item rekening milik nasabah
                 val adapter = ArrayAdapter(
                     requireContext(),
                     android.R.layout.simple_spinner_item,
@@ -107,11 +118,8 @@ class PenarikanNasabahFragment : Fragment() {
                 )
                 adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
                 binding.spinnerBank.adapter = adapter
-
-                // Simpan ke variabel Triple untuk proses submit
                 rekeningDipilih = Triple(bank, noRek, atasNama)
 
-                // Default pilih tabungan
                 pilihJenis("tabungan")
 
             } catch (e: Exception) {
@@ -130,6 +138,7 @@ class PenarikanNasabahFragment : Fragment() {
         }
         binding.tvSaldoTersedia.text = formatRupiah(saldoTerpilih)
 
+        // Visual tab aktif/tidak aktif
         if (jenis == "tabungan") {
             binding.optionTabungan.setBackgroundResource(com.example.bankjatahapp.R.drawable.ic_bg_tab_active)
             binding.tvSaldoTabunganNilai.setTextColor(requireContext().getColor(com.example.bankjatahapp.R.color.white))
@@ -146,6 +155,7 @@ class PenarikanNasabahFragment : Fragment() {
             binding.radioTabungan.isChecked = false
         }
 
+        // Cek syarat — tampilkan warning jika belum memenuhi, disable input
         val syaratInfo = cekSyaratPenarikan(jenis)
         if (syaratInfo != null) {
             binding.tvWarningNominal.text = syaratInfo
@@ -170,20 +180,19 @@ class PenarikanNasabahFragment : Fragment() {
         binding.cardRingkasan.visibility = View.GONE
     }
 
+    // Semua nilai dari system_config — tidak ada yang hardcode
     private fun cekSyaratPenarikan(jenis: String): String? {
         val cfg = config
         return when (jenis) {
             "tabungan" -> {
-                if (isAktif) {
-                    val threshold = cfg?.thresholdSaldoNasabahAktif ?: 120000.0
-                    if (saldoTabungan < threshold) {
-                        return "⚠ Nasabah aktif baru bisa menarik jika saldo ≥ ${formatRupiah(threshold)}\nSaldo Anda: ${formatRupiah(saldoTabungan)}"
-                    }
-                } else {
-                    val minPasif = cfg?.minPenarikanNasabahPasif ?: 25000.0
-                    if (saldoTabungan < minPasif) {
-                        return "⚠ Saldo tidak mencukupi minimum penarikan ${formatRupiah(minPasif)}"
-                    }
+                val minBintang = cfg?.minBintangPenarikan ?: 3
+                val levelSaat  = nasabahData?.levelBintang ?: 1
+                if (levelSaat < minBintang) {
+                    return "⚠ Penarikan tabungan membutuhkan minimal Bintang $minBintang\nLevel Anda: Bintang $levelSaat"
+                }
+                val threshold = cfg?.thresholdSaldoNasabah ?: 120000.0
+                if (saldoTabungan < threshold) {
+                    return "⚠ Saldo tabungan harus ≥ ${formatRupiah(threshold)} untuk mulai menarik\nSaldo Anda: ${formatRupiah(saldoTabungan)}"
                 }
                 null
             }
@@ -191,7 +200,7 @@ class PenarikanNasabahFragment : Fragment() {
                 val minBintang = cfg?.minBintangPenarikan ?: 3
                 val levelSaat  = nasabahData?.levelBintang ?: 1
                 if (levelSaat < minBintang) {
-                    return "⚠ Penarikan bonus/afiliasi membutuhkan minimal Bintang $minBintang\nLevel Anda saat ini: Bintang $levelSaat"
+                    return "⚠ Penarikan bonus/afiliasi membutuhkan minimal Bintang $minBintang\nLevel Anda: Bintang $levelSaat"
                 }
                 if (saldoAfiliasi <= 0) {
                     return "⚠ Saldo bonus/afiliasi Anda kosong"
@@ -206,14 +215,13 @@ class PenarikanNasabahFragment : Fragment() {
         val cfg = config
         return when (jenis) {
             "tabungan" -> {
-                val min = if (isAktif) cfg?.minPenarikanNasabahAktif ?: 15000.0
-                else        cfg?.minPenarikanNasabahPasif  ?: 25000.0
-                "Minimum penarikan: ${formatRupiah(min)}"
+                val minSisa = cfg?.minSisaSaldoNasabah ?: 20000.0
+                "Min. penarikan dinamis · Sisa wajib ${formatRupiah(minSisa)}"
             }
             "afiliasi" -> {
+                val min        = cfg?.minPenarikanAfiliasi ?: 10000.0
                 val minBintang = cfg?.minBintangPenarikan ?: 3
-                val minNominal = cfg?.minPenarikanKomisi  ?: 10000.0
-                "Tersedia untuk Bintang $minBintang ke atas · Min: ${formatRupiah(minNominal)}"
+                "Min. ${formatRupiah(min)} · Bintang $minBintang ke atas"
             }
             else -> ""
         }
@@ -227,9 +235,9 @@ class PenarikanNasabahFragment : Fragment() {
         binding.optionAfiliasi.setOnClickListener { pilihJenis("afiliasi") }
         binding.radioAfiliasi.setOnClickListener  { pilihJenis("afiliasi") }
 
-        binding.btn50k.setOnClickListener  { setNominal(50_000) }
-        binding.btn100k.setOnClickListener { setNominal(100_000) }
-        binding.btn200k.setOnClickListener { setNominal(200_000) }
+        binding.btn50k.setOnClickListener   { setNominal(50_000) }
+        binding.btn100k.setOnClickListener  { setNominal(100_000) }
+        binding.btn200k.setOnClickListener  { setNominal(200_000) }
         binding.btnSemua.setOnClickListener { setNominal(saldoTerpilih.toLong()) }
 
         binding.etNominal.addTextChangedListener(object : TextWatcher {
@@ -253,77 +261,103 @@ class PenarikanNasabahFragment : Fragment() {
         binding.tilNominal.error = null
 
         val cfg = config
-        val minPenarikan = when {
-            jenisTerpilih == "tabungan" && isAktif -> cfg?.minPenarikanNasabahAktif ?: 15000.0
-            jenisTerpilih == "tabungan"            -> cfg?.minPenarikanNasabahPasif ?: 25000.0
-            else                                   -> cfg?.minPenarikanKomisi       ?: 10000.0
-        }
 
-        when {
-            nominal <= 0 -> {
-                binding.cardRingkasan.visibility = View.GONE
+        when (jenisTerpilih) {
+            "tabungan" -> {
+                // Tidak ada minimum nominal khusus untuk tabungan —
+                // hanya ada syarat threshold (sudah dicek di cekSyaratPenarikan)
+                // dan sisa saldo minimal
+                val minSisa = cfg?.minSisaSaldoNasabah ?: 20000.0
+                when {
+                    nominal <= 0 -> binding.cardRingkasan.visibility = View.GONE
+                    nominal > saldoTerpilih -> {
+                        binding.tvWarningNominal.text = "⚠ Nominal melebihi saldo tersedia (${formatRupiah(saldoTerpilih)})"
+                        binding.tvWarningNominal.visibility = View.VISIBLE
+                        binding.cardRingkasan.visibility = View.GONE
+                    }
+                    (saldoTerpilih - nominal) < minSisa -> {
+                        binding.tvWarningNominal.text =
+                            "⚠ Harus menyisakan minimal ${formatRupiah(minSisa)} di dompet"
+                        binding.tvWarningNominal.visibility = View.VISIBLE
+                        binding.cardRingkasan.visibility = View.GONE
+                    }
+                    else -> tampilkanRingkasan(nominal)
+                }
             }
-            nominal < minPenarikan -> {
-                binding.tvWarningNominal.text = "⚠ Minimum penarikan adalah ${formatRupiah(minPenarikan)}"
-                binding.tvWarningNominal.visibility = View.VISIBLE
-                binding.cardRingkasan.visibility = View.GONE
-            }
-            nominal > saldoTerpilih -> {
-                binding.tvWarningNominal.text = "⚠ Nominal melebihi saldo tersedia (${formatRupiah(saldoTerpilih)})"
-                binding.tvWarningNominal.visibility = View.VISIBLE
-                binding.cardRingkasan.visibility = View.GONE
-            }
-            jenisTerpilih == "tabungan" && isAktif && cfg != null &&
-                    (saldoTerpilih - nominal) < cfg.minSisaSaldoNasabahAktif -> {
-                binding.tvWarningNominal.text =
-                    "⚠ Harus menyisakan minimal ${formatRupiah(cfg.minSisaSaldoNasabahAktif)} di dompet"
-                binding.tvWarningNominal.visibility = View.VISIBLE
-                binding.cardRingkasan.visibility = View.GONE
-            }
-            else -> {
-                val bersih = nominal - biayaAdmin
-                binding.tvRingkasanJumlah.text = formatRupiah(nominal)
-                binding.tvRingkasanBiaya.text  = if (biayaAdmin > 0) formatRupiah(biayaAdmin) else "Gratis"
-                binding.tvRingkasanBersih.text = formatRupiah(bersih)
-                binding.cardRingkasan.visibility = View.VISIBLE
+            "afiliasi" -> {
+                val minAfiliasi = cfg?.minPenarikanAfiliasi ?: 10000.0
+                when {
+                    nominal <= 0 -> binding.cardRingkasan.visibility = View.GONE
+                    nominal < minAfiliasi -> {
+                        binding.tvWarningNominal.text = "⚠ Minimum penarikan bonus/afiliasi adalah ${formatRupiah(minAfiliasi)}"
+                        binding.tvWarningNominal.visibility = View.VISIBLE
+                        binding.cardRingkasan.visibility = View.GONE
+                    }
+                    nominal > saldoTerpilih -> {
+                        binding.tvWarningNominal.text = "⚠ Nominal melebihi saldo tersedia (${formatRupiah(saldoTerpilih)})"
+                        binding.tvWarningNominal.visibility = View.VISIBLE
+                        binding.cardRingkasan.visibility = View.GONE
+                    }
+                    else -> tampilkanRingkasan(nominal)
+                }
             }
         }
     }
 
+    private fun tampilkanRingkasan(nominal: Double) {
+        val bersih = nominal - biayaAdmin
+        binding.tvRingkasanJumlah.text = formatRupiah(nominal)
+        binding.tvRingkasanBiaya.text  = if (biayaAdmin > 0) formatRupiah(biayaAdmin) else "Gratis"
+        binding.tvRingkasanBersih.text = formatRupiah(bersih)
+        binding.cardRingkasan.visibility = View.VISIBLE
+    }
+
     private fun ajukanPenarikan() {
-        val nominalStr  = binding.etNominal.text.toString().trim()
-        val nominal = nominalStr.toDoubleOrNull()
-        val cfg     = config
+        val nominalStr = binding.etNominal.text.toString().trim()
+        val nominal    = nominalStr.toDoubleOrNull()
+        val cfg        = config
 
-        val minPenarikan = when {
-            jenisTerpilih == "tabungan" && isAktif -> cfg?.minPenarikanNasabahAktif ?: 15000.0
-            jenisTerpilih == "tabungan"            -> cfg?.minPenarikanNasabahPasif ?: 25000.0
-            else                                   -> cfg?.minPenarikanKomisi       ?: 10000.0
-        }
-
-        if (nominal == null || nominal < minPenarikan) {
-            binding.tilNominal.error = "Nominal minimal ${formatRupiah(minPenarikan)}"
+        if (nominal == null || nominal <= 0) {
+            binding.tilNominal.error = "Masukkan nominal penarikan"
             return
         }
-        if (nominal > saldoTerpilih) {
-            binding.tilNominal.error = "Nominal melebihi saldo tersedia"
-            return
-        }
-        if (jenisTerpilih == "tabungan" && isAktif && cfg != null) {
-            if ((saldoTerpilih - nominal) < cfg.minSisaSaldoNasabahAktif) {
-                binding.tilNominal.error = "Harus menyisakan minimal ${formatRupiah(cfg.minSisaSaldoNasabahAktif)}"
-                return
+
+        when (jenisTerpilih) {
+            "tabungan" -> {
+                val minSisa = cfg?.minSisaSaldoNasabah ?: 20000.0
+                if (nominal > saldoTerpilih) {
+                    binding.tilNominal.error = "Nominal melebihi saldo tersedia"
+                    return
+                }
+                if ((saldoTerpilih - nominal) < minSisa) {
+                    binding.tilNominal.error = "Harus menyisakan minimal ${formatRupiah(minSisa)}"
+                    return
+                }
+            }
+            "afiliasi" -> {
+                val minAfiliasi = cfg?.minPenarikanAfiliasi ?: 10000.0
+                if (nominal < minAfiliasi) {
+                    binding.tilNominal.error = "Nominal minimal ${formatRupiah(minAfiliasi)}"
+                    return
+                }
+                if (nominal > saldoTerpilih) {
+                    binding.tilNominal.error = "Nominal melebihi saldo tersedia"
+                    return
+                }
             }
         }
         binding.tilNominal.error = null
 
-        // PERUBAHAN: Gunakan data dari rekeningDipilih yang sudah diisi di loadData()
         val kodeBank    = rekeningDipilih.first
         val noRekening  = rekeningDipilih.second
         val namaPemilik = rekeningDipilih.third
 
         if (kodeBank.isEmpty() || noRekening.isEmpty()) {
-            Toast.makeText(requireContext(), "Data rekening belum tersedia. Lengkapi profil Anda.", Toast.LENGTH_SHORT).show()
+            Toast.makeText(
+                requireContext(),
+                "Data rekening belum tersedia. Lengkapi rekening di Pengaturan Akun.",
+                Toast.LENGTH_LONG
+            ).show()
             return
         }
 
@@ -337,7 +371,6 @@ class PenarikanNasabahFragment : Fragment() {
         namaPemilik: String
     ) {
         setLoading(true)
-
         lifecycleScope.launch {
             try {
                 val idUser = client.auth.currentUserOrNull()?.id
@@ -375,7 +408,6 @@ class PenarikanNasabahFragment : Fragment() {
                     "✓ Pengajuan penarikan berhasil!\nKode: $kodePencairan\nMenunggu persetujuan admin.",
                     Toast.LENGTH_LONG
                 ).show()
-
                 parentFragmentManager.popBackStack()
 
             } catch (e: Exception) {
