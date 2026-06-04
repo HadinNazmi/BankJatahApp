@@ -42,6 +42,7 @@ import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
 
+
 class RiwayatFragment : Fragment() {
 
     private var _binding: FragmentRiwayatBinding? = null
@@ -377,12 +378,119 @@ class RiwayatFragment : Fragment() {
     }
 
     private fun tampilkanDialogBuktiTransfer(urlBukti: String, kodePencairan: String) {
-        val layout = LinearLayout(requireContext()).apply { orientation = LinearLayout.VERTICAL; setPadding(48, 48, 48, 48); setBackgroundResource(android.R.color.white) }
-        val ivBukti = ImageView(requireContext()).apply { layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, (300 * resources.displayMetrics.density).toInt()); scaleType = ImageView.ScaleType.FIT_CENTER }
-        Glide.with(requireContext()).load(urlBukti).into(ivBukti)
-        layout.addView(TextView(requireContext()).apply { text = "Bukti Transfer"; gravity = Gravity.CENTER; setTypeface(null, Typeface.BOLD) })
+        val layout = LinearLayout(requireContext()).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(48, 48, 48, 48)
+            setBackgroundResource(android.R.color.white)
+        }
+
+        val tvJudul = TextView(requireContext()).apply {
+            text = "Bukti Transfer"
+            textSize = 16f
+            setTypeface(null, Typeface.BOLD)
+            setTextColor(requireContext().getColor(R.color.black))
+            gravity = Gravity.CENTER
+            setPadding(0, 0, 0, 16)
+        }
+
+        // Gunakan PhotoView atau ZoomableImageView — pakai matrix scale type agar bisa pinch zoom
+        val ivBukti = ImageView(requireContext()).apply {
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                (400 * resources.displayMetrics.density).toInt()
+            )
+            scaleType = ImageView.ScaleType.FIT_CENTER
+            adjustViewBounds = true
+            isClickable = true
+            isFocusable = true
+        }
+
+        Glide.with(requireContext())
+            .load(urlBukti)
+            .placeholder(android.R.drawable.ic_menu_gallery)
+            .error(android.R.drawable.ic_menu_close_clear_cancel)
+            .into(ivBukti)
+
+        // Tombol Download ke Galeri
+        val btnDownload = TextView(requireContext()).apply {
+            text = "⬇ Simpan ke Galeri"
+            textSize = 13f
+            setTypeface(null, Typeface.BOLD)
+            setTextColor(requireContext().getColor(R.color.white))
+            gravity = Gravity.CENTER
+            setBackgroundColor(requireContext().getColor(R.color.orange_primary))
+            val dp = (resources.displayMetrics.density).toInt()
+            setPadding(0, 14 * dp, 0, 14 * dp)
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            ).apply { setMargins(0, 16 * dp, 0, 0) }
+            isClickable = true
+            isFocusable = true
+            setOnClickListener {
+                downloadBuktiTransfer(urlBukti, kodePencairan)
+            }
+        }
+
+        layout.addView(tvJudul)
         layout.addView(ivBukti)
-        AlertDialog.Builder(requireContext()).setView(layout).setNegativeButton("Tutup", null).show()
+        layout.addView(btnDownload)
+
+        AlertDialog.Builder(requireContext())
+            .setView(layout)
+            .setCancelable(true)
+            .setNegativeButton("Tutup") { d, _ -> d.dismiss() }
+            .create()
+            .also { it.window?.setBackgroundDrawableResource(android.R.color.transparent) }
+            .show()
+    }
+
+    private fun downloadBuktiTransfer(urlBukti: String, kodePencairan: String) {
+        lifecycleScope.launch {
+            try {
+                Toast.makeText(requireContext(), "Mengunduh gambar...", Toast.LENGTH_SHORT).show()
+
+                val futureTarget = Glide.with(requireContext())
+                    .asBitmap()
+                    .load(urlBukti)
+                    .submit()
+
+                val bitmap = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                    futureTarget.get()
+                }
+
+                val namaFile = "BuktiTransfer_${kodePencairan.replace("-", "_")}.jpg"
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    val values = ContentValues().apply {
+                        put(MediaStore.Images.Media.DISPLAY_NAME, namaFile)
+                        put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
+                        put(MediaStore.Images.Media.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + "/BankJatah")
+                    }
+                    val uri = requireContext().contentResolver
+                        .insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values)
+                    uri?.let {
+                        requireContext().contentResolver.openOutputStream(it)?.use { os ->
+                            bitmap.compress(Bitmap.CompressFormat.JPEG, 95, os)
+                        }
+                    }
+                } else {
+                    @Suppress("DEPRECATION")
+                    val dir = java.io.File(
+                        Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
+                        "BankJatah"
+                    ).apply { mkdirs() }
+                    java.io.File(dir, namaFile).outputStream().use {
+                        bitmap.compress(Bitmap.CompressFormat.JPEG, 95, it)
+                    }
+                }
+
+                Toast.makeText(requireContext(), "✓ Tersimpan di Galeri / BankJatah", Toast.LENGTH_LONG).show()
+
+            } catch (e: Exception) {
+                Toast.makeText(requireContext(), "Gagal mengunduh: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 
     private fun tambahkanItemRedeem(idRedeem: String, poin: String, tgl: String, kode: String, status: String) {
