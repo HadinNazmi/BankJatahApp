@@ -12,10 +12,10 @@ data class Notification(
     @SerialName("id_user")
     val idUser: String = "",
 
-    @SerialName("title")
+    @SerialName("judul")
     val title: String = "",
 
-    @SerialName("message")
+    @SerialName("pesan")
     val message: String = "",
 
     @SerialName("type")
