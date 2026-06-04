@@ -1,28 +1,37 @@
 package com.example.bankjatahapp.ui.unitbisnis.fragment
 
 import android.Manifest
+import android.content.Context
 import android.content.pm.PackageManager
+import android.graphics.Color
+import android.graphics.Typeface
+import android.location.Location
 import android.net.Uri
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.InputMethodManager
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
+import android.widget.Button
+import android.widget.LinearLayout
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.camera.core.CameraSelector
-import androidx.camera.core.ImageAnalysis
-import androidx.camera.core.Preview
-import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import com.example.bankjatahapp.R
 import com.example.bankjatahapp.data.model.HargaMinyak
 import com.example.bankjatahapp.data.model.SystemConfig
 import com.example.bankjatahapp.data.model.UnitBisnisData
 import com.example.bankjatahapp.data.model.User
+import com.example.bankjatahapp.data.model.NasabahData
 import com.example.bankjatahapp.data.remote.SupabaseClient.client
 import com.example.bankjatahapp.databinding.FragmentSetoranBinding
 import com.google.mlkit.vision.barcode.BarcodeScanning
@@ -30,11 +39,17 @@ import com.google.mlkit.vision.common.InputImage
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.storage.storage
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
+import androidx.camera.core.CameraSelector
+import androidx.camera.core.ImageAnalysis
+import androidx.camera.core.Preview
+import androidx.camera.lifecycle.ProcessCameraProvider
 import java.io.File
 import java.text.NumberFormat
 import java.util.Locale
@@ -59,11 +74,14 @@ class SetoranFragment : Fragment() {
 
     private var hargaPerKg: Double? = null
     private var komisiPerKg: Double? = null
-    private var idUnitSaatIni: String? = null  // ← simpan id unit bisnis yang login
+    private var idUnitSaatIni: String? = null
 
     // ===== UPAH JEMPUT =====
     private var isJemput: Boolean = false
     private var biayaJemputPerKg: Double = 500.0
+
+    // ===== SEARCH NASABAH =====
+    private var searchJob: Job? = null
 
     // CameraX
     private var cameraProvider: ProcessCameraProvider? = null
@@ -108,6 +126,7 @@ class SetoranFragment : Fragment() {
         cameraExecutor = Executors.newSingleThreadExecutor()
         muatHargaDanKomisi()
         setupListeners()
+        setupSearchNasabah()
     }
 
     private fun muatHargaDanKomisi() {
@@ -119,7 +138,6 @@ class SetoranFragment : Fragment() {
                 val idUnit = client.auth.currentUserOrNull()?.id
                     ?: throw Exception("Session tidak ditemukan, silakan login ulang.")
 
-                // Simpan id unit untuk dipakai di tampilkanUser()
                 idUnitSaatIni = idUnit
 
                 val unitData = client.postgrest
@@ -154,7 +172,7 @@ class SetoranFragment : Fragment() {
 
                 biayaJemputPerKg = config.biayaJemputPerKg
 
-                if (_binding == null) return@launch  // ← TAMBAH INI
+                if (_binding == null) return@launch
 
                 binding.tvJemputSub.text =
                     "Nasabah -${formatRupiah(biayaJemputPerKg)}/kg • UB +${formatRupiah(biayaJemputPerKg)}/kg"
@@ -164,7 +182,7 @@ class SetoranFragment : Fragment() {
                 binding.btnKonfirmasi.text = "Konfirmasi Setor"
 
             } catch (e: Exception) {
-                if (_binding == null) return@launch  // ← TAMBAH INI
+                if (_binding == null) return@launch
                 binding.btnKonfirmasi.text = "Konfirmasi Setor"
                 Toast.makeText(
                     requireContext(),
@@ -224,6 +242,217 @@ class SetoranFragment : Fragment() {
 
         binding.btnBukaKamera.setOnClickListener { bukaKameraFoto() }
         binding.btnKonfirmasi.setOnClickListener { validasiDanSubmit() }
+    }
+
+    private fun setupSearchNasabah() {
+        binding.layoutHasilCari.visibility = View.GONE
+        binding.tvTidakAdaHasil.visibility = View.GONE
+
+        binding.etCariNasabah.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            override fun afterTextChanged(s: Editable?) {
+                val query = s?.toString()?.trim() ?: ""
+
+                searchJob?.cancel()
+
+                if (query.length < 2) {
+                    binding.layoutHasilCari.visibility = View.GONE
+                    binding.tvTidakAdaHasil.visibility = View.GONE
+                    return
+                }
+
+                binding.layoutHasilCari.visibility     = View.VISIBLE
+                binding.tvTidakAdaHasil.visibility     = View.GONE
+                binding.progressCariNasabah.visibility = View.VISIBLE
+
+                searchJob = lifecycleScope.launch {
+                    delay(500)
+                    cariNasabahByNama(query)
+                }
+            }
+        })
+
+        binding.etCariNasabah.setOnFocusChangeListener { _, hasFokus ->
+            if (!hasFokus && binding.etCariNasabah.text.isNullOrBlank()) {
+                binding.layoutHasilCari.visibility = View.GONE
+                binding.tvTidakAdaHasil.visibility = View.GONE
+            }
+        }
+    }
+
+    private suspend fun cariNasabahByNama(query: String) {
+        try {
+            val semuaUser = client.postgrest
+                .from("users")
+                .select {
+                    filter { eq("status_akun", "aktif") }
+                }
+                .decodeList<User>()
+
+            val hasilUser = semuaUser.filter {
+                it.namaLengkap.contains(query, ignoreCase = true)
+            }
+
+            if (_binding == null) return
+
+            binding.progressCariNasabah.visibility = View.GONE
+
+            if (hasilUser.isEmpty()) {
+                binding.tvTidakAdaHasil.visibility = View.VISIBLE
+                binding.layoutHasilCari.visibility = View.GONE
+                return
+            }
+
+            binding.tvTidakAdaHasil.visibility = View.GONE
+            val idUserList = hasilUser.map { it.idUser }
+            tampilkanHasilPencarian(hasilUser, idUserList)
+
+        } catch (e: Exception) {
+            if (_binding == null) return
+            binding.progressCariNasabah.visibility = View.GONE
+            binding.tvTidakAdaHasil.text = "Error: ${e.message}"
+            binding.tvTidakAdaHasil.visibility = View.VISIBLE
+        }
+    }
+
+    private suspend fun tampilkanHasilPencarian(users: List<User>, validIds: List<String>) {
+        if (_binding == null) return
+
+        binding.layoutDaftarHasil.removeAllViews()
+
+        val nasabahDataMap = try {
+            client.postgrest
+                .from("nasabah_data")
+                .select()
+                .decodeList<NasabahData>()
+                .associateBy { it.idNasabah }
+        } catch (e: Exception) {
+            emptyMap()
+        }
+
+        var adaHasil = false
+
+        for (user in users.take(10)) {
+            val nasabahData = nasabahDataMap[user.idUser]
+            if (nasabahData == null) continue
+
+            adaHasil = true
+            val itemView = buatItemHasilCari(user, nasabahData)
+            binding.layoutDaftarHasil.addView(itemView)
+        }
+
+        if (!adaHasil) {
+            binding.tvTidakAdaHasil.text = "Tidak ada nasabah dengan nama tersebut"
+            binding.tvTidakAdaHasil.visibility = View.VISIBLE
+            binding.layoutHasilCari.visibility = View.GONE
+        } else {
+            binding.layoutHasilCari.visibility = View.VISIBLE
+        }
+    }
+
+    private fun buatItemHasilCari(user: User, nasabahData: NasabahData): View {
+        val ctx   = requireContext()
+        val dp8   = (8  * resources.displayMetrics.density).toInt()
+        val dp12  = (12 * resources.displayMetrics.density).toInt()
+
+        val card = androidx.cardview.widget.CardView(ctx).apply {
+            radius        = (8 * resources.displayMetrics.density)
+            cardElevation = (1 * resources.displayMetrics.density)
+            setCardBackgroundColor(ctx.getColor(R.color.white))
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            ).apply { setMargins(0, 0, 0, dp8) }
+        }
+
+        val inner = LinearLayout(ctx).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity     = Gravity.CENTER_VERTICAL
+            setPadding(dp12, dp12, dp12, dp12)
+        }
+
+        val tvAvatar = TextView(ctx).apply {
+            text      = user.namaLengkap.take(1).uppercase()
+            textSize  = 16f
+            gravity   = Gravity.CENTER
+            setTextColor(ctx.getColor(R.color.white))
+            setBackgroundResource(R.drawable.ic_bg_aktivitas_orange)
+            val size = (40 * resources.displayMetrics.density).toInt()
+            layoutParams = LinearLayout.LayoutParams(size, size).apply {
+                marginEnd = dp12
+            }
+        }
+
+        val infoLayout = LinearLayout(ctx).apply {
+            orientation = LinearLayout.VERTICAL
+            layoutParams = LinearLayout.LayoutParams(
+                0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f
+            )
+        }
+
+        val tvNama = TextView(ctx).apply {
+            text      = user.namaLengkap
+            textSize  = 13f
+            setTypeface(null, Typeface.BOLD)
+            setTextColor(ctx.getColor(R.color.black))
+        }
+
+        val labelRole = if (user.role == "unit_bisnis") "Unit Bisnis" else "Nasabah"
+        val levelTxt = "⭐ Level ${nasabahData.levelBintang ?: 1}  •  $labelRole"
+        val tvDetail = TextView(ctx).apply {
+            text      = levelTxt
+            textSize  = 11f
+            setTextColor(ctx.getColor(R.color.gray_text))
+            setPadding(0, (2 * resources.displayMetrics.density).toInt(), 0, 0)
+        }
+
+        val tvId = TextView(ctx).apply {
+            text      = "ID: ${user.idUser.take(8)}"
+            textSize  = 10f
+            setTextColor(ctx.getColor(R.color.gray_text))
+        }
+
+        infoLayout.addView(tvNama)
+        infoLayout.addView(tvDetail)
+        infoLayout.addView(tvId)
+
+        val btnPilih = Button(ctx).apply {
+            text     = "Pilih"
+            textSize = 12f
+            setTextColor(ctx.getColor(R.color.white))
+            backgroundTintList = android.content.res.ColorStateList.valueOf(
+                ctx.getColor(R.color.orange_primary)
+            )
+            val w = (64 * resources.displayMetrics.density).toInt()
+            val h = (36 * resources.displayMetrics.density).toInt()
+            layoutParams = LinearLayout.LayoutParams(w, h).apply {
+                marginStart = dp8
+            }
+            setOnClickListener {
+                pilihNasabahDariSearch(user, nasabahData)
+            }
+        }
+
+        inner.addView(tvAvatar)
+        inner.addView(infoLayout)
+        inner.addView(btnPilih)
+        card.addView(inner)
+        return card
+    }
+
+    private fun pilihNasabahDariSearch(user: User, nasabahData: NasabahData) {
+        val imm = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        imm.hideSoftInputFromWindow(binding.etCariNasabah.windowToken, 0)
+
+        binding.etCariNasabah.setText("")
+        binding.layoutHasilCari.visibility = View.GONE
+        binding.tvTidakAdaHasil.visibility = View.GONE
+
+        binding.etIdNasabah.setText(user.idUser.take(8) + "...")
+
+        val sponsorInfo = NasabahSponsorInfo(idSponsor = nasabahData.idSponsor)
+        tampilkanUser(user, user.idUser.take(8), sponsorInfo)
     }
 
     private fun hitungUlangEstimasi() {
@@ -394,42 +623,27 @@ class SetoranFragment : Fragment() {
         binding.layoutInfoNasabah.visibility = View.VISIBLE
         binding.tvNamaNasabah.text           = user.namaLengkap
 
-        val labelRole = when (user.role) {
-            "unit_bisnis" -> "Unit Bisnis"
-            "nasabah"     -> "Nasabah"
-            else          -> user.role
-        }
+        val labelRole = if (user.role == "unit_bisnis") "Unit Bisnis" else "Nasabah"
         binding.tvIdNasabahInfo.text = "ID: $displayId • $labelRole"
 
-        // ===== STATUS SPONSOR =====
         if (sponsorInfo != null) {
             binding.tvStatusSponsor.visibility = View.VISIBLE
 
             when {
-                // Nasabah setor ke dirinya sendiri (dia adalah UB)
                 user.idUser == idUnitSaatIni -> {
                     binding.tvStatusSponsor.text = "⚠️ Ini akun Anda sendiri — sponsor tidak bisa diassign ke diri sendiri"
-                    binding.tvStatusSponsor.setTextColor(
-                        ContextCompat.getColor(requireContext(), android.R.color.holo_orange_dark)
-                    )
+                    binding.tvStatusSponsor.setTextColor(ContextCompat.getColor(requireContext(), android.R.color.holo_orange_dark))
                 }
-                // Nasabah belum punya sponsor — UB ini akan jadi sponsor
                 sponsorInfo.idSponsor == null -> {
                     binding.tvStatusSponsor.text = "⚠️ Nasabah belum memiliki sponsor — UB ini akan otomatis menjadi sponsornya"
-                    binding.tvStatusSponsor.setTextColor(
-                        ContextCompat.getColor(requireContext(), android.R.color.holo_orange_dark)
-                    )
+                    binding.tvStatusSponsor.setTextColor(ContextCompat.getColor(requireContext(), android.R.color.holo_orange_dark))
                 }
-                // Sudah punya sponsor
                 else -> {
                     binding.tvStatusSponsor.text = "✓ Nasabah sudah memiliki sponsor"
-                    binding.tvStatusSponsor.setTextColor(
-                        ContextCompat.getColor(requireContext(), android.R.color.holo_green_dark)
-                    )
+                    binding.tvStatusSponsor.setTextColor(ContextCompat.getColor(requireContext(), android.R.color.holo_green_dark))
                 }
             }
         } else {
-            // Bukan nasabah (unit_bisnis / internal)
             binding.tvStatusSponsor.visibility = View.GONE
         }
 
@@ -494,7 +708,6 @@ class SetoranFragment : Fragment() {
                 val kodeTransaksi = "TRX-${UUID.randomUUID().toString()
                     .replace("-", "").take(16).uppercase()}"
 
-                // ===== UPLOAD FOTO =====
                 var urlFotoBukti: String? = null
                 val foto = fotoFile
                 if (foto != null && foto.exists() && foto.length() > 0) {

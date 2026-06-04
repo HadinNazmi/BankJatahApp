@@ -12,7 +12,6 @@
         android:orientation="vertical"
         android:paddingBottom="32dp">
 
-        <!-- ===== HEADER ===== -->
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -48,7 +47,6 @@
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
-        <!-- ===== CARD PROGRESS TARGET BULANAN ===== -->
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -59,74 +57,9 @@
             app:cardElevation="2dp"
             app:cardBackgroundColor="@color/white">
 
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:padding="16dp">
 
-                <TextView
-                    android:id="@+id/tvTargetLabel"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:text="Total Setoran Bulan Ini"
-                    android:textSize="13sp"
-                    android:textColor="@color/black"
-                    android:fontFamily="@font/poppins_regular"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintEnd_toStartOf="@+id/tvTotalSetoran"
-                    app:layout_constraintTop_toTopOf="parent" />
-
-                <TextView
-                    android:id="@+id/tvTotalSetoran"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="0.0L"
-                    android:textSize="18sp"
-                    android:textStyle="bold"
-                    android:textColor="@color/orange_primary"
-                    android:fontFamily="@font/poppins_bold"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
-
-                <ProgressBar
-                    android:id="@+id/progressTarget"
-                    style="?android:attr/progressBarStyleHorizontal"
-                    android:layout_width="0dp"
-                    android:layout_height="8dp"
-                    android:layout_marginTop="10dp"
-                    android:progress="0"
-                    android:progressTint="@color/orange_primary"
-                    android:progressBackgroundTint="@color/gray_border"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/tvTargetLabel" />
-
-                <ImageView
-                    android:id="@+id/ivDroplet"
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
-                    android:src="@drawable/ic_nav_setor"
-                    android:layout_marginTop="6dp"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/progressTarget" />
-
-                <TextView
-                    android:id="@+id/tvSisaTarget"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:text="-"
-                    android:textSize="11sp"
-                    android:textColor="@color/gray_text"
-                    android:fontFamily="@font/poppins_regular"
-                    android:layout_marginTop="6dp"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintEnd_toStartOf="@+id/ivDroplet"
-                    app:layout_constraintTop_toBottomOf="@+id/progressTarget" />
-
-            </androidx.constraintlayout.widget.ConstraintLayout>
         </androidx.cardview.widget.CardView>
 
-        <!-- ===== FORM INPUT ===== -->
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -143,7 +76,6 @@
                 android:orientation="vertical"
                 android:padding="16dp">
 
-                <!-- ===== IDENTITAS NASABAH ===== -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -153,7 +85,6 @@
                     android:textColor="@color/black"
                     android:fontFamily="@font/poppins_semibold" />
 
-                <!-- ===== AREA QR SCANNER ===== -->
                 <androidx.cardview.widget.CardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -272,7 +203,6 @@
 
                 </androidx.cardview.widget.CardView>
 
-                <!-- Divider atau -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -302,7 +232,6 @@
 
                 </LinearLayout>
 
-                <!-- Input manual ID + tombol Cek -->
                 <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -354,7 +283,95 @@
 
                 </androidx.constraintlayout.widget.ConstraintLayout>
 
-                <!-- Info nama nasabah setelah cek/scan -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardCariNasabah"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="0dp"
+                    app:strokeColor="@color/gray_border"
+                    app:strokeWidth="1dp"
+                    app:cardBackgroundColor="@color/white">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="14dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="atau cari berdasarkan nama"
+                            android:textSize="12sp"
+                            android:textColor="@color/gray_text"
+                            android:fontFamily="@font/poppins_regular"
+                            android:layout_marginBottom="8dp" />
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:id="@+id/tilCariNasabah"
+                            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            app:hintEnabled="false"
+                            app:boxCornerRadiusTopStart="10dp"
+                            app:boxCornerRadiusTopEnd="10dp"
+                            app:boxCornerRadiusBottomStart="10dp"
+                            app:boxCornerRadiusBottomEnd="10dp"
+                            app:boxStrokeColor="@color/gray_border"
+                            app:startIconDrawable="@android:drawable/ic_menu_search"
+                            app:startIconTint="@color/gray_text">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/etCariNasabah"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:hint="Ketik minimal 2 huruf nama nasabah..."
+                                android:textSize="13sp"
+                                android:fontFamily="@font/poppins_regular"
+                                android:inputType="textPersonName"
+                                android:imeOptions="actionSearch" />
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <ProgressBar
+                            android:id="@+id/progressCariNasabah"
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:layout_marginTop="8dp"
+                            android:layout_gravity="center_horizontal"
+                            android:indeterminateTint="@color/orange_primary"
+                            android:visibility="gone" />
+
+                        <TextView
+                            android:id="@+id/tvTidakAdaHasil"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:gravity="center"
+                            android:textSize="12sp"
+                            android:textColor="@color/gray_text"
+                            android:fontFamily="@font/poppins_regular"
+                            android:visibility="gone"
+                            android:text="Tidak ada nasabah ditemukan" />
+
+                        <LinearLayout
+                            android:id="@+id/layoutHasilCari"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:layout_marginTop="8dp"
+                            android:visibility="gone">
+
+                            <LinearLayout
+                                android:id="@+id/layoutDaftarHasil"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="vertical" />
+                        </LinearLayout>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
                 <LinearLayout
                     android:id="@+id/layoutInfoNasabah"
                     android:layout_width="match_parent"
@@ -365,7 +382,6 @@
                     android:padding="12dp"
                     android:visibility="gone">
 
-                    <!-- Baris nama + ceklis -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -405,10 +421,8 @@
                                 android:fontFamily="@font/poppins_regular" />
 
                         </LinearLayout>
-
                     </LinearLayout>
 
-                    <!-- ✅ TAMBAHAN: Status sponsor -->
                     <TextView
                         android:id="@+id/tvStatusSponsor"
                         android:layout_width="match_parent"
@@ -421,7 +435,6 @@
 
                 </LinearLayout>
 
-                <!-- ===== BERAT BERSIH ===== -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -458,7 +471,6 @@
 
                 </com.google.android.material.textfield.TextInputLayout>
 
-                <!-- Kalkulasi otomatis -->
                 <androidx.constraintlayout.widget.ConstraintLayout
                     android:id="@+id/layoutKalkulasi"
                     android:layout_width="match_parent"
@@ -494,7 +506,6 @@
 
                 </androidx.constraintlayout.widget.ConstraintLayout>
 
-                <!-- Info detail jika mode jemput aktif -->
                 <TextView
                     android:id="@+id/tvInfoJemput"
                     android:layout_width="match_parent"
@@ -506,7 +517,6 @@
                     android:layout_marginTop="4dp"
                     android:visibility="gone" />
 
-                <!-- ===== UPAH JEMPUT ===== -->
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
@@ -568,10 +578,8 @@
                             android:layout_marginTop="2dp" />
 
                     </LinearLayout>
-
                 </LinearLayout>
 
-                <!-- Divider -->
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
@@ -579,7 +587,6 @@
                     android:layout_marginTop="16dp"
                     android:layout_marginBottom="16dp" />
 
-                <!-- ===== FOTO BUKTI ===== -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -639,7 +646,6 @@
                     </LinearLayout>
                 </FrameLayout>
 
-                <!-- Divider -->
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
@@ -647,7 +653,6 @@
                     android:layout_marginTop="16dp"
                     android:layout_marginBottom="16dp" />
 
-                <!-- ===== CATATAN ===== -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -685,13 +690,11 @@
                         android:maxLines="4"
                         android:gravity="top"
                         android:maxLength="200" />
-
                 </com.google.android.material.textfield.TextInputLayout>
 
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
-        <!-- ===== TOMBOL KONFIRMASI ===== -->
         <Button
             android:id="@+id/btnKonfirmasi"
             android:layout_width="match_parent"
@@ -709,7 +712,7 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Pastikan ID nasabah dan berat sudah benar sebelum konfirmasi"
+            android:text="Pastikan ID nasabah and berat sudah benar sebelum konfirmasi"
             android:textSize="11sp"
             android:textColor="@color/gray_text"
             android:fontFamily="@font/poppins_regular"
@@ -718,7 +721,6 @@
             android:layout_marginEnd="20dp"
             android:layout_marginTop="8dp" />
 
-        <!-- ===== CARD RINGKASAN ===== -->
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -744,7 +746,6 @@
                     android:textColor="@color/black"
                     android:fontFamily="@font/poppins_bold" />
 
-                <!-- Total Rupiah Nasabah -->
                 <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -800,7 +801,6 @@
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintTop_toTopOf="parent"
                         app:layout_constraintBottom_toBottomOf="parent" />
-
                 </androidx.constraintlayout.widget.ConstraintLayout>
 
                 <View
@@ -809,7 +809,6 @@
                     android:background="@color/gray_border"
                     android:layout_marginTop="12dp" />
 
-                <!-- Harga per Kg -->
                 <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -857,7 +856,7 @@
                         android:id="@+id/tvPoinNilai"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Rp 90/Kg"
+                        android:text="Rp 0/Kg"
                         android:textSize="14sp"
                         android:textStyle="bold"
                         android:textColor="@color/orange_primary"
@@ -865,7 +864,6 @@
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintTop_toTopOf="parent"
                         app:layout_constraintBottom_toBottomOf="parent" />
-
                 </androidx.constraintlayout.widget.ConstraintLayout>
 
                 <View
@@ -874,7 +872,6 @@
                     android:background="@color/gray_border"
                     android:layout_marginTop="12dp" />
 
-                <!-- Estimasi Validasi -->
                 <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -930,7 +927,6 @@
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintTop_toTopOf="parent"
                         app:layout_constraintBottom_toBottomOf="parent" />
-
                 </androidx.constraintlayout.widget.ConstraintLayout>
 
             </LinearLayout>
