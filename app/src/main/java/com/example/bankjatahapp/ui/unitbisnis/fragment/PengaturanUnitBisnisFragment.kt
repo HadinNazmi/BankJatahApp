@@ -23,8 +23,6 @@ import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
-import kotlinx.serialization.json.buildJsonObject
-import kotlinx.serialization.json.put
 
 class PengaturanUnitBisnisFragment : Fragment() {
 
@@ -33,11 +31,24 @@ class PengaturanUnitBisnisFragment : Fragment() {
 
     private var idUser: String? = null
 
-    // ✅ Tambah flag apakah sponsor sudah ada
+    // Flag apakah sponsor sudah ada
     private var sudahAdaSponsor: Boolean = false
 
     private var listBank: List<MasterBank> = emptyList()
     private var bankDipilih: String? = null
+
+    // ===== KOORDINAT BARU DARI PETA EDIT =====
+    private var latBaru: Double? = null
+    private var lonBaru: Double? = null
+    private var markerEdit: org.osmdroid.views.overlay.Marker? = null
+
+    private val requestLokasiLauncher = registerForActivityResult(
+        androidx.activity.result.contract.ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        val granted = permissions[android.Manifest.permission.ACCESS_FINE_LOCATION] == true ||
+                permissions[android.Manifest.permission.ACCESS_COARSE_LOCATION] == true
+        if (granted) gunakanGpsSaatIni()
+    }
 
     @Serializable
     data class ReferralResult(
@@ -75,6 +86,11 @@ class PengaturanUnitBisnisFragment : Fragment() {
                     .from("nasabah_data")
                     .select { filter { eq("id_nasabah", idUser!!) } }
                     .decodeSingle<NasabahData>()
+
+                val unit = client.postgrest
+                    .from("unit_bisnis_data")
+                    .select { filter { eq("id_unit_bisnis", idUser!!) } }
+                    .decodeSingle<UnitBisnisData>()
 
                 // ===== LOAD MASTER BANK =====
                 try {
@@ -122,7 +138,42 @@ class PengaturanUnitBisnisFragment : Fragment() {
                 binding.etNoTelp.setText(user.noTelp ?: "")
                 binding.etAlamat.setText(nasabah.alamatRumah ?: "")
 
-                // ===== KODE REFERRAL SPONSOR — ✅ dengan info sponsor sudah ada =====
+                // ===== FIX 1: ISI SEMUA FIELD DARI DATA EXISTING UNIT BISNIS =====
+                binding.etNamaUsaha.setText(unit.namaUsaha ?: "")
+                binding.etJamBuka.setText(unit.jamBuka ?: "")
+                binding.etJamTutup.setText(unit.jamTutup ?: "")
+                binding.etHariOperasional.setText(unit.hariOperasional ?: "")
+                binding.etAlamatUsaha.setText(unit.alamat ?: "")
+
+                org.osmdroid.config.Configuration.getInstance().userAgentValue = requireContext().packageName
+                val lat = unit.lokasiLat.takeIf { it != 0.0 } ?: 0.5071
+                val lon = unit.lokasiLong.takeIf { it != 0.0 } ?: 101.4478
+
+                binding.mapViewEdit.apply {
+                    setTileSource(org.osmdroid.tileprovider.tilesource.TileSourceFactory.MAPNIK)
+                    setMultiTouchControls(true)
+                    controller.setZoom(15.0)
+                    controller.setCenter(org.osmdroid.util.GeoPoint(lat, lon))
+                }
+
+                if (unit.lokasiLat != 0.0) {
+                    pindahkanMarkerEdit(unit.lokasiLat, unit.lokasiLong)
+                    binding.tvKoordinatSaatIni.text =
+                        "📍 Saat ini: ${String.format("%.6f", unit.lokasiLat)}, ${String.format("%.6f", unit.lokasiLong)}"
+                }
+
+                val mapEventsReceiver = object : org.osmdroid.events.MapEventsReceiver {
+                    override fun singleTapConfirmedHelper(p: org.osmdroid.util.GeoPoint): Boolean {
+                        pindahkanMarkerEdit(p.latitude, p.longitude)
+                        return true
+                    }
+                    override fun longPressHelper(p: org.osmdroid.util.GeoPoint): Boolean = false
+                }
+                binding.mapViewEdit.overlays.add(
+                    org.osmdroid.views.overlay.MapEventsOverlay(mapEventsReceiver)
+                )
+
+                // ===== KODE REFERRAL SPONSOR =====
                 sudahAdaSponsor = !nasabah.idSponsor.isNullOrEmpty()
                 if (sudahAdaSponsor) {
                     try {
@@ -135,9 +186,9 @@ class PengaturanUnitBisnisFragment : Fragment() {
                         binding.etKodeReferralSponsor.setText("")
                     }
                     binding.etKodeReferralSponsor.isEnabled = false
-                    binding.tilKodeReferralSponsor.isEnabled = false  // ✅ tambah ini — disable seluruh layout
+                    binding.tilKodeReferralSponsor.isEnabled = false
                     binding.tilKodeReferralSponsor.helperText = "✓ Sponsor sudah terdaftar, tidak dapat diubah"
-                    binding.tilKodeReferralSponsor.alpha = 0.6f        // ✅ visual redup
+                    binding.tilKodeReferralSponsor.alpha = 0.6f
                 } else {
                     binding.etKodeReferralSponsor.isEnabled = true
                     binding.tilKodeReferralSponsor.isEnabled = true
@@ -174,6 +225,47 @@ class PengaturanUnitBisnisFragment : Fragment() {
         }
     }
 
+    private fun pindahkanMarkerEdit(lat: Double, lon: Double) {
+        latBaru = lat
+        lonBaru = lon
+        val geoPoint = org.osmdroid.util.GeoPoint(lat, lon)
+        markerEdit?.let { binding.mapViewEdit.overlays.remove(it) }
+        markerEdit = org.osmdroid.views.overlay.Marker(binding.mapViewEdit).apply {
+            position = geoPoint
+            title    = "Lokasi Unit Bisnis"
+            setAnchor(
+                org.osmdroid.views.overlay.Marker.ANCHOR_CENTER,
+                org.osmdroid.views.overlay.Marker.ANCHOR_BOTTOM
+            )
+        }
+        binding.mapViewEdit.overlays.add(markerEdit)
+        binding.mapViewEdit.controller.animateTo(geoPoint)
+        binding.mapViewEdit.invalidate()
+        binding.tvKoordinatBaru.text =
+            "📍 Baru: ${String.format("%.6f", lat)}, ${String.format("%.6f", lon)}"
+        binding.tvKoordinatBaru.setTextColor(
+            requireContext().getColor(com.example.bankjatahapp.R.color.orange_primary)
+        )
+    }
+
+    private fun gunakanGpsSaatIni() {
+        try {
+            com.google.android.gms.location.LocationServices
+                .getFusedLocationProviderClient(requireActivity())
+                .lastLocation
+                .addOnSuccessListener { location ->
+                    if (location != null) {
+                        pindahkanMarkerEdit(location.latitude, location.longitude)
+                        binding.mapViewEdit.controller.setZoom(17.0)
+                    } else {
+                        Toast.makeText(requireContext(), "GPS belum tersedia", Toast.LENGTH_SHORT).show()
+                    }
+                }
+        } catch (e: SecurityException) {
+            Toast.makeText(requireContext(), "Izin lokasi belum diberikan", Toast.LENGTH_SHORT).show()
+        }
+    }
+
     private fun setupClickListeners() {
         binding.btnBack.setOnClickListener {
             parentFragmentManager.popBackStack()
@@ -191,6 +283,25 @@ class PengaturanUnitBisnisFragment : Fragment() {
             }
             bagikanKodeReferral(kodeReferral)
         }
+        binding.btnGunakanGpsSaatIni.setOnClickListener {
+            val fine   = androidx.core.content.ContextCompat.checkSelfPermission(
+                requireContext(), android.Manifest.permission.ACCESS_FINE_LOCATION
+            ) == android.content.pm.PackageManager.PERMISSION_GRANTED
+            val coarse = androidx.core.content.ContextCompat.checkSelfPermission(
+                requireContext(), android.Manifest.permission.ACCESS_COARSE_LOCATION
+            ) == android.content.pm.PackageManager.PERMISSION_GRANTED
+            if (fine || coarse) gunakanGpsSaatIni()
+            else requestLocationsLauncherAdapter()
+        }
+    }
+
+    private fun requestLocationsLauncherAdapter() {
+        requestLokasiLauncher.launch(
+            arrayOf(
+                android.Manifest.permission.ACCESS_FINE_LOCATION,
+                android.Manifest.permission.ACCESS_COARSE_LOCATION
+            )
+        )
     }
 
     private fun bagikanKodeReferral(kode: String) {
@@ -232,7 +343,7 @@ class PengaturanUnitBisnisFragment : Fragment() {
             try {
                 val id = idUser ?: throw Exception("Session tidak ditemukan")
 
-                // ✅ Hanya proses sponsor jika field aktif (belum ada sponsor) dan diisi
+                // Hanya proses sponsor jika field aktif (belum ada sponsor) dan diisi
                 var idSponsorBaru: String? = null
                 if (!sudahAdaSponsor && kodeRefSponsor.isNotEmpty()) {
                     try {
@@ -275,6 +386,23 @@ class PengaturanUnitBisnisFragment : Fragment() {
                     filter { eq("id_nasabah", id) }
                 }
 
+                // ===== FIX 2: GANTI UPDATE UNIT BISNIS MENGGUNAKAN buildJsonObject =====
+                val updateUnit = buildJsonObject {
+                    put("nama_usaha",       binding.etNamaUsaha.text.toString().trim().ifEmpty { null })
+                    put("jam_buka",         binding.etJamBuka.text.toString().trim().ifEmpty { null })
+                    put("jam_tutup",        binding.etJamTutup.text.toString().trim().ifEmpty { null })
+                    put("hari_operasional", binding.etHariOperasional.text.toString().trim().ifEmpty { null })
+                    put("alamat",           binding.etAlamatUsaha.text.toString().trim().ifEmpty { null })
+
+                    // Update koordinat hanya jika user memilih lokasi baru di peta
+                    latBaru?.let { put("lokasi_lat",  it) }
+                    lonBaru?.let { put("lokasi_long", it) }
+                }
+
+                client.postgrest.from("unit_bisnis_data").update(updateUnit) {
+                    filter { eq("id_unit_bisnis", id) }
+                }
+
                 AvatarUtils.pasangKeImageView(binding.ivFotoProfil, nama, 300)
 
                 setLoading(false)
@@ -302,7 +430,18 @@ class PengaturanUnitBisnisFragment : Fragment() {
         binding.scrollContent.visibility = if (loading) View.GONE else View.VISIBLE
     }
 
+    override fun onResume() {
+        super.onResume()
+        if (_binding != null) binding.mapViewEdit.onResume()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        if (_binding != null) binding.mapViewEdit.onPause()
+    }
+
     override fun onDestroyView() {
+        if (_binding != null) binding.mapViewEdit.onDetach()
         super.onDestroyView()
         _binding = null
     }
