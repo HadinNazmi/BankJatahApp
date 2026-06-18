@@ -215,31 +215,12 @@ class RegisterActivity : AppCompatActivity() {
                 return
             }
 
-            // STEP 3: Logout setelah berhasil
+            // STEP 3: Logout setelah berhasil (tetap logout, karena email belum confirmed)
             client.auth.signOut()
 
             setLoading(false)
             runOnUiThread {
-                // Jika referral diisi tapi tidak ditemukan, tampilkan warning
-                // tapi tetap lanjut karena akun sudah terbuat dengan sukses
-                if (refWarning && referal.isNotEmpty()) {
-                    Toast.makeText(
-                        this@RegisterActivity,
-                        "⚠ Kode referral \"$referal\" tidak ditemukan.\nAkun berhasil dibuat tanpa sponsor.",
-                        Toast.LENGTH_LONG
-                    ).show()
-                } else {
-                    Toast.makeText(
-                        this@RegisterActivity,
-                        "✓ Akun berhasil dibuat! Silakan masuk.",
-                        Toast.LENGTH_LONG
-                    ).show()
-                }
-
-                val intent = Intent(this@RegisterActivity, LoginActivity::class.java)
-                intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
-                startActivity(intent)
-                finish()
+                tampilkanDialogKonfirmasiEmail(email, refWarning && referal.isNotEmpty(), referal)
             }
 
         } catch (e: Exception) {
@@ -280,6 +261,35 @@ class RegisterActivity : AppCompatActivity() {
                 }
             }
         }
+    }
+
+    // ✅ FUNGSI BARU: Dialog konfirmasi email setelah register sukses
+    private fun tampilkanDialogKonfirmasiEmail(
+        email: String,
+        adaRefWarning: Boolean,
+        kodeReferal: String
+    ) {
+        val pesan = buildString {
+            append("Akun berhasil dibuat!\n\n")
+            append("Kami telah mengirim email konfirmasi ke:\n$email\n\n")
+            append("Silakan buka email tersebut dan klik link konfirmasi sebelum login.")
+            if (adaRefWarning) {
+                append("\n\n⚠ Kode referral \"$kodeReferal\" tidak ditemukan. Akun dibuat tanpa sponsor.")
+            }
+        }
+
+        androidx.appcompat.app.AlertDialog.Builder(this)
+            .setTitle("Cek Email Kamu!")
+            .setMessage(pesan)
+            .setCancelable(false)
+            .setPositiveButton("OK, Mengerti") { dialog, _ ->
+                dialog.dismiss()
+                val intent = Intent(this@RegisterActivity, LoginActivity::class.java)
+                intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+                startActivity(intent)
+                finish()
+            }
+            .show()
     }
 
     private fun setLoading(loading: Boolean) {
