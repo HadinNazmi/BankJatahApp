@@ -6,7 +6,8 @@
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+    <uses-permission
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         android:maxSdkVersion="28" />
 
     <uses-feature
@@ -23,6 +24,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.BankJatahApp">
         <activity
+            android:name=".ui.auth.LupaPasswordActivity"
+            android:exported="false" />
+        <activity
             android:name=".ui.auth.LoginActivity"
             android:exported="false" />
         <activity
@@ -32,6 +36,7 @@
             android:theme="@style/Theme.BankJatahApp">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
@@ -40,24 +45,22 @@
             android:exported="false" />
         <activity
             android:name=".ui.nasabah.NasabahActivity"
-            android:exported="false" />
-
-        <!-- ✅ PERUBAHAN: exported=true + intent-filter deep link ditambahkan -->
+            android:exported="false" /> <!-- ✅ PERUBAHAN: exported=true + intent-filter deep link ditambahkan -->
         <activity
             android:name=".ui.auth.RegisterActivity"
             android:exported="true">
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
+
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <data
-                    android:scheme="bankjatah"
-                    android:host="register"
-                    android:pathPrefix="/ref" />
-            </intent-filter>
-        </activity>
 
-        <!-- FileProvider untuk kamera (foto bukti setoran) -->
+                <data
+                    android:host="register"
+                    android:pathPrefix="/ref"
+                    android:scheme="bankjatah" />
+            </intent-filter>
+        </activity> <!-- FileProvider untuk kamera (foto bukti setoran) -->
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.provider"

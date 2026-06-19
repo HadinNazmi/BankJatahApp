@@ -123,7 +123,7 @@ class LoginActivity : AppCompatActivity() {
         }
 
         binding.tvLupaPassword.setOnClickListener {
-            Toast.makeText(this, "Fitur lupa password segera hadir", Toast.LENGTH_SHORT).show()
+            startActivity(Intent(this, LupaPasswordActivity::class.java))
         }
 
         binding.tvDaftar.setOnClickListener {
