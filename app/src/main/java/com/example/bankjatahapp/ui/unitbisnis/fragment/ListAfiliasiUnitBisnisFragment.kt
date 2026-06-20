@@ -9,6 +9,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.bankjatahapp.data.model.DownlineItem
+import com.example.bankjatahapp.data.model.NasabahData
 import com.example.bankjatahapp.data.remote.SupabaseClient.client
 import com.example.bankjatahapp.databinding.FragmentListAfiliasiUnitBisnisBinding
 import io.github.jan.supabase.auth.auth
@@ -16,11 +17,15 @@ import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.postgrest.query.Columns
 import kotlinx.coroutines.launch
 import java.util.Locale
+import android.content.Intent
 
 class ListAfiliasiUnitBisnisFragment : Fragment() {
 
     private var _binding: FragmentListAfiliasiUnitBisnisBinding? = null
     private val binding get() = _binding!!
+
+    private var sudahAdaSponsor = false
+    private var idUser: String? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FragmentListAfiliasiUnitBisnisBinding.inflate(inflater, container, false)
@@ -32,6 +37,7 @@ class ListAfiliasiUnitBisnisFragment : Fragment() {
         binding.rvAfiliasi.layoutManager = LinearLayoutManager(requireContext())
         binding.btnBack.setOnClickListener { parentFragmentManager.popBackStack() }
         loadAfiliasi()
+        setupReferral()
     }
 
     private fun loadAfiliasi() {
@@ -92,6 +98,112 @@ class ListAfiliasiUnitBisnisFragment : Fragment() {
             } catch (e: Exception) {
                 binding.progressBar.visibility = View.GONE
                 Toast.makeText(requireContext(), "Error: ${e.message}", Toast.LENGTH_LONG).show()
+            }
+        }
+    }
+
+    private fun setupReferral() {
+        lifecycleScope.launch {
+            try {
+                val uid = client.auth.currentUserOrNull()?.id ?: return@launch
+                idUser = uid
+
+                val nasabah = client.postgrest
+                    .from("nasabah_data")
+                    .select { filter { eq("id_nasabah", uid) } }
+                    .decodeSingle<NasabahData>()
+
+                // Tampilkan kode referral saya
+                binding.tvKodeReferralSaya.text = nasabah.kodeReferral ?: "-"
+
+                // Cek apakah sudah ada sponsor
+                sudahAdaSponsor = !nasabah.idSponsor.isNullOrEmpty()
+                if (sudahAdaSponsor) {
+                    binding.etKodeReferralSponsor.isEnabled = false
+                    binding.tilKodeReferralSponsor.isEnabled = false
+                    binding.tilKodeReferralSponsor.alpha = 0.6f
+                    binding.btnSimpanSponsor.isEnabled = false
+                    binding.btnSimpanSponsor.alpha = 0.5f
+                    // Tampilkan kode sponsor yang sudah ada
+                    try {
+                        val sponsor = client.postgrest
+                            .from("nasabah_data")
+                            .select { filter { eq("id_nasabah", nasabah.idSponsor!!) } }
+                            .decodeSingle<NasabahData>()
+                        binding.etKodeReferralSponsor.setText(sponsor.kodeReferral ?: "")
+                    } catch (_: Exception) {}
+                    binding.tilKodeReferralSponsor.helperText = "✓ Sponsor sudah terdaftar, tidak dapat diubah"
+                }
+
+            } catch (_: Exception) {}
+        }
+
+        binding.tvBagikanKeTeman.setOnClickListener {
+            val kode = binding.tvKodeReferralSaya.text.toString()
+            if (kode == "-" || kode.isEmpty()) {
+                Toast.makeText(requireContext(), "Kode referral belum tersedia", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+            val pesan = """
+        🎉 Hei! Saya mengundang kamu bergabung di *Bank Jatah Indonesia*!
+        
+        Bank Jatah adalah platform pengelolaan minyak jelantah yang menguntungkan. Setor minyak jelantahmu dan dapatkan saldo, poin reward, serta komisi afiliasi!
+        
+        Gunakan kode referral saya saat mendaftar:
+        ✨ *$kode* ✨
+        
+        Belum punya aplikasinya? Download sekarang di:
+        🌐 https://www.bjindonesia.online/aplikasi
+        
+        Daftar sekarang dan mulai hasilkan dari minyak jelantahmu! 💰
+    """.trimIndent()
+
+            val intent = Intent(Intent.ACTION_SEND).apply {
+                type = "text/plain"
+                putExtra(Intent.EXTRA_TEXT, pesan)
+            }
+            startActivity(Intent.createChooser(intent, "Bagikan via"))
+        }
+
+        binding.btnSimpanSponsor.setOnClickListener {
+            if (sudahAdaSponsor) return@setOnClickListener
+            val kode = binding.etKodeReferralSponsor.text.toString().trim()
+            if (kode.isEmpty()) {
+                binding.tilKodeReferralSponsor.error = "Masukkan kode sponsor"
+                return@setOnClickListener
+            }
+            simpanSponsor(kode)
+        }
+    }
+
+    private fun simpanSponsor(kodeRefSponsor: String) {
+        binding.btnSimpanSponsor.isEnabled = false
+        binding.btnSimpanSponsor.text = "Menyimpan..."
+        lifecycleScope.launch {
+            try {
+                val uid = idUser ?: return@launch
+                val sponsorData = client.postgrest
+                    .from("nasabah_data")
+                    .select { filter { eq("kode_referral", kodeRefSponsor) } }
+                    .decodeSingle<NasabahData>()
+
+                client.postgrest.from("nasabah_data").update(
+                    mapOf("id_sponsor" to sponsorData.idNasabah)
+                ) { filter { eq("id_nasabah", uid) } }
+
+                sudahAdaSponsor = true
+                binding.etKodeReferralSponsor.isEnabled = false
+                binding.tilKodeReferralSponsor.isEnabled = false
+                binding.tilKodeReferralSponsor.alpha = 0.6f
+                binding.tilKodeReferralSponsor.helperText = "✓ Sponsor berhasil disimpan"
+                binding.btnSimpanSponsor.text = "Tersimpan"
+
+                Toast.makeText(requireContext(), "✓ Sponsor berhasil ditambahkan!", Toast.LENGTH_SHORT).show()
+
+            } catch (_: Exception) {
+                binding.btnSimpanSponsor.isEnabled = true
+                binding.btnSimpanSponsor.text = "Simpan"
+                binding.tilKodeReferralSponsor.error = "Kode sponsor tidak ditemukan"
             }
         }
     }

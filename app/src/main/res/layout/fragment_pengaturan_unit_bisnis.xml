@@ -241,60 +241,6 @@
                     <View android:layout_width="match_parent" android:layout_height="1dp"
                         android:background="@color/gray_border" android:layout_marginStart="16dp" />
 
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:paddingStart="16dp"
-                        android:paddingEnd="16dp"
-                        android:paddingTop="12dp"
-                        android:paddingBottom="12dp">
-
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:orientation="vertical">
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Kode Referral Saya"
-                                android:textSize="11sp"
-                                android:textColor="@color/gray_text"
-                                android:fontFamily="@font/poppins_regular" />
-
-                            <TextView
-                                android:id="@+id/tvKodeReferralValue"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="-"
-                                android:textSize="15sp"
-                                android:textStyle="bold"
-                                android:textColor="@color/orange_primary"
-                                android:fontFamily="@font/poppins_bold"
-                                android:layout_marginTop="2dp" />
-
-                        </LinearLayout>
-
-                        <TextView
-                            android:id="@+id/tvBagikanKeTeman"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Bagikan ke teman"
-                            android:textSize="10sp"
-                            android:textColor="@color/orange_primary"
-                            android:fontFamily="@font/poppins_regular"
-                            android:layout_gravity="center_vertical"
-                            android:clickable="true"
-                            android:focusable="true"
-                            android:background="?attr/selectableItemBackgroundBorderless"
-                            android:padding="8dp" />
-
-                    </LinearLayout>
-
-                    <View android:layout_width="match_parent" android:layout_height="1dp"
-                        android:background="@color/gray_border" android:layout_marginStart="16dp" />
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -575,42 +521,6 @@
                             android:minLines="2"
                             android:maxLines="4"
                             android:gravity="top" />
-
-                    </com.google.android.material.textfield.TextInputLayout>
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Kode Referral Sponsor"
-                        android:textSize="12sp"
-                        android:textColor="@color/gray_text"
-                        android:fontFamily="@font/poppins_regular" />
-
-                    <com.google.android.material.textfield.TextInputLayout
-                        android:id="@+id/tilKodeReferralSponsor"
-                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="6dp"
-                        android:layout_marginBottom="16dp"
-                        app:boxCornerRadiusTopStart="10dp"
-                        app:boxCornerRadiusTopEnd="10dp"
-                        app:boxCornerRadiusBottomStart="10dp"
-                        app:boxCornerRadiusBottomEnd="10dp"
-                        app:boxStrokeColor="@color/orange_primary"
-                        app:hintEnabled="false"
-                        app:helperTextEnabled="true"
-                        app:helperText="Opsional — isi jika Anda memiliki sponsor">
-
-                        <com.google.android.material.textfield.TextInputEditText
-                            android:id="@+id/etKodeReferralSponsor"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:hint="Contoh: ABC12345"
-                            android:textSize="14sp"
-                            android:fontFamily="@font/poppins_regular"
-                            android:textColor="@color/black"
-                            android:inputType="text" />
 
                     </com.google.android.material.textfield.TextInputLayout>
 

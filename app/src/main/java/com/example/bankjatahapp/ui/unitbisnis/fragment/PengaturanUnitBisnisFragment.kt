@@ -31,9 +31,6 @@ class PengaturanUnitBisnisFragment : Fragment() {
 
     private var idUser: String? = null
 
-    // Flag apakah sponsor sudah ada
-    private var sudahAdaSponsor: Boolean = false
-
     private var listBank: List<MasterBank> = emptyList()
     private var bankDipilih: String? = null
 
@@ -173,33 +170,9 @@ class PengaturanUnitBisnisFragment : Fragment() {
                     org.osmdroid.views.overlay.MapEventsOverlay(mapEventsReceiver)
                 )
 
-                // ===== KODE REFERRAL SPONSOR =====
-                sudahAdaSponsor = !nasabah.idSponsor.isNullOrEmpty()
-                if (sudahAdaSponsor) {
-                    try {
-                        val sponsor = client.postgrest
-                            .from("nasabah_data")
-                            .select { filter { eq("id_nasabah", nasabah.idSponsor!!) } }
-                            .decodeSingle<NasabahData>()
-                        binding.etKodeReferralSponsor.setText(sponsor.kodeReferral ?: "")
-                    } catch (_: Exception) {
-                        binding.etKodeReferralSponsor.setText("")
-                    }
-                    binding.etKodeReferralSponsor.isEnabled = false
-                    binding.tilKodeReferralSponsor.isEnabled = false
-                    binding.tilKodeReferralSponsor.helperText = "✓ Sponsor sudah terdaftar, tidak dapat diubah"
-                    binding.tilKodeReferralSponsor.alpha = 0.6f
-                } else {
-                    binding.etKodeReferralSponsor.isEnabled = true
-                    binding.tilKodeReferralSponsor.isEnabled = true
-                    binding.tilKodeReferralSponsor.helperText = "Opsional — isi jika Anda memiliki sponsor"
-                    binding.tilKodeReferralSponsor.alpha = 1.0f
-                }
-
                 // Field read-only
                 binding.tvEmailValue.text        = user.email
                 binding.tvNikValue.text          = nasabah.nik ?: "-"
-                binding.tvKodeReferralValue.text = nasabah.kodeReferral ?: "-"
                 binding.tvLevelBintangValue.text = "Bintang ${nasabah.levelBintang ?: 1}"
                 binding.tvKategoriValue.text     = (nasabah.kategoriNasabah ?: "pasif")
                     .replaceFirstChar { it.uppercase() }
@@ -273,16 +246,7 @@ class PengaturanUnitBisnisFragment : Fragment() {
         binding.btnSimpan.setOnClickListener {
             simpanPerubahan()
         }
-        binding.tvBagikanKeTeman.setOnClickListener {
-            val kodeReferral = binding.tvKodeReferralValue.text.toString()
-            if (kodeReferral == "-" || kodeReferral.isEmpty()) {
-                Toast.makeText(
-                    requireContext(), "Kode referral belum tersedia", Toast.LENGTH_SHORT
-                ).show()
-                return@setOnClickListener
-            }
-            bagikanKodeReferral(kodeReferral)
-        }
+
         binding.btnGunakanGpsSaatIni.setOnClickListener {
             val fine   = androidx.core.content.ContextCompat.checkSelfPermission(
                 requireContext(), android.Manifest.permission.ACCESS_FINE_LOCATION
@@ -304,30 +268,11 @@ class PengaturanUnitBisnisFragment : Fragment() {
         )
     }
 
-    private fun bagikanKodeReferral(kode: String) {
-        val link = "bankjatah://register/ref?kode=$kode"
-        val pesan = """
-            🎉 Hei! Aku mengundang kamu bergabung di aplikasi Bank Jatah!
-            
-            Gunakan kode referral aku: *$kode*
-            
-            Daftar sekarang lewat link ini:
-            $link
-            
-            Atau buka aplikasi Bank Jatah dan masukkan kode referral saat daftar.
-        """.trimIndent()
-        val intent = Intent(Intent.ACTION_SEND).apply {
-            type = "text/plain"
-            putExtra(Intent.EXTRA_TEXT, pesan)
-        }
-        startActivity(Intent.createChooser(intent, "Bagikan kode referral via"))
-    }
 
     private fun simpanPerubahan() {
         val nama           = binding.etNama.text.toString().trim()
         val noTelp         = binding.etNoTelp.text.toString().trim()
         val alamat         = binding.etAlamat.text.toString().trim()
-        val kodeRefSponsor = binding.etKodeReferralSponsor.text.toString().trim()
         val noRekening     = binding.etNoRekening.text.toString().trim()
         val atasNama       = binding.etAtasNama.text.toString().trim()
 
@@ -343,26 +288,6 @@ class PengaturanUnitBisnisFragment : Fragment() {
             try {
                 val id = idUser ?: throw Exception("Session tidak ditemukan")
 
-                // Hanya proses sponsor jika field aktif (belum ada sponsor) dan diisi
-                var idSponsorBaru: String? = null
-                if (!sudahAdaSponsor && kodeRefSponsor.isNotEmpty()) {
-                    try {
-                        val sponsorData = client.postgrest
-                            .from("nasabah_data")
-                            .select { filter { eq("kode_referral", kodeRefSponsor) } }
-                            .decodeSingle<NasabahData>()
-                        idSponsorBaru = sponsorData.idNasabah
-                    } catch (_: Exception) {
-                        setLoading(false)
-                        Toast.makeText(
-                            requireContext(),
-                            "Kode referral sponsor tidak ditemukan",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                        return@launch
-                    }
-                }
-
                 // Update tabel users
                 client.postgrest.from("users").update(
                     mapOf(
@@ -377,9 +302,6 @@ class PengaturanUnitBisnisFragment : Fragment() {
                     put("bank_code",          bankDipilih)
                     put("no_rekening",        noRekening.ifEmpty { null })
                     put("atas_nama_rekening", atasNama.ifEmpty { null })
-                    if (!sudahAdaSponsor && idSponsorBaru != null) {
-                        put("id_sponsor", idSponsorBaru)
-                    }
                 }
 
                 client.postgrest.from("nasabah_data").update(updatePayload) {

@@ -581,43 +581,6 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Kode Referral Sponsor"
-                        android:textSize="12sp"
-                        android:textColor="@color/gray_text"
-                        android:fontFamily="@font/poppins_regular" />
-
-                    <!-- ✅ PERUBAHAN: Tambah helperTextEnabled="true" dan helperText default -->
-                    <com.google.android.material.textfield.TextInputLayout
-                        android:id="@+id/tilKodeReferralSponsor"
-                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="6dp"
-                        android:layout_marginBottom="16dp"
-                        app:boxCornerRadiusTopStart="10dp"
-                        app:boxCornerRadiusTopEnd="10dp"
-                        app:boxCornerRadiusBottomStart="10dp"
-                        app:boxCornerRadiusBottomEnd="10dp"
-                        app:boxStrokeColor="@color/orange_primary"
-                        app:hintEnabled="false"
-                        app:helperTextEnabled="true"
-                        app:helperText="Opsional — isi jika Anda memiliki sponsor">
-
-                        <com.google.android.material.textfield.TextInputEditText
-                            android:id="@+id/etKodeReferralSponsor"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:hint="Contoh: ABC12345"
-                            android:textSize="14sp"
-                            android:fontFamily="@font/poppins_regular"
-                            android:textColor="@color/black"
-                            android:inputType="text" />
-
-                    </com.google.android.material.textfield.TextInputLayout>
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
                         android:text="Bank"
                         android:textSize="12sp"
                         android:textColor="@color/gray_text"
