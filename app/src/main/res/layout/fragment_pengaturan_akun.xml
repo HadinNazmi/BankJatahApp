@@ -58,7 +58,6 @@
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintBottom_toBottomOf="parent" />
-
             </androidx.constraintlayout.widget.ConstraintLayout>
 
             <LinearLayout
@@ -91,16 +90,13 @@
                         app:cardBackgroundColor="@color/white"
                         android:clickable="true"
                         android:focusable="true">
-
                         <ImageView
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
                             android:src="@android:drawable/ic_menu_camera"
                             android:padding="4dp"
                             android:scaleType="centerInside" />
-
                     </androidx.cardview.widget.CardView>
-
                 </FrameLayout>
 
                 <TextView
@@ -111,13 +107,326 @@
                     android:textColor="#CCFFFFFF"
                     android:fontFamily="@font/poppins_regular"
                     android:layout_marginTop="8dp" />
-
             </LinearLayout>
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="INFO AKUN"
+                android:text="PROFIL PERSONAL"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:textColor="@color/gray_text"
+                android:fontFamily="@font/poppins_semibold"
+                android:letterSpacing="0.1"
+                android:layout_marginStart="20dp"
+                android:layout_marginTop="20dp"
+                android:layout_marginBottom="8dp" />
+
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="20dp"
+                app:cardCornerRadius="14dp"
+                app:cardElevation="2dp"
+                app:cardBackgroundColor="@color/white">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <LinearLayout
+                        android:id="@+id/itemEditNama"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:background="?attr/selectableItemBackground"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:padding="16dp">
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Nama Lengkap"
+                                android:textSize="11sp"
+                                android:textColor="@color/gray_text"
+                                android:fontFamily="@font/poppins_regular" />
+                            <TextView
+                                android:id="@+id/tvNamaValue"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="-"
+                                android:textSize="13sp"
+                                android:textColor="@color/black"
+                                android:fontFamily="@font/poppins_semibold"
+                                android:layout_marginTop="2dp" />
+                        </LinearLayout>
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Ubah →"
+                            android:textSize="11sp"
+                            android:textColor="@color/orange_primary"
+                            android:fontFamily="@font/poppins_regular"
+                            android:layout_gravity="center_vertical" />
+                    </LinearLayout>
+
+                    <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/gray_border" android:layout_marginStart="16dp" />
+
+                    <LinearLayout
+                        android:id="@+id/itemEditNoTelp"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:background="?attr/selectableItemBackground"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:padding="16dp">
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Nomor Telepon"
+                                android:textSize="11sp"
+                                android:textColor="@color/gray_text"
+                                android:fontFamily="@font/poppins_regular" />
+                            <TextView
+                                android:id="@+id/tvNoTelpValue"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="-"
+                                android:textSize="13sp"
+                                android:textColor="@color/black"
+                                android:fontFamily="@font/poppins_semibold"
+                                android:layout_marginTop="2dp" />
+                        </LinearLayout>
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Ubah →"
+                            android:textSize="11sp"
+                            android:textColor="@color/orange_primary"
+                            android:fontFamily="@font/poppins_regular"
+                            android:layout_gravity="center_vertical" />
+                    </LinearLayout>
+
+                    <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/gray_border" android:layout_marginStart="16dp" />
+
+                    <LinearLayout
+                        android:id="@+id/itemEditAlamat"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:background="?attr/selectableItemBackground"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:padding="16dp">
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Alamat Rumah"
+                                android:textSize="11sp"
+                                android:textColor="@color/gray_text"
+                                android:fontFamily="@font/poppins_regular" />
+                            <TextView
+                                android:id="@+id/tvAlamatValue"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="-"
+                                android:textSize="13sp"
+                                android:textColor="@color/black"
+                                android:fontFamily="@font/poppins_semibold"
+                                android:layout_marginTop="2dp" />
+                        </LinearLayout>
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Ubah →"
+                            android:textSize="11sp"
+                            android:textColor="@color/orange_primary"
+                            android:fontFamily="@font/poppins_regular"
+                            android:layout_gravity="center_vertical" />
+                    </LinearLayout>
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="REKENING PENCAIRAN"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:textColor="@color/gray_text"
+                android:fontFamily="@font/poppins_semibold"
+                android:letterSpacing="0.1"
+                android:layout_marginStart="20dp"
+                android:layout_marginTop="20dp"
+                android:layout_marginBottom="8dp" />
+
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="20dp"
+                app:cardCornerRadius="14dp"
+                app:cardElevation="2dp"
+                app:cardBackgroundColor="@color/white">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <LinearLayout
+                        android:id="@+id/itemEditBank"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:background="?attr/selectableItemBackground"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:padding="16dp">
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Nama Bank Tujuan"
+                                android:textSize="11sp"
+                                android:textColor="@color/gray_text"
+                                android:fontFamily="@font/poppins_regular" />
+                            <TextView
+                                android:id="@+id/tvBankValue"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="-"
+                                android:textSize="13sp"
+                                android:textColor="@color/black"
+                                android:fontFamily="@font/poppins_semibold"
+                                android:layout_marginTop="2dp" />
+                        </LinearLayout>
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Ubah →"
+                            android:textSize="11sp"
+                            android:textColor="@color/orange_primary"
+                            android:fontFamily="@font/poppins_regular"
+                            android:layout_gravity="center_vertical" />
+                    </LinearLayout>
+
+                    <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/gray_border" android:layout_marginStart="16dp" />
+
+                    <LinearLayout
+                        android:id="@+id/itemEditNoRekening"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:background="?attr/selectableItemBackground"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:padding="16dp">
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Nomor Rekening"
+                                android:textSize="11sp"
+                                android:textColor="@color/gray_text"
+                                android:fontFamily="@font/poppins_regular" />
+                            <TextView
+                                android:id="@+id/tvNoRekeningValue"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="-"
+                                android:textSize="13sp"
+                                android:textColor="@color/black"
+                                android:fontFamily="@font/poppins_semibold"
+                                android:layout_marginTop="2dp" />
+                        </LinearLayout>
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Ubah →"
+                            android:textSize="11sp"
+                            android:textColor="@color/orange_primary"
+                            android:fontFamily="@font/poppins_regular"
+                            android:layout_gravity="center_vertical" />
+                    </LinearLayout>
+
+                    <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/gray_border" android:layout_marginStart="16dp" />
+
+                    <LinearLayout
+                        android:id="@+id/itemEditAtasNama"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:background="?attr/selectableItemBackground"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:padding="16dp">
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Atas Nama Pemilik Rekening"
+                                android:textSize="11sp"
+                                android:textColor="@color/gray_text"
+                                android:fontFamily="@font/poppins_regular" />
+                            <TextView
+                                android:id="@+id/tvAtasNamaValue"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="-"
+                                android:textSize="13sp"
+                                android:textColor="@color/black"
+                                android:fontFamily="@font/poppins_semibold"
+                                android:layout_marginTop="2dp" />
+                        </LinearLayout>
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Ubah →"
+                            android:textSize="11sp"
+                            android:textColor="@color/orange_primary"
+                            android:fontFamily="@font/poppins_regular"
+                            android:layout_gravity="center_vertical" />
+                    </LinearLayout>
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="INFORMASI SISTEM"
                 android:textSize="11sp"
                 android:textStyle="bold"
                 android:textColor="@color/gray_text"
@@ -147,25 +456,19 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
-                        android:paddingStart="16dp"
-                        android:paddingEnd="16dp"
-                        android:paddingTop="12dp"
-                        android:paddingBottom="12dp">
-
+                        android:padding="16dp">
                         <LinearLayout
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:orientation="vertical">
-
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Email"
+                                android:text="Email Terdaftar"
                                 android:textSize="11sp"
                                 android:textColor="@color/gray_text"
                                 android:fontFamily="@font/poppins_regular" />
-
                             <TextView
                                 android:id="@+id/tvEmailValue"
                                 android:layout_width="wrap_content"
@@ -175,46 +478,36 @@
                                 android:textColor="@color/black"
                                 android:fontFamily="@font/poppins_semibold"
                                 android:layout_marginTop="2dp" />
-
                         </LinearLayout>
-
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Tidak dapat diubah"
+                            android:text="Kunci"
                             android:textSize="10sp"
                             android:textColor="@color/gray_text"
                             android:fontFamily="@font/poppins_regular"
                             android:layout_gravity="center_vertical" />
-
                     </LinearLayout>
 
-                    <View android:layout_width="match_parent" android:layout_height="1dp"
-                        android:background="@color/gray_border" android:layout_marginStart="16dp" />
+                    <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/gray_border" android:layout_marginStart="16dp" />
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
-                        android:paddingStart="16dp"
-                        android:paddingEnd="16dp"
-                        android:paddingTop="12dp"
-                        android:paddingBottom="12dp">
-
+                        android:padding="16dp">
                         <LinearLayout
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:orientation="vertical">
-
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="NIK"
+                                android:text="NIK (Nomor Induk Kependudukan)"
                                 android:textSize="11sp"
                                 android:textColor="@color/gray_text"
                                 android:fontFamily="@font/poppins_regular" />
-
                             <TextView
                                 android:id="@+id/tvNikValue"
                                 android:layout_width="wrap_content"
@@ -224,46 +517,36 @@
                                 android:textColor="@color/black"
                                 android:fontFamily="@font/poppins_semibold"
                                 android:layout_marginTop="2dp" />
-
                         </LinearLayout>
-
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Tidak dapat diubah"
+                            android:text="Kunci"
                             android:textSize="10sp"
                             android:textColor="@color/gray_text"
                             android:fontFamily="@font/poppins_regular"
                             android:layout_gravity="center_vertical" />
-
                     </LinearLayout>
 
-                    <View android:layout_width="match_parent" android:layout_height="1dp"
-                        android:background="@color/gray_border" android:layout_marginStart="16dp" />
+                    <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/gray_border" android:layout_marginStart="16dp" />
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
-                        android:paddingStart="16dp"
-                        android:paddingEnd="16dp"
-                        android:paddingTop="12dp"
-                        android:paddingBottom="12dp">
-
+                        android:padding="16dp">
                         <LinearLayout
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:orientation="vertical">
-
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Kode Referral Saya"
+                                android:text="Kode Referral Anda"
                                 android:textSize="11sp"
                                 android:textColor="@color/gray_text"
                                 android:fontFamily="@font/poppins_regular" />
-
                             <TextView
                                 android:id="@+id/tvKodeReferralValue"
                                 android:layout_width="wrap_content"
@@ -274,43 +557,34 @@
                                 android:textColor="@color/orange_primary"
                                 android:fontFamily="@font/poppins_bold"
                                 android:layout_marginTop="2dp" />
-
                         </LinearLayout>
-
                         <TextView
                             android:id="@+id/tvBagikanKeTeman"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Bagikan ke teman"
-                            android:textSize="10sp"
+                            android:text="Salin Kode"
+                            android:textSize="11sp"
                             android:textColor="@color/orange_primary"
-                            android:fontFamily="@font/poppins_regular"
+                            android:fontFamily="@font/poppins_semibold"
                             android:layout_gravity="center_vertical"
                             android:clickable="true"
                             android:focusable="true"
                             android:background="?attr/selectableItemBackgroundBorderless"
-                            android:padding="8dp" />
-
+                            android:padding="6dp" />
                     </LinearLayout>
 
-                    <View android:layout_width="match_parent" android:layout_height="1dp"
-                        android:background="@color/gray_border" android:layout_marginStart="16dp" />
+                    <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/gray_border" android:layout_marginStart="16dp" />
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
-                        android:paddingStart="16dp"
-                        android:paddingEnd="16dp"
-                        android:paddingTop="12dp"
-                        android:paddingBottom="12dp">
-
+                        android:padding="16dp">
                         <LinearLayout
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:orientation="vertical">
-
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
@@ -318,18 +592,15 @@
                                 android:textSize="11sp"
                                 android:textColor="@color/gray_text"
                                 android:fontFamily="@font/poppins_regular" />
-
                             <TextView
                                 android:id="@+id/tvLevelBintangValue"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Bintang 1"
+                                android:text="-"
                                 android:textSize="13sp"
-                                android:textStyle="bold"
                                 android:textColor="@color/black"
                                 android:fontFamily="@font/poppins_semibold"
                                 android:layout_marginTop="2dp" />
-
                         </LinearLayout>
 
                         <LinearLayout
@@ -337,7 +608,6 @@
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:orientation="vertical">
-
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
@@ -345,18 +615,15 @@
                                 android:textSize="11sp"
                                 android:textColor="@color/gray_text"
                                 android:fontFamily="@font/poppins_regular" />
-
                             <TextView
                                 android:id="@+id/tvKategoriValue"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Pasif"
+                                android:text="-"
                                 android:textSize="13sp"
-                                android:textStyle="bold"
                                 android:textColor="@color/black"
                                 android:fontFamily="@font/poppins_semibold"
                                 android:layout_marginTop="2dp" />
-
                         </LinearLayout>
 
                         <LinearLayout
@@ -364,22 +631,19 @@
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:orientation="vertical">
-
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Status"
+                                android:text="Status Akun"
                                 android:textSize="11sp"
                                 android:textColor="@color/gray_text"
                                 android:fontFamily="@font/poppins_regular" />
-
                             <TextView
                                 android:id="@+id/tvStatusAkunValue"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Aktif"
+                                android:text="-"
                                 android:textSize="11sp"
-                                android:textStyle="bold"
                                 android:textColor="@color/white"
                                 android:fontFamily="@font/poppins_semibold"
                                 android:paddingStart="8dp"
@@ -387,312 +651,23 @@
                                 android:paddingTop="3dp"
                                 android:paddingBottom="3dp"
                                 android:layout_marginTop="2dp" />
-
                         </LinearLayout>
-
                     </LinearLayout>
-
-                    <View android:layout_width="match_parent" android:layout_height="1dp"
-                        android:background="@color/gray_border" android:layout_marginStart="16dp" />
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:paddingStart="16dp"
-                        android:paddingEnd="16dp"
-                        android:paddingTop="12dp"
-                        android:paddingBottom="12dp">
-
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:orientation="vertical">
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Role"
-                                android:textSize="11sp"
-                                android:textColor="@color/gray_text"
-                                android:fontFamily="@font/poppins_regular" />
-
-                            <TextView
-                                android:id="@+id/tvRoleValue"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Nasabah"
-                                android:textSize="13sp"
-                                android:textColor="@color/black"
-                                android:fontFamily="@font/poppins_semibold"
-                                android:layout_marginTop="2dp" />
-
-                        </LinearLayout>
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Tidak dapat diubah"
-                            android:textSize="10sp"
-                            android:textColor="@color/gray_text"
-                            android:fontFamily="@font/poppins_regular"
-                            android:layout_gravity="center_vertical" />
-
-                    </LinearLayout>
-
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
             <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="UBAH DATA"
-                android:textSize="11sp"
-                android:textStyle="bold"
-                android:textColor="@color/gray_text"
-                android:fontFamily="@font/poppins_semibold"
-                android:letterSpacing="0.1"
-                android:layout_marginStart="20dp"
-                android:layout_marginTop="20dp"
-                android:layout_marginBottom="8dp" />
-
-            <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="20dp"
-                android:layout_marginEnd="20dp"
-                app:cardCornerRadius="14dp"
-                app:cardElevation="2dp"
-                app:cardBackgroundColor="@color/white">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="16dp">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Nama Lengkap"
-                        android:textSize="12sp"
-                        android:textColor="@color/gray_text"
-                        android:fontFamily="@font/poppins_regular" />
-
-                    <com.google.android.material.textfield.TextInputLayout
-                        android:id="@+id/tilNama"
-                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="6dp"
-                        android:layout_marginBottom="16dp"
-                        app:boxCornerRadiusTopStart="10dp"
-                        app:boxCornerRadiusTopEnd="10dp"
-                        app:boxCornerRadiusBottomStart="10dp"
-                        app:boxCornerRadiusBottomEnd="10dp"
-                        app:boxStrokeColor="@color/orange_primary"
-                        app:hintEnabled="false">
-
-                        <com.google.android.material.textfield.TextInputEditText
-                            android:id="@+id/etNama"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:hint="Nama lengkap Anda"
-                            android:textSize="14sp"
-                            android:fontFamily="@font/poppins_regular"
-                            android:textColor="@color/black"
-                            android:inputType="textPersonName|textCapWords" />
-
-                    </com.google.android.material.textfield.TextInputLayout>
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Nomor Telepon"
-                        android:textSize="12sp"
-                        android:textColor="@color/gray_text"
-                        android:fontFamily="@font/poppins_regular" />
-
-                    <com.google.android.material.textfield.TextInputLayout
-                        android:id="@+id/tilNoTelp"
-                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="6dp"
-                        android:layout_marginBottom="16dp"
-                        app:boxCornerRadiusTopStart="10dp"
-                        app:boxCornerRadiusTopEnd="10dp"
-                        app:boxCornerRadiusBottomStart="10dp"
-                        app:boxCornerRadiusBottomEnd="10dp"
-                        app:boxStrokeColor="@color/orange_primary"
-                        app:hintEnabled="false">
-
-                        <com.google.android.material.textfield.TextInputEditText
-                            android:id="@+id/etNoTelp"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:hint="Contoh: 082283884373"
-                            android:textSize="14sp"
-                            android:fontFamily="@font/poppins_regular"
-                            android:textColor="@color/black"
-                            android:inputType="phone"
-                            android:maxLength="15" />
-
-                    </com.google.android.material.textfield.TextInputLayout>
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Alamat Rumah"
-                        android:textSize="12sp"
-                        android:textColor="@color/gray_text"
-                        android:fontFamily="@font/poppins_regular" />
-
-                    <com.google.android.material.textfield.TextInputLayout
-                        android:id="@+id/tilAlamat"
-                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="6dp"
-                        android:layout_marginBottom="16dp"
-                        app:boxCornerRadiusTopStart="10dp"
-                        app:boxCornerRadiusTopEnd="10dp"
-                        app:boxCornerRadiusBottomStart="10dp"
-                        app:boxCornerRadiusBottomEnd="10dp"
-                        app:boxStrokeColor="@color/orange_primary"
-                        app:hintEnabled="false">
-
-                        <com.google.android.material.textfield.TextInputEditText
-                            android:id="@+id/etAlamat"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:hint="Alamat lengkap (opsional)"
-                            android:textSize="14sp"
-                            android:fontFamily="@font/poppins_regular"
-                            android:textColor="@color/black"
-                            android:inputType="textMultiLine"
-                            android:minLines="2"
-                            android:maxLines="4"
-                            android:gravity="top" />
-
-                    </com.google.android.material.textfield.TextInputLayout>
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Bank"
-                        android:textSize="12sp"
-                        android:textColor="@color/gray_text"
-                        android:fontFamily="@font/poppins_regular"
-                        android:layout_marginTop="16dp" />
-
-                    <Spinner
-                        android:id="@+id/spinnerBank"
-                        android:layout_width="match_parent"
-                        android:layout_height="52dp"
-                        android:layout_marginTop="6dp"
-                        android:layout_marginBottom="16dp"
-                        android:background="@drawable/ic_bg_tab_inactive"
-                        android:padding="12dp" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Nomor Rekening"
-                        android:textSize="12sp"
-                        android:textColor="@color/gray_text"
-                        android:fontFamily="@font/poppins_regular" />
-
-                    <com.google.android.material.textfield.TextInputLayout
-                        android:id="@+id/tilNoRekening"
-                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="6dp"
-                        android:layout_marginBottom="16dp"
-                        app:boxCornerRadiusTopStart="10dp"
-                        app:boxCornerRadiusTopEnd="10dp"
-                        app:boxCornerRadiusBottomStart="10dp"
-                        app:boxCornerRadiusBottomEnd="10dp"
-                        app:boxStrokeColor="@color/orange_primary"
-                        app:hintEnabled="false">
-
-                        <com.google.android.material.textfield.TextInputEditText
-                            android:id="@+id/etNoRekening"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:hint="Nomor rekening"
-                            android:textSize="14sp"
-                            android:fontFamily="@font/poppins_regular"
-                            android:textColor="@color/black"
-                            android:inputType="number" />
-
-                    </com.google.android.material.textfield.TextInputLayout>
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Atas Nama Rekening"
-                        android:textSize="12sp"
-                        android:textColor="@color/gray_text"
-                        android:fontFamily="@font/poppins_regular" />
-
-                    <com.google.android.material.textfield.TextInputLayout
-                        android:id="@+id/tilAtasNama"
-                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="6dp"
-                        app:boxCornerRadiusTopStart="10dp"
-                        app:boxCornerRadiusTopEnd="10dp"
-                        app:boxCornerRadiusBottomStart="10dp"
-                        app:boxCornerRadiusBottomEnd="10dp"
-                        app:boxStrokeColor="@color/orange_primary"
-                        app:hintEnabled="false">
-
-                        <com.google.android.material.textfield.TextInputEditText
-                            android:id="@+id/etAtasNama"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:hint="Nama sesuai rekening"
-                            android:textSize="14sp"
-                            android:fontFamily="@font/poppins_regular"
-                            android:textColor="@color/black"
-                            android:inputType="textPersonName|textCapWords" />
-
-                    </com.google.android.material.textfield.TextInputLayout>
-
-                </LinearLayout>
-            </androidx.cardview.widget.CardView>
-
-            <Button
-                android:id="@+id/btnSimpan"
-                android:layout_width="match_parent"
-                android:layout_height="52dp"
-                android:text="Simpan Perubahan"
-                android:textSize="15sp"
-                android:textColor="@color/white"
-                android:fontFamily="@font/poppins_semibold"
-                android:backgroundTint="@color/orange_primary"
-                android:layout_marginStart="20dp"
-                android:layout_marginEnd="20dp"
-                android:layout_marginTop="24dp"
-                app:cornerRadius="14dp" />
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Data NIK, kode referral, dan email hanya bisa diubah melalui admin."
+                android:text="Data berlogo 'Kunci' hanya bisa disesuaikan oleh admin pusat."
                 android:textSize="11sp"
                 android:textColor="@color/gray_text"
                 android:fontFamily="@font/poppins_regular"
                 android:gravity="center"
                 android:layout_marginStart="20dp"
                 android:layout_marginEnd="20dp"
-                android:layout_marginTop="8dp" />
+                android:layout_marginTop="20dp" />
 
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
-
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

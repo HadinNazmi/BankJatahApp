@@ -25,6 +25,7 @@
             android:orientation="vertical"
             android:paddingBottom="40dp">
 
+            <!-- ===== HEADER ===== -->
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -58,9 +59,9 @@
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintBottom_toBottomOf="parent" />
-
             </androidx.constraintlayout.widget.ConstraintLayout>
 
+            <!-- ===== FOTO PROFIL ===== -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="140dp"
@@ -91,16 +92,13 @@
                         app:cardBackgroundColor="@color/white"
                         android:clickable="true"
                         android:focusable="true">
-
                         <ImageView
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
                             android:src="@android:drawable/ic_menu_camera"
                             android:padding="4dp"
                             android:scaleType="centerInside" />
-
                     </androidx.cardview.widget.CardView>
-
                 </FrameLayout>
 
                 <TextView
@@ -111,13 +109,13 @@
                     android:textColor="#CCFFFFFF"
                     android:fontFamily="@font/poppins_regular"
                     android:layout_marginTop="8dp" />
-
             </LinearLayout>
 
+            <!-- ===== PROFIL PERSONAL ===== -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="INFO AKUN"
+                android:text="PROFIL PERSONAL"
                 android:textSize="11sp"
                 android:textStyle="bold"
                 android:textColor="@color/gray_text"
@@ -139,35 +137,31 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:paddingTop="4dp"
-                    android:paddingBottom="4dp">
+                    android:orientation="vertical">
 
                     <LinearLayout
+                        android:id="@+id/itemEditNama"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
-                        android:paddingStart="16dp"
-                        android:paddingEnd="16dp"
-                        android:paddingTop="12dp"
-                        android:paddingBottom="12dp">
-
+                        android:background="?attr/selectableItemBackground"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:padding="16dp">
                         <LinearLayout
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:orientation="vertical">
-
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Email"
+                                android:text="Nama Lengkap"
                                 android:textSize="11sp"
                                 android:textColor="@color/gray_text"
                                 android:fontFamily="@font/poppins_regular" />
-
                             <TextView
-                                android:id="@+id/tvEmailValue"
+                                android:id="@+id/tvNamaValue"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="-"
@@ -175,48 +169,42 @@
                                 android:textColor="@color/black"
                                 android:fontFamily="@font/poppins_semibold"
                                 android:layout_marginTop="2dp" />
-
                         </LinearLayout>
-
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Tidak dapat diubah"
-                            android:textSize="10sp"
-                            android:textColor="@color/gray_text"
+                            android:text="Ubah →"
+                            android:textSize="11sp"
+                            android:textColor="@color/orange_primary"
                             android:fontFamily="@font/poppins_regular"
                             android:layout_gravity="center_vertical" />
-
                     </LinearLayout>
 
-                    <View android:layout_width="match_parent" android:layout_height="1dp"
-                        android:background="@color/gray_border" android:layout_marginStart="16dp" />
+                    <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/gray_border" android:layout_marginStart="16dp" />
 
                     <LinearLayout
+                        android:id="@+id/itemEditNoTelp"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
-                        android:paddingStart="16dp"
-                        android:paddingEnd="16dp"
-                        android:paddingTop="12dp"
-                        android:paddingBottom="12dp">
-
+                        android:background="?attr/selectableItemBackground"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:padding="16dp">
                         <LinearLayout
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:orientation="vertical">
-
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="NIK"
+                                android:text="Nomor Telepon"
                                 android:textSize="11sp"
                                 android:textColor="@color/gray_text"
                                 android:fontFamily="@font/poppins_regular" />
-
                             <TextView
-                                android:id="@+id/tvNikValue"
+                                android:id="@+id/tvNoTelpValue"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="-"
@@ -224,176 +212,467 @@
                                 android:textColor="@color/black"
                                 android:fontFamily="@font/poppins_semibold"
                                 android:layout_marginTop="2dp" />
-
                         </LinearLayout>
-
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Tidak dapat diubah"
-                            android:textSize="10sp"
-                            android:textColor="@color/gray_text"
+                            android:text="Ubah →"
+                            android:textSize="11sp"
+                            android:textColor="@color/orange_primary"
                             android:fontFamily="@font/poppins_regular"
                             android:layout_gravity="center_vertical" />
-
                     </LinearLayout>
 
-                    <View android:layout_width="match_parent" android:layout_height="1dp"
-                        android:background="@color/gray_border" android:layout_marginStart="16dp" />
-
+                    <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/gray_border" android:layout_marginStart="16dp" />
 
                     <LinearLayout
+                        android:id="@+id/itemEditAlamat"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
-                        android:paddingStart="16dp"
-                        android:paddingEnd="16dp"
-                        android:paddingTop="12dp"
-                        android:paddingBottom="12dp">
-
+                        android:background="?attr/selectableItemBackground"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:padding="16dp">
                         <LinearLayout
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:orientation="vertical">
-
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Level"
+                                android:text="Alamat Rumah"
                                 android:textSize="11sp"
                                 android:textColor="@color/gray_text"
                                 android:fontFamily="@font/poppins_regular" />
-
                             <TextView
-                                android:id="@+id/tvLevelBintangValue"
-                                android:layout_width="wrap_content"
+                                android:id="@+id/tvAlamatValue"
+                                android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:text="Bintang 1"
-                                android:textSize="13sp"
-                                android:textStyle="bold"
-                                android:textColor="@color/black"
-                                android:fontFamily="@font/poppins_semibold"
-                                android:layout_marginTop="2dp" />
-
-                        </LinearLayout>
-
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:orientation="vertical">
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Kategori"
-                                android:textSize="11sp"
-                                android:textColor="@color/gray_text"
-                                android:fontFamily="@font/poppins_regular" />
-
-                            <TextView
-                                android:id="@+id/tvKategoriValue"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Pasif"
-                                android:textSize="13sp"
-                                android:textStyle="bold"
-                                android:textColor="@color/black"
-                                android:fontFamily="@font/poppins_semibold"
-                                android:layout_marginTop="2dp" />
-
-                        </LinearLayout>
-
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:orientation="vertical">
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Status"
-                                android:textSize="11sp"
-                                android:textColor="@color/gray_text"
-                                android:fontFamily="@font/poppins_regular" />
-
-                            <TextView
-                                android:id="@+id/tvStatusAkunValue"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Aktif"
-                                android:textSize="11sp"
-                                android:textStyle="bold"
-                                android:textColor="@color/white"
-                                android:fontFamily="@font/poppins_semibold"
-                                android:paddingStart="8dp"
-                                android:paddingEnd="8dp"
-                                android:paddingTop="3dp"
-                                android:paddingBottom="3dp"
-                                android:layout_marginTop="2dp" />
-
-                        </LinearLayout>
-
-                    </LinearLayout>
-
-                    <View android:layout_width="match_parent" android:layout_height="1dp"
-                        android:background="@color/gray_border" android:layout_marginStart="16dp" />
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:paddingStart="16dp"
-                        android:paddingEnd="16dp"
-                        android:paddingTop="12dp"
-                        android:paddingBottom="12dp">
-
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:orientation="vertical">
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Role"
-                                android:textSize="11sp"
-                                android:textColor="@color/gray_text"
-                                android:fontFamily="@font/poppins_regular" />
-
-                            <TextView
-                                android:id="@+id/tvRoleValue"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Unit Bisnis"
+                                android:text="-"
                                 android:textSize="13sp"
                                 android:textColor="@color/black"
                                 android:fontFamily="@font/poppins_semibold"
                                 android:layout_marginTop="2dp" />
-
                         </LinearLayout>
-
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Tidak dapat diubah"
-                            android:textSize="10sp"
-                            android:textColor="@color/gray_text"
+                            android:text="Ubah →"
+                            android:textSize="11sp"
+                            android:textColor="@color/orange_primary"
                             android:fontFamily="@font/poppins_regular"
                             android:layout_gravity="center_vertical" />
-
                     </LinearLayout>
-
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
+            <!-- ===== REKENING PENCAIRAN ===== -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="UBAH DATA"
+                android:text="REKENING PENCAIRAN"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:textColor="@color/gray_text"
+                android:fontFamily="@font/poppins_semibold"
+                android:letterSpacing="0.1"
+                android:layout_marginStart="20dp"
+                android:layout_marginTop="20dp"
+                android:layout_marginBottom="8dp" />
+
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="20dp"
+                app:cardCornerRadius="14dp"
+                app:cardElevation="2dp"
+                app:cardBackgroundColor="@color/white">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <LinearLayout
+                        android:id="@+id/itemEditBank"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:background="?attr/selectableItemBackground"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:padding="16dp">
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Nama Bank Tujuan"
+                                android:textSize="11sp"
+                                android:textColor="@color/gray_text"
+                                android:fontFamily="@font/poppins_regular" />
+                            <TextView
+                                android:id="@+id/tvBankValue"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="-"
+                                android:textSize="13sp"
+                                android:textColor="@color/black"
+                                android:fontFamily="@font/poppins_semibold"
+                                android:layout_marginTop="2dp" />
+                        </LinearLayout>
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Ubah →"
+                            android:textSize="11sp"
+                            android:textColor="@color/orange_primary"
+                            android:fontFamily="@font/poppins_regular"
+                            android:layout_gravity="center_vertical" />
+                    </LinearLayout>
+
+                    <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/gray_border" android:layout_marginStart="16dp" />
+
+                    <LinearLayout
+                        android:id="@+id/itemEditNoRekening"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:background="?attr/selectableItemBackground"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:padding="16dp">
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Nomor Rekening"
+                                android:textSize="11sp"
+                                android:textColor="@color/gray_text"
+                                android:fontFamily="@font/poppins_regular" />
+                            <TextView
+                                android:id="@+id/tvNoRekeningValue"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="-"
+                                android:textSize="13sp"
+                                android:textColor="@color/black"
+                                android:fontFamily="@font/poppins_semibold"
+                                android:layout_marginTop="2dp" />
+                        </LinearLayout>
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Ubah →"
+                            android:textSize="11sp"
+                            android:textColor="@color/orange_primary"
+                            android:fontFamily="@font/poppins_regular"
+                            android:layout_gravity="center_vertical" />
+                    </LinearLayout>
+
+                    <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/gray_border" android:layout_marginStart="16dp" />
+
+                    <LinearLayout
+                        android:id="@+id/itemEditAtasNama"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:background="?attr/selectableItemBackground"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:padding="16dp">
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Atas Nama Pemilik Rekening"
+                                android:textSize="11sp"
+                                android:textColor="@color/gray_text"
+                                android:fontFamily="@font/poppins_regular" />
+                            <TextView
+                                android:id="@+id/tvAtasNamaValue"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="-"
+                                android:textSize="13sp"
+                                android:textColor="@color/black"
+                                android:fontFamily="@font/poppins_semibold"
+                                android:layout_marginTop="2dp" />
+                        </LinearLayout>
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Ubah →"
+                            android:textSize="11sp"
+                            android:textColor="@color/orange_primary"
+                            android:fontFamily="@font/poppins_regular"
+                            android:layout_gravity="center_vertical" />
+                    </LinearLayout>
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <!-- ===== DATA UNIT BISNIS (khusus role UB) ===== -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="DATA UNIT BISNIS"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:textColor="@color/gray_text"
+                android:fontFamily="@font/poppins_semibold"
+                android:letterSpacing="0.1"
+                android:layout_marginStart="20dp"
+                android:layout_marginTop="20dp"
+                android:layout_marginBottom="8dp" />
+
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="20dp"
+                app:cardCornerRadius="14dp"
+                app:cardElevation="2dp"
+                app:cardBackgroundColor="@color/white">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <LinearLayout
+                        android:id="@+id/itemEditNamaUsaha"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:background="?attr/selectableItemBackground"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:padding="16dp">
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Nama Usaha / Outlet"
+                                android:textSize="11sp"
+                                android:textColor="@color/gray_text"
+                                android:fontFamily="@font/poppins_regular" />
+                            <TextView
+                                android:id="@+id/tvNamaUsahaValue"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="-"
+                                android:textSize="13sp"
+                                android:textColor="@color/black"
+                                android:fontFamily="@font/poppins_semibold"
+                                android:layout_marginTop="2dp" />
+                        </LinearLayout>
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Ubah →"
+                            android:textSize="11sp"
+                            android:textColor="@color/orange_primary"
+                            android:fontFamily="@font/poppins_regular"
+                            android:layout_gravity="center_vertical" />
+                    </LinearLayout>
+
+                    <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/gray_border" android:layout_marginStart="16dp" />
+
+                    <LinearLayout
+                        android:id="@+id/itemEditJamBuka"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:background="?attr/selectableItemBackground"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:padding="16dp">
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Jam Buka Operasional"
+                                android:textSize="11sp"
+                                android:textColor="@color/gray_text"
+                                android:fontFamily="@font/poppins_regular" />
+                            <TextView
+                                android:id="@+id/tvJamBukaValue"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="-"
+                                android:textSize="13sp"
+                                android:textColor="@color/black"
+                                android:fontFamily="@font/poppins_semibold"
+                                android:layout_marginTop="2dp" />
+                        </LinearLayout>
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Ubah →"
+                            android:textSize="11sp"
+                            android:textColor="@color/orange_primary"
+                            android:fontFamily="@font/poppins_regular"
+                            android:layout_gravity="center_vertical" />
+                    </LinearLayout>
+
+                    <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/gray_border" android:layout_marginStart="16dp" />
+
+                    <LinearLayout
+                        android:id="@+id/itemEditJamTutup"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:background="?attr/selectableItemBackground"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:padding="16dp">
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Jam Tutup Operasional"
+                                android:textSize="11sp"
+                                android:textColor="@color/gray_text"
+                                android:fontFamily="@font/poppins_regular" />
+                            <TextView
+                                android:id="@+id/tvJamTutupValue"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="-"
+                                android:textSize="13sp"
+                                android:textColor="@color/black"
+                                android:fontFamily="@font/poppins_semibold"
+                                android:layout_marginTop="2dp" />
+                        </LinearLayout>
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Ubah →"
+                            android:textSize="11sp"
+                            android:textColor="@color/orange_primary"
+                            android:fontFamily="@font/poppins_regular"
+                            android:layout_gravity="center_vertical" />
+                    </LinearLayout>
+
+                    <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/gray_border" android:layout_marginStart="16dp" />
+
+                    <LinearLayout
+                        android:id="@+id/itemEditHariOperasional"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:background="?attr/selectableItemBackground"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:padding="16dp">
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Hari Operasional"
+                                android:textSize="11sp"
+                                android:textColor="@color/gray_text"
+                                android:fontFamily="@font/poppins_regular" />
+                            <TextView
+                                android:id="@+id/tvHariOperasionalValue"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="-"
+                                android:textSize="13sp"
+                                android:textColor="@color/black"
+                                android:fontFamily="@font/poppins_semibold"
+                                android:layout_marginTop="2dp" />
+                        </LinearLayout>
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Ubah →"
+                            android:textSize="11sp"
+                            android:textColor="@color/orange_primary"
+                            android:fontFamily="@font/poppins_regular"
+                            android:layout_gravity="center_vertical" />
+                    </LinearLayout>
+
+                    <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/gray_border" android:layout_marginStart="16dp" />
+
+                    <LinearLayout
+                        android:id="@+id/itemEditAlamatUsaha"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:background="?attr/selectableItemBackground"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:padding="16dp">
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Alamat Lengkap Unit Bisnis"
+                                android:textSize="11sp"
+                                android:textColor="@color/gray_text"
+                                android:fontFamily="@font/poppins_regular" />
+                            <TextView
+                                android:id="@+id/tvAlamatUsahaValue"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="-"
+                                android:textSize="13sp"
+                                android:textColor="@color/black"
+                                android:fontFamily="@font/poppins_semibold"
+                                android:layout_marginTop="2dp" />
+                        </LinearLayout>
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Ubah →"
+                            android:textSize="11sp"
+                            android:textColor="@color/orange_primary"
+                            android:fontFamily="@font/poppins_regular"
+                            android:layout_gravity="center_vertical" />
+                    </LinearLayout>
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <!-- ===== LOKASI PETA (tetap card terpisah, perlu interaksi peta langsung) ===== -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="LOKASI UNIT BISNIS"
                 android:textSize="11sp"
                 android:textStyle="bold"
                 android:textColor="@color/gray_text"
@@ -417,404 +696,6 @@
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
                     android:padding="16dp">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Nama Lengkap"
-                        android:textSize="12sp"
-                        android:textColor="@color/gray_text"
-                        android:fontFamily="@font/poppins_regular" />
-
-                    <com.google.android.material.textfield.TextInputLayout
-                        android:id="@+id/tilNama"
-                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="6dp"
-                        android:layout_marginBottom="16dp"
-                        app:boxCornerRadiusTopStart="10dp"
-                        app:boxCornerRadiusTopEnd="10dp"
-                        app:boxCornerRadiusBottomStart="10dp"
-                        app:boxCornerRadiusBottomEnd="10dp"
-                        app:boxStrokeColor="@color/orange_primary"
-                        app:hintEnabled="false">
-
-                        <com.google.android.material.textfield.TextInputEditText
-                            android:id="@+id/etNama"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:hint="Nama lengkap Anda"
-                            android:textSize="14sp"
-                            android:fontFamily="@font/poppins_regular"
-                            android:textColor="@color/black"
-                            android:inputType="textPersonName|textCapWords" />
-
-                    </com.google.android.material.textfield.TextInputLayout>
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Nomor Telepon"
-                        android:textSize="12sp"
-                        android:textColor="@color/gray_text"
-                        android:fontFamily="@font/poppins_regular" />
-
-                    <com.google.android.material.textfield.TextInputLayout
-                        android:id="@+id/tilNoTelp"
-                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="6dp"
-                        android:layout_marginBottom="16dp"
-                        app:boxCornerRadiusTopStart="10dp"
-                        app:boxCornerRadiusTopEnd="10dp"
-                        app:boxCornerRadiusBottomStart="10dp"
-                        app:boxCornerRadiusBottomEnd="10dp"
-                        app:boxStrokeColor="@color/orange_primary"
-                        app:hintEnabled="false">
-
-                        <com.google.android.material.textfield.TextInputEditText
-                            android:id="@+id/etNoTelp"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:hint="Contoh: 082283884373"
-                            android:textSize="14sp"
-                            android:fontFamily="@font/poppins_regular"
-                            android:textColor="@color/black"
-                            android:inputType="phone"
-                            android:maxLength="15" />
-
-                    </com.google.android.material.textfield.TextInputLayout>
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Alamat Rumah"
-                        android:textSize="12sp"
-                        android:textColor="@color/gray_text"
-                        android:fontFamily="@font/poppins_regular" />
-
-                    <com.google.android.material.textfield.TextInputLayout
-                        android:id="@+id/tilAlamat"
-                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="6dp"
-                        android:layout_marginBottom="16dp"
-                        app:boxCornerRadiusTopStart="10dp"
-                        app:boxCornerRadiusTopEnd="10dp"
-                        app:boxCornerRadiusBottomStart="10dp"
-                        app:boxCornerRadiusBottomEnd="10dp"
-                        app:boxStrokeColor="@color/orange_primary"
-                        app:hintEnabled="false">
-
-                        <com.google.android.material.textfield.TextInputEditText
-                            android:id="@+id/etAlamat"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:hint="Alamat lengkap (opsional)"
-                            android:textSize="14sp"
-                            android:fontFamily="@font/poppins_regular"
-                            android:textColor="@color/black"
-                            android:inputType="textMultiLine"
-                            android:minLines="2"
-                            android:maxLines="4"
-                            android:gravity="top" />
-
-                    </com.google.android.material.textfield.TextInputLayout>
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Bank"
-                        android:textSize="12sp"
-                        android:textColor="@color/gray_text"
-                        android:fontFamily="@font/poppins_regular"
-                        android:layout_marginTop="16dp" />
-
-                    <Spinner
-                        android:id="@+id/spinnerBank"
-                        android:layout_width="match_parent"
-                        android:layout_height="52dp"
-                        android:layout_marginTop="6dp"
-                        android:layout_marginBottom="16dp"
-                        android:background="@drawable/ic_bg_tab_inactive"
-                        android:padding="12dp" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Nomor Rekening"
-                        android:textSize="12sp"
-                        android:textColor="@color/gray_text"
-                        android:fontFamily="@font/poppins_regular" />
-
-                    <com.google.android.material.textfield.TextInputLayout
-                        android:id="@+id/tilNoRekening"
-                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="6dp"
-                        android:layout_marginBottom="16dp"
-                        app:boxCornerRadiusTopStart="10dp"
-                        app:boxCornerRadiusTopEnd="10dp"
-                        app:boxCornerRadiusBottomStart="10dp"
-                        app:boxCornerRadiusBottomEnd="10dp"
-                        app:boxStrokeColor="@color/orange_primary"
-                        app:hintEnabled="false">
-
-                        <com.google.android.material.textfield.TextInputEditText
-                            android:id="@+id/etNoRekening"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:hint="Nomor rekening"
-                            android:textSize="14sp"
-                            android:fontFamily="@font/poppins_regular"
-                            android:textColor="@color/black"
-                            android:inputType="number" />
-
-                    </com.google.android.material.textfield.TextInputLayout>
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Atas Nama Rekening"
-                        android:textSize="12sp"
-                        android:textColor="@color/gray_text"
-                        android:fontFamily="@font/poppins_regular" />
-
-                    <com.google.android.material.textfield.TextInputLayout
-                        android:id="@+id/tilAtasNama"
-                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="6dp"
-                        app:boxCornerRadiusTopStart="10dp"
-                        app:boxCornerRadiusTopEnd="10dp"
-                        app:boxCornerRadiusBottomStart="10dp"
-                        app:boxCornerRadiusBottomEnd="10dp"
-                        app:boxStrokeColor="@color/orange_primary"
-                        app:hintEnabled="false">
-
-                        <com.google.android.material.textfield.TextInputEditText
-                            android:id="@+id/etAtasNama"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:hint="Nama sesuai rekening"
-                            android:textSize="14sp"
-                            android:fontFamily="@font/poppins_regular"
-                            android:textColor="@color/black"
-                            android:inputType="textPersonName|textCapWords" />
-
-                    </com.google.android.material.textfield.TextInputLayout>
-
-                </LinearLayout>
-            </androidx.cardview.widget.CardView>
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="LOKASI &amp; OPERASIONAL UNIT BISNIS"
-                android:textSize="11sp"
-                android:textStyle="bold"
-                android:textColor="@color/gray_text"
-                android:fontFamily="@font/poppins_semibold"
-                android:letterSpacing="0.1"
-                android:layout_marginStart="20dp"
-                android:layout_marginTop="20dp"
-                android:layout_marginBottom="8dp" />
-
-            <androidx.cardview.widget.CardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="20dp"
-                android:layout_marginEnd="20dp"
-                app:cardCornerRadius="14dp"
-                app:cardElevation="2dp"
-                app:cardBackgroundColor="@color/white">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="16dp">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Nama Usaha / Outlet"
-                        android:textSize="12sp"
-                        android:textColor="@color/gray_text"
-                        android:fontFamily="@font/poppins_regular" />
-
-                    <com.google.android.material.textfield.TextInputLayout
-                        android:id="@+id/tilNamaUsaha"
-                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="6dp"
-                        android:layout_marginBottom="16dp"
-                        app:boxCornerRadiusTopStart="10dp"
-                        app:boxCornerRadiusTopEnd="10dp"
-                        app:boxCornerRadiusBottomStart="10dp"
-                        app:boxCornerRadiusBottomEnd="10dp"
-                        app:boxStrokeColor="@color/orange_primary"
-                        app:hintEnabled="false">
-
-                        <com.google.android.material.textfield.TextInputEditText
-                            android:id="@+id/etNamaUsaha"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:hint="Contoh: UB Sukajadi Clean"
-                            android:textSize="14sp"
-                            android:fontFamily="@font/poppins_regular"
-                            android:textColor="@color/black"
-                            android:inputType="textCapWords" />
-                    </com.google.android.material.textfield.TextInputLayout>
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Jam Buka Operasional"
-                        android:textSize="12sp"
-                        android:textColor="@color/gray_text"
-                        android:fontFamily="@font/poppins_regular" />
-
-                    <com.google.android.material.textfield.TextInputLayout
-                        android:id="@+id/tilJamBuka"
-                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="6dp"
-                        android:layout_marginBottom="16dp"
-                        app:boxCornerRadiusTopStart="10dp"
-                        app:boxCornerRadiusTopEnd="10dp"
-                        app:boxCornerRadiusBottomStart="10dp"
-                        app:boxCornerRadiusBottomEnd="10dp"
-                        app:boxStrokeColor="@color/orange_primary"
-                        app:hintEnabled="false">
-
-                        <com.google.android.material.textfield.TextInputEditText
-                            android:id="@+id/etJamBuka"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:hint="Contoh: 08:00"
-                            android:textSize="14sp"
-                            android:fontFamily="@font/poppins_regular"
-                            android:textColor="@color/black"
-                            android:inputType="datetime" />
-                    </com.google.android.material.textfield.TextInputLayout>
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Jam Tutup Operasional"
-                        android:textSize="12sp"
-                        android:textColor="@color/gray_text"
-                        android:fontFamily="@font/poppins_regular" />
-
-                    <com.google.android.material.textfield.TextInputLayout
-                        android:id="@+id/tilJamTutup"
-                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="6dp"
-                        android:layout_marginBottom="16dp"
-                        app:boxCornerRadiusTopStart="10dp"
-                        app:boxCornerRadiusTopEnd="10dp"
-                        app:boxCornerRadiusBottomStart="10dp"
-                        app:boxCornerRadiusBottomEnd="10dp"
-                        app:boxStrokeColor="@color/orange_primary"
-                        app:hintEnabled="false">
-
-                        <com.google.android.material.textfield.TextInputEditText
-                            android:id="@+id/etJamTutup"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:hint="Contoh: 17:00"
-                            android:textSize="14sp"
-                            android:fontFamily="@font/poppins_regular"
-                            android:textColor="@color/black"
-                            android:inputType="datetime" />
-                    </com.google.android.material.textfield.TextInputLayout>
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Hari Operasional"
-                        android:textSize="12sp"
-                        android:textColor="@color/gray_text"
-                        android:fontFamily="@font/poppins_regular" />
-
-                    <com.google.android.material.textfield.TextInputLayout
-                        android:id="@+id/tilHariOperasional"
-                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="6dp"
-                        android:layout_marginBottom="16dp"
-                        app:boxCornerRadiusTopStart="10dp"
-                        app:boxCornerRadiusTopEnd="10dp"
-                        app:boxCornerRadiusBottomStart="10dp"
-                        app:boxCornerRadiusBottomEnd="10dp"
-                        app:boxStrokeColor="@color/orange_primary"
-                        app:hintEnabled="false">
-
-                        <com.google.android.material.textfield.TextInputEditText
-                            android:id="@+id/etHariOperasional"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:hint="Contoh: Senin - Sabtu"
-                            android:textSize="14sp"
-                            android:fontFamily="@font/poppins_regular"
-                            android:textColor="@color/black"
-                            android:inputType="text" />
-                    </com.google.android.material.textfield.TextInputLayout>
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Alamat Lengkap Unit Bisnis"
-                        android:textSize="12sp"
-                        android:textColor="@color/gray_text"
-                        android:fontFamily="@font/poppins_regular" />
-
-                    <com.google.android.material.textfield.TextInputLayout
-                        android:id="@+id/tilAlamatUsaha"
-                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="6dp"
-                        android:layout_marginBottom="16dp"
-                        app:boxCornerRadiusTopStart="10dp"
-                        app:boxCornerRadiusTopEnd="10dp"
-                        app:boxCornerRadiusBottomStart="10dp"
-                        app:boxCornerRadiusBottomEnd="10dp"
-                        app:boxStrokeColor="@color/orange_primary"
-                        app:hintEnabled="false">
-
-                        <com.google.android.material.textfield.TextInputEditText
-                            android:id="@+id/etAlamatUsaha"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:hint="Alamat lengkap unit bisnis"
-                            android:textSize="14sp"
-                            android:fontFamily="@font/poppins_regular"
-                            android:textColor="@color/black"
-                            android:inputType="textMultiLine"
-                            android:minLines="2"
-                            android:maxLines="4"
-                            android:gravity="top" />
-                    </com.google.android.material.textfield.TextInputLayout>
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Koordinat Lokasi Peta"
-                        android:textSize="12sp"
-                        android:textColor="@color/gray_text"
-                        android:fontFamily="@font/poppins_regular" />
 
                     <TextView
                         android:id="@+id/tvKoordinatSaatIni"
@@ -824,7 +705,6 @@
                         android:textSize="12sp"
                         android:textColor="@color/orange_primary"
                         android:fontFamily="@font/poppins_regular"
-                        android:layout_marginTop="4dp"
                         android:layout_marginBottom="12dp" />
 
                     <org.osmdroid.views.MapView
@@ -856,36 +736,264 @@
                         android:layout_marginTop="10dp"
                         app:cornerRadius="10dp" />
 
+                    <Button
+                        android:id="@+id/btnSimpanLokasi"
+                        android:layout_width="match_parent"
+                        android:layout_height="44dp"
+                        android:text="Simpan Lokasi Baru"
+                        android:textSize="13sp"
+                        android:textColor="@color/orange_primary"
+                        android:fontFamily="@font/poppins_semibold"
+                        android:backgroundTint="@color/white"
+                        app:strokeColor="@color/orange_primary"
+                        app:strokeWidth="1dp"
+                        android:layout_marginTop="8dp"
+                        app:cornerRadius="10dp" />
+
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
-            <Button
-                android:id="@+id/btnSimpan"
-                android:layout_width="match_parent"
-                android:layout_height="52dp"
-                android:text="Simpan Perubahan"
-                android:textSize="15sp"
-                android:textColor="@color/white"
+            <!-- ===== INFORMASI SISTEM ===== -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="INFORMASI SISTEM"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:textColor="@color/gray_text"
                 android:fontFamily="@font/poppins_semibold"
-                android:backgroundTint="@color/orange_primary"
+                android:letterSpacing="0.1"
+                android:layout_marginStart="20dp"
+                android:layout_marginTop="20dp"
+                android:layout_marginBottom="8dp" />
+
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
                 android:layout_marginStart="20dp"
                 android:layout_marginEnd="20dp"
-                android:layout_marginTop="24dp"
-                app:cornerRadius="14dp" />
+                app:cardCornerRadius="14dp"
+                app:cardElevation="2dp"
+                app:cardBackgroundColor="@color/white">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:paddingTop="4dp"
+                    android:paddingBottom="4dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:padding="16dp">
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Email Terdaftar"
+                                android:textSize="11sp"
+                                android:textColor="@color/gray_text"
+                                android:fontFamily="@font/poppins_regular" />
+                            <TextView
+                                android:id="@+id/tvEmailValue"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="-"
+                                android:textSize="13sp"
+                                android:textColor="@color/black"
+                                android:fontFamily="@font/poppins_semibold"
+                                android:layout_marginTop="2dp" />
+                        </LinearLayout>
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Kunci"
+                            android:textSize="10sp"
+                            android:textColor="@color/gray_text"
+                            android:fontFamily="@font/poppins_regular"
+                            android:layout_gravity="center_vertical" />
+                    </LinearLayout>
+
+                    <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/gray_border" android:layout_marginStart="16dp" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:padding="16dp">
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="NIK (Nomor Induk Kependudukan)"
+                                android:textSize="11sp"
+                                android:textColor="@color/gray_text"
+                                android:fontFamily="@font/poppins_regular" />
+                            <TextView
+                                android:id="@+id/tvNikValue"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="-"
+                                android:textSize="13sp"
+                                android:textColor="@color/black"
+                                android:fontFamily="@font/poppins_semibold"
+                                android:layout_marginTop="2dp" />
+                        </LinearLayout>
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Kunci"
+                            android:textSize="10sp"
+                            android:textColor="@color/gray_text"
+                            android:fontFamily="@font/poppins_regular"
+                            android:layout_gravity="center_vertical" />
+                    </LinearLayout>
+
+                    <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/gray_border" android:layout_marginStart="16dp" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:padding="16dp">
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Role"
+                                android:textSize="11sp"
+                                android:textColor="@color/gray_text"
+                                android:fontFamily="@font/poppins_regular" />
+                            <TextView
+                                android:id="@+id/tvRoleValue"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Unit Bisnis"
+                                android:textSize="13sp"
+                                android:textColor="@color/black"
+                                android:fontFamily="@font/poppins_semibold"
+                                android:layout_marginTop="2dp" />
+                        </LinearLayout>
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Kunci"
+                            android:textSize="10sp"
+                            android:textColor="@color/gray_text"
+                            android:fontFamily="@font/poppins_regular"
+                            android:layout_gravity="center_vertical" />
+                    </LinearLayout>
+
+                    <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/gray_border" android:layout_marginStart="16dp" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:padding="16dp">
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Level"
+                                android:textSize="11sp"
+                                android:textColor="@color/gray_text"
+                                android:fontFamily="@font/poppins_regular" />
+                            <TextView
+                                android:id="@+id/tvLevelBintangValue"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="-"
+                                android:textSize="13sp"
+                                android:textColor="@color/black"
+                                android:fontFamily="@font/poppins_semibold"
+                                android:layout_marginTop="2dp" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Kategori"
+                                android:textSize="11sp"
+                                android:textColor="@color/gray_text"
+                                android:fontFamily="@font/poppins_regular" />
+                            <TextView
+                                android:id="@+id/tvKategoriValue"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="-"
+                                android:textSize="13sp"
+                                android:textColor="@color/black"
+                                android:fontFamily="@font/poppins_semibold"
+                                android:layout_marginTop="2dp" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Status Akun"
+                                android:textSize="11sp"
+                                android:textColor="@color/gray_text"
+                                android:fontFamily="@font/poppins_regular" />
+                            <TextView
+                                android:id="@+id/tvStatusAkunValue"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="-"
+                                android:textSize="11sp"
+                                android:textColor="@color/white"
+                                android:fontFamily="@font/poppins_semibold"
+                                android:paddingStart="8dp"
+                                android:paddingEnd="8dp"
+                                android:paddingTop="3dp"
+                                android:paddingBottom="3dp"
+                                android:layout_marginTop="2dp" />
+                        </LinearLayout>
+                    </LinearLayout>
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Data NIK, kode referral, dan email hanya bisa diubah melalui admin."
+                android:text="Data berlogo 'Kunci' hanya bisa disesuaikan oleh admin pusat."
                 android:textSize="11sp"
                 android:textColor="@color/gray_text"
                 android:fontFamily="@font/poppins_regular"
                 android:gravity="center"
                 android:layout_marginStart="20dp"
                 android:layout_marginEnd="20dp"
-                android:layout_marginTop="8dp" />
+                android:layout_marginTop="20dp" />
 
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
-
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
