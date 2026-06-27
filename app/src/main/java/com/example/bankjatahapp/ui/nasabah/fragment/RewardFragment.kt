@@ -31,6 +31,7 @@ import io.github.jan.supabase.postgrest.postgrest
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
+import com.example.bankjatahapp.ui.nasabah.NasabahActivity
 
 class RewardFragment : Fragment() {
 
@@ -58,6 +59,21 @@ class RewardFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         setupRecyclerView()
         loadData()
+        cekPengajuanBerhentiAktif()
+    }
+
+    private fun cekPengajuanBerhentiAktif() {
+        lifecycleScope.launch {
+            val adaPengajuan = (activity as? NasabahActivity)?.cekAdaPengajuanAktif() ?: false
+            if (adaPengajuan && _binding != null) {
+                Toast.makeText(
+                    requireContext(),
+                    "⚠️ Penukaran reward dinonaktifkan karena Anda memiliki pengajuan penutupan akun aktif.",
+                    Toast.LENGTH_LONG
+                ).show()
+                adapter.setSemuaDisabled(true)
+            }
+        }
     }
 
     private fun setupRecyclerView() {

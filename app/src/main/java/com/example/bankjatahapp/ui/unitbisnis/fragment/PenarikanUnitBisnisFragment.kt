@@ -23,6 +23,7 @@ import kotlinx.serialization.json.put
 import java.text.NumberFormat
 import java.util.Locale
 import java.util.UUID
+import com.example.bankjatahapp.ui.unitbisnis.UnitBisnisActivity
 
 class PenarikanUnitBisnisFragment : Fragment() {
 
@@ -53,6 +54,19 @@ class PenarikanUnitBisnisFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         loadData()
         setupListeners()
+        cekPengajuanBerhentiAktif()
+    }
+
+    private fun cekPengajuanBerhentiAktif() {
+        lifecycleScope.launch {
+            val adaPengajuan = (activity as? UnitBisnisActivity)?.cekAdaPengajuanAktif() ?: false
+            if (adaPengajuan && _binding != null) {
+                binding.btnAjukanPenarikan.isEnabled = false
+                binding.tvWarningNominal.text =
+                    "⚠️ Anda memiliki pengajuan penutupan akun aktif. Pencairan saldo akan diproses oleh sistem secara otomatis."
+                binding.tvWarningNominal.visibility = View.VISIBLE
+            }
+        }
     }
 
     private fun loadData() {

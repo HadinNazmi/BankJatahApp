@@ -15,6 +15,7 @@ import com.example.bankjatahapp.databinding.FragmentAjukanBerhentiUnitBisnisBind
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.postgrest.postgrest
 import kotlinx.coroutines.launch
+import com.example.bankjatahapp.data.model.DompetUser
 
 class AjukanBerhentiUnitBisnisFragment : Fragment() {
 
@@ -177,8 +178,70 @@ class AjukanBerhentiUnitBisnisFragment : Fragment() {
         }
     }
 
+    private suspend fun validasiSaldoSebelumKirim(): String? {
+        val idUser = client.auth.currentUserOrNull()?.id ?: return "Session tidak ditemukan"
+
+        val dompet = try {
+            client.postgrest
+                .from("dompet_user")
+                .select { filter { eq("id_dompet", idUser) } }
+                .decodeSingle<DompetUser>()
+        } catch (_: Exception) {
+            return null
+        }
+
+        if (tipeTerpilih in listOf("unit_bisnis", "total") && dompet.saldoUnit < 0) {
+            return " Saldo komisi unit Anda minus. Harap lunasi hutang terlebih dahulu."
+        }
+        if (tipeTerpilih == "total" && dompet.saldoNasabah < 0) {
+            return " Saldo tabungan Anda minus. Harap lunasi hutang terlebih dahulu."
+        }
+        return null
+    }
     private fun kirimPengajuan() {
         val alasan = binding.etAlasan.text.toString().trim()
+
+        lifecycleScope.launch {
+            showLoading(true)
+            val errorMsg = validasiSaldoSebelumKirim()
+            showLoading(false)
+            if (errorMsg != null) {
+                tampilkanDialogSyaratBelumTerpenuhi(errorMsg)
+                return@launch
+            }
+            tampilkanDialogKonfirmasi(alasan)
+        }
+    }
+
+    private fun tampilkanDialogSyaratBelumTerpenuhi(pesan: String) {
+        androidx.appcompat.app.AlertDialog.Builder(requireContext())
+            .setTitle("⚠️ Syarat Belum Terpenuhi")
+            .setMessage(pesan)
+            .setPositiveButton("OK", null)
+            .show()
+            .also { dialog ->
+                dialog.getButton(androidx.appcompat.app.AlertDialog.BUTTON_POSITIVE)
+                    ?.setTextColor(requireContext().getColor(com.example.bankjatahapp.R.color.orange_primary))
+            }
+    }
+
+    private fun bersihkanPesanError(pesanAsli: String?): String {
+        if (pesanAsli == null) return "Gagal mengirim pengajuan. Silakan coba lagi."
+
+        val regex = Regex("Gagal mengajukan:[^\"\\\\]*")
+        val match = regex.find(pesanAsli)
+        if (match != null) {
+            return match.value.trim()
+        }
+
+        return if (pesanAsli.length > 200) {
+            "Anda masih memiliki transaksi (setoran/penarikan/reward) yang sedang berjalan. Selesaikan semua transaksi terlebih dahulu sebelum mengajukan berhenti."
+        } else {
+            "Gagal mengirim pengajuan: $pesanAsli"
+        }
+    }
+
+    private fun tampilkanDialogKonfirmasi(alasan: String) {
         val labelTipe = if (tipeTerpilih == "unit_bisnis")
             "Unit Bisnis saja (akun nasabah tetap aktif)"
         else
@@ -268,11 +331,7 @@ class AjukanBerhentiUnitBisnisFragment : Fragment() {
             } catch (e: Exception) {
                 showLoading(false)
                 binding.btnKirimPengajuan.isEnabled = true
-                Toast.makeText(
-                    requireContext(),
-                    "Gagal mengirim pengajuan: ${e.message}",
-                    Toast.LENGTH_LONG
-                ).show()
+                tampilkanDialogSyaratBelumTerpenuhi(bersihkanPesanError(e.message))
             }
         }
     }

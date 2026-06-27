@@ -31,6 +31,7 @@ import io.github.jan.supabase.postgrest.postgrest
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
+import com.example.bankjatahapp.ui.unitbisnis.UnitBisnisActivity
 
 class RewardUnitBisnisFragment : Fragment() {
 
@@ -58,9 +59,24 @@ class RewardUnitBisnisFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         setupRecyclerView()
         loadData()
+        cekPengajuanBerhentiAktif()
 
         binding.btnBack.setOnClickListener {
             parentFragmentManager.popBackStack()
+        }
+    }
+
+    private fun cekPengajuanBerhentiAktif() {
+        lifecycleScope.launch {
+            val adaPengajuan = (activity as? UnitBisnisActivity)?.cekAdaPengajuanAktif() ?: false
+            if (adaPengajuan && _binding != null) {
+                Toast.makeText(
+                    requireContext(),
+                    "⚠️ Penukaran reward dinonaktifkan karena Anda memiliki pengajuan penutupan akun aktif.",
+                    Toast.LENGTH_LONG
+                ).show()
+                adapter.setSemuaDisabled(true)
+            }
         }
     }
 

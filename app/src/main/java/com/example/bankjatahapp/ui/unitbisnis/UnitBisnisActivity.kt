@@ -4,11 +4,15 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import com.example.bankjatahapp.R
+import com.example.bankjatahapp.data.model.PengajuanBerhenti
+import com.example.bankjatahapp.data.remote.SupabaseClient.client
 import com.example.bankjatahapp.databinding.ActivityUnitBisnisBinding
 import com.example.bankjatahapp.ui.unitbisnis.fragment.HomeUnitBisnisFragment
 import com.example.bankjatahapp.ui.unitbisnis.fragment.ProfilUnitBisnisFragment
 import com.example.bankjatahapp.ui.unitbisnis.fragment.RiwayatUnitBisnisFragment
 import com.example.bankjatahapp.ui.unitbisnis.fragment.SetoranFragment
+import io.github.jan.supabase.auth.auth
+import io.github.jan.supabase.postgrest.postgrest
 
 class UnitBisnisActivity : AppCompatActivity() {
 
@@ -65,5 +69,26 @@ class UnitBisnisActivity : AppCompatActivity() {
         supportFragmentManager.beginTransaction()
             .replace(R.id.fragmentContainer, fragment)
             .commitAllowingStateLoss()
+    }
+
+    suspend fun cekAdaPengajuanAktif(): Boolean {
+        return try {
+            val idUser = client.auth.currentUserOrNull()?.id ?: return false
+            val hasil = client.postgrest
+                .from("pengajuan_berhenti")
+                .select {
+                    filter {
+                        eq("id_user", idUser)
+                        or {
+                            eq("status", "menunggu")
+                            eq("status", "diproses")
+                        }
+                    }
+                }
+                .decodeList<PengajuanBerhenti>()
+            hasil.isNotEmpty()
+        } catch (_: Exception) {
+            false
+        }
     }
 }

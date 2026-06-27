@@ -17,6 +17,7 @@ class ProdukRewardAdapter(
     private var listProduk: List<ProdukReward>,
     private val onTukarClick: (ProdukReward) -> Unit
 ) : RecyclerView.Adapter<ProdukRewardAdapter.ViewHolder>() {
+    private var semuaDisabled = false
 
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val ivFoto: ImageView        = view.findViewById(R.id.ivFotoProduk)
@@ -62,7 +63,7 @@ class ProdukRewardAdapter(
             holder.ivPlaceholder.visibility = View.VISIBLE
         }
 
-        // ===== STATUS STOK =====
+// ===== STATUS STOK =====
         if (produk.stok <= 0) {
             holder.tvStokHabis.visibility = View.VISIBLE
             holder.btnTukar.isEnabled     = false
@@ -75,11 +76,21 @@ class ProdukRewardAdapter(
             holder.btnTukar.text          = "Tukar"
         }
 
+        if (semuaDisabled) {
+            holder.btnTukar.isEnabled = false
+            holder.btnTukar.alpha     = 0.4f
+        }
+
         holder.btnTukar.setOnClickListener {
-            if (produk.stok > 0) {
+            if (produk.stok > 0 && !semuaDisabled) {
                 onTukarClick(produk)
             }
         }
+    }
+
+    fun setSemuaDisabled(disabled: Boolean) {
+        semuaDisabled = disabled
+        notifyDataSetChanged()
     }
 
     override fun getItemCount(): Int = listProduk.size

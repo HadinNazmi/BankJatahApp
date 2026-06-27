@@ -50,6 +50,7 @@ import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
+import com.example.bankjatahapp.ui.unitbisnis.UnitBisnisActivity
 import java.io.File
 import java.text.NumberFormat
 import java.util.Locale
@@ -127,6 +128,22 @@ class SetoranFragment : Fragment() {
         muatHargaDanKomisi()
         setupListeners()
         setupSearchNasabah()
+        cekPengajuanBerhentiAktif()
+    }
+
+    private fun cekPengajuanBerhentiAktif() {
+        lifecycleScope.launch {
+            val adaPengajuan = (activity as? UnitBisnisActivity)?.cekAdaPengajuanAktif() ?: false
+            if (adaPengajuan && _binding != null) {
+                setFormEnabled(false)
+                binding.btnKonfirmasi.text = "Tidak dapat setor"
+                Toast.makeText(
+                    requireContext(),
+                    "⚠️ Form setoran dinonaktifkan karena Anda memiliki pengajuan penutupan akun yang sedang diproses.",
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+        }
     }
 
     private fun muatHargaDanKomisi() {
