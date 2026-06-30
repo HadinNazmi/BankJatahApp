@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Saat status LinearLayout (Parent) sedang aktif/di-select, paksa teks jadi PUTIH -->
+    <item android:state_selected="true" android:color="@color/white" />
+    <item android:state_checked="true" android:color="@color/white" />
+
+    <!-- Saat status normal / tidak dipilih, paksa teks jadi HITAM/ABU -->
+    <item android:color="@color/black" />
+</selector>

@@ -173,45 +173,44 @@ class PenarikanUnitBisnisFragment : Fragment() {
         }
         binding.tvSaldoTersedia.text = formatRupiah(saldoTerpilih)
 
-        // Reset semua tab ke inactive
-        listOf(
-            binding.optionTabungan to binding.tvSaldoTabunganNilai,
-            binding.optionKomisi   to binding.tvSaldoKomisiNilai,
-            binding.optionAfiliasi to binding.tvSaldoAfiliasiNilai
-        ).forEach { (opt, tv) ->
-            opt.setBackgroundResource(com.example.bankjatahapp.R.drawable.ic_bg_tab_inactive)
-            tv.setTextColor(requireContext().getColor(com.example.bankjatahapp.R.color.black))
-        }
+        // Reset State Seleksi Komponen Utama
+        binding.optionTabungan.isSelected = false
+        binding.optionKomisi.isSelected   = false
+        binding.optionAfiliasi.isSelected = false
+
         binding.radioTabungan.isChecked = false
         binding.radioKomisi.isChecked   = false
         binding.radioAfiliasi.isChecked = false
 
-        // Aktifkan tab yang dipilih
+        binding.optionTabungan.setBackgroundResource(com.example.bankjatahapp.R.drawable.ic_bg_tab_inactive)
+        binding.optionKomisi.setBackgroundResource(com.example.bankjatahapp.R.drawable.ic_bg_tab_inactive)
+        binding.optionAfiliasi.setBackgroundResource(com.example.bankjatahapp.R.drawable.ic_bg_tab_inactive)
+
+        // Aktifkan State Terpilih secara spesifik
         when (jenis) {
             "tabungan" -> {
                 binding.optionTabungan.setBackgroundResource(com.example.bankjatahapp.R.drawable.ic_bg_tab_active)
-                binding.tvSaldoTabunganNilai.setTextColor(requireContext().getColor(com.example.bankjatahapp.R.color.white))
+                binding.optionTabungan.isSelected = true
                 binding.radioTabungan.isChecked = true
             }
             "komisi" -> {
                 binding.optionKomisi.setBackgroundResource(com.example.bankjatahapp.R.drawable.ic_bg_tab_active)
-                binding.tvSaldoKomisiNilai.setTextColor(requireContext().getColor(com.example.bankjatahapp.R.color.white))
+                binding.optionKomisi.isSelected = true
                 binding.radioKomisi.isChecked = true
             }
             "afiliasi" -> {
                 binding.optionAfiliasi.setBackgroundResource(com.example.bankjatahapp.R.drawable.ic_bg_tab_active)
-                binding.tvSaldoAfiliasiNilai.setTextColor(requireContext().getColor(com.example.bankjatahapp.R.color.white))
+                binding.optionAfiliasi.isSelected = true
                 binding.radioAfiliasi.isChecked = true
             }
         }
 
-        // Cek syarat — disable input jika tidak terpenuhi
+        // Cek syarat batas penarikan
         val syaratInfo = cekSyaratPenarikan(jenis)
         if (syaratInfo != null) {
             binding.tvWarningNominal.text = syaratInfo
             binding.tvWarningNominal.visibility = View.VISIBLE
             setInputEnabled(false)
-            binding.cardRingkasan.visibility = View.GONE
         } else {
             binding.tvWarningNominal.visibility = View.GONE
             setInputEnabled(true)

@@ -152,21 +152,25 @@ class PenarikanNasabahFragment : Fragment() {
         }
         binding.tvSaldoTersedia.text = formatRupiah(saldoTerpilih)
 
-        // Visual tab aktif/tidak aktif
+        // Reset state seleksi & check radio button agar tidak bertabrakan
+        binding.optionTabungan.isSelected = false
+        binding.optionAfiliasi.isSelected = false
+        binding.radioTabungan.isChecked = false
+        binding.radioAfiliasi.isChecked = false
+
+        // Atur background kartu secara dinamis & picu pendelegasian status isSelected ke XML
         if (jenis == "tabungan") {
             binding.optionTabungan.setBackgroundResource(com.example.bankjatahapp.R.drawable.ic_bg_tab_active)
-            binding.tvSaldoTabunganNilai.setTextColor(requireContext().getColor(com.example.bankjatahapp.R.color.white))
+            binding.optionTabungan.isSelected = true
             binding.radioTabungan.isChecked = true
+
             binding.optionAfiliasi.setBackgroundResource(com.example.bankjatahapp.R.drawable.ic_bg_tab_inactive)
-            binding.tvSaldoAfiliasiNilai.setTextColor(requireContext().getColor(com.example.bankjatahapp.R.color.black))
-            binding.radioAfiliasi.isChecked = false
         } else {
             binding.optionAfiliasi.setBackgroundResource(com.example.bankjatahapp.R.drawable.ic_bg_tab_active)
-            binding.tvSaldoAfiliasiNilai.setTextColor(requireContext().getColor(com.example.bankjatahapp.R.color.white))
+            binding.optionAfiliasi.isSelected = true
             binding.radioAfiliasi.isChecked = true
+
             binding.optionTabungan.setBackgroundResource(com.example.bankjatahapp.R.drawable.ic_bg_tab_inactive)
-            binding.tvSaldoTabunganNilai.setTextColor(requireContext().getColor(com.example.bankjatahapp.R.color.black))
-            binding.radioTabungan.isChecked = false
         }
 
         // Cek syarat — tampilkan warning jika belum memenuhi, disable input
