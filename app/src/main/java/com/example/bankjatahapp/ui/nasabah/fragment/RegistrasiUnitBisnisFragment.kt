@@ -116,6 +116,24 @@ class RegistrasiUnitBisnisFragment : Fragment() {
         setupMap()
         loadProvinsi()
         setupClickListeners()
+        cekPengajuanBerhentiAktif()
+    }
+
+    private fun cekPengajuanBerhentiAktif() {
+        lifecycleScope.launch {
+            val adaPengajuan = (activity as? com.example.bankjatahapp.ui.nasabah.NasabahActivity)
+                ?.cekAdaPengajuanAktif() ?: false
+            if (adaPengajuan && _binding != null) {
+                binding.btnAjukanKemitraan.isEnabled = false
+                binding.btnAjukanKemitraan.text = "Tidak Dapat Mendaftar"
+                binding.btnAjukanKemitraan.alpha = 0.5f
+                Toast.makeText(
+                    requireContext(),
+                    "⚠️ Anda memiliki pengajuan penutupan akun aktif. Pendaftaran Unit Bisnis tidak dapat dilakukan.",
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+        }
     }
 
     // ===== SETUP MAP =====
@@ -468,6 +486,7 @@ class RegistrasiUnitBisnisFragment : Fragment() {
     }
 
     private fun validasiDanAjukan() {
+        if (!binding.btnAjukanKemitraan.isEnabled) return
         val namaUsaha = binding.etNamaUsaha.text.toString().trim()
         val alamat    = binding.etAlamat.text.toString().trim()
 

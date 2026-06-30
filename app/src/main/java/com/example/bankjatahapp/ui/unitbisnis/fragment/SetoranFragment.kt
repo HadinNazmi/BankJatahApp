@@ -137,11 +137,13 @@ class SetoranFragment : Fragment() {
             if (adaPengajuan && _binding != null) {
                 setFormEnabled(false)
                 binding.btnKonfirmasi.text = "Tidak dapat setor"
-                Toast.makeText(
-                    requireContext(),
-                    "⚠️ Form setoran dinonaktifkan karena Anda memiliki pengajuan penutupan akun yang sedang diproses.",
-                    Toast.LENGTH_LONG
-                ).show()
+
+                androidx.appcompat.app.AlertDialog.Builder(requireContext())
+                    .setTitle("Tidak Dapat Menerima Setoran")
+                    .setMessage("Anda sedang mengajukan proses berhenti dan tidak dapat melakukan transaksi setoran selama pengajuan diproses.")
+                    .setPositiveButton("Mengerti", null)
+                    .setCancelable(false)
+                    .show()
             }
         }
     }
@@ -217,6 +219,8 @@ class SetoranFragment : Fragment() {
         binding.frameQrScanner.isEnabled = enabled
         binding.btnCekNasabah.isEnabled  = enabled
         binding.switchJemput.isEnabled   = enabled
+        binding.etCariNasabah.isEnabled  = enabled
+        binding.etIdNasabah.isEnabled    = enabled
     }
 
     private fun kompresGambar(bytes: ByteArray, maxSizeKb: Int = 2048): ByteArray {
@@ -469,7 +473,9 @@ class SetoranFragment : Fragment() {
         binding.etIdNasabah.setText(user.idUser.take(8) + "...")
 
         val sponsorInfo = NasabahSponsorInfo(idSponsor = nasabahData.idSponsor)
-        tampilkanUser(user, user.idUser.take(8), sponsorInfo)
+        lifecycleScope.launch {
+            tampilkanUser(user, user.idUser.take(8), sponsorInfo)
+        }
     }
 
     private fun hitungUlangEstimasi() {
@@ -633,7 +639,40 @@ class SetoranFragment : Fragment() {
         } catch (_: Exception) { null }
     }
 
-    private fun tampilkanUser(user: User, displayId: String, sponsorInfo: NasabahSponsorInfo?) {
+    private suspend fun cekNasabahAdaPengajuanBerhenti(idNasabah: String): Boolean {
+        return try {
+            val hasil = client.postgrest
+                .from("pengajuan_berhenti")
+                .select {
+                    filter {
+                        eq("id_user", idNasabah)
+                        or {
+                            eq("status", "menunggu")
+                            eq("status", "diproses")
+                        }
+                    }
+                }
+                .data
+            hasil != "[]" && hasil.isNotBlank()
+        } catch (_: Exception) { false }
+    }
+
+    private suspend fun tampilkanUser(user: User, displayId: String, sponsorInfo: NasabahSponsorInfo?) {
+        // ===== CEK NASABAH SEDANG PROSES BERHENTI =====
+        val sedangBerhenti = cekNasabahAdaPengajuanBerhenti(user.idUser)
+        if (sedangBerhenti) {
+            userTidakDitemukan()
+            if (_binding != null) {
+                androidx.appcompat.app.AlertDialog.Builder(requireContext())
+                    .setTitle("Tidak Dapat Memproses Setoran")
+                    .setMessage("Nasabah ini sedang mengajukan proses berhenti dan tidak dapat melanjutkan transaksi setoran.")
+                    .setPositiveButton("Mengerti", null)
+                    .setCancelable(true)
+                    .show()
+            }
+            return
+        }
+
         idNasabahDipilih   = user.idUser
         namaNasabahDipilih = user.namaLengkap
 
@@ -672,6 +711,7 @@ class SetoranFragment : Fragment() {
         namaNasabahDipilih = null
         binding.layoutInfoNasabah.visibility = View.GONE
         binding.tvStatusSponsor.visibility   = View.GONE
+        binding.etIdNasabah.setText("")   // kosongkan total supaya scan ulang selalu bersih
     }
 
     private fun setTombolCek(loading: Boolean) {
@@ -693,6 +733,10 @@ class SetoranFragment : Fragment() {
     private fun validasiDanSubmit() {
         if (hargaPerKg == null || komisiPerKg == null) {
             Toast.makeText(requireContext(), "Data harga belum termuat.", Toast.LENGTH_SHORT).show()
+            return
+        }
+        if (!binding.btnKonfirmasi.isEnabled) {
+            Toast.makeText(requireContext(), "Form setoran sedang dinonaktifkan.", Toast.LENGTH_SHORT).show()
             return
         }
         if (idNasabahDipilih == null) {
