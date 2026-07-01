@@ -235,9 +235,44 @@ class SetoranFragment : Fragment() {
         binding.etIdNasabah.isEnabled    = enabled
     }
 
-    private fun kompresGambar(bytes: ByteArray, maxSizeKb: Int = 2048): ByteArray {
-        val bitmap = android.graphics.BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
-        var quality = 90
+    private fun kompresGambar(bytes: ByteArray, maxSizeKb: Int = 800): ByteArray {
+        val options = android.graphics.BitmapFactory.Options().apply {
+            inJustDecodeBounds = true
+        }
+        android.graphics.BitmapFactory.decodeByteArray(bytes, 0, bytes.size, options)
+
+        // ===== STEP 1: Hitung inSampleSize untuk pre-scale sebelum decode penuh =====
+        // Target resolusi maksimal 1080px di sisi terpanjang
+        val maxPx = 1080
+        var sampleSize = 1
+        val tinggi = options.outHeight
+        val lebar  = options.outWidth
+        if (tinggi > maxPx || lebar > maxPx) {
+            val halfTinggi = tinggi / 2
+            val halfLebar  = lebar / 2
+            while ((halfTinggi / sampleSize) >= maxPx || (halfLebar / sampleSize) >= maxPx) {
+                sampleSize *= 2
+            }
+        }
+
+        // ===== STEP 2: Decode dengan sample size =====
+        val decodeOptions = android.graphics.BitmapFactory.Options().apply {
+            inSampleSize = sampleSize
+        }
+        var bitmap = android.graphics.BitmapFactory.decodeByteArray(bytes, 0, bytes.size, decodeOptions)
+
+        // ===== STEP 3: Scale ulang jika masih lebih besar dari maxPx =====
+        val w = bitmap.width
+        val h = bitmap.height
+        if (w > maxPx || h > maxPx) {
+            val ratio = maxPx.toFloat() / maxOf(w, h)
+            val newW  = (w * ratio).toInt()
+            val newH  = (h * ratio).toInt()
+            bitmap = android.graphics.Bitmap.createScaledBitmap(bitmap, newW, newH, true)
+        }
+
+        // ===== STEP 4: Compress quality bertahap sampai di bawah maxSizeKb =====
+        var quality = 85
         var hasil: ByteArray
         do {
             val out = java.io.ByteArrayOutputStream()
@@ -245,6 +280,7 @@ class SetoranFragment : Fragment() {
             hasil = out.toByteArray()
             quality -= 10
         } while (hasil.size > maxSizeKb * 1024 && quality > 10)
+
         return hasil
     }
 

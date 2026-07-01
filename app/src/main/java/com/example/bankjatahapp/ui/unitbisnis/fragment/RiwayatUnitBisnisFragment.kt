@@ -244,7 +244,13 @@ class RiwayatUnitBisnisFragment : Fragment() {
                             "komisi_afiliasi" -> "Komisi Afiliasi"
                             else -> "Tabungan Minyak"
                         }
-                        tambahkanItemRiwayat("", "Penarikan $labelSumber", "${formatRupiah(jumlah)}  •  $bank $noRek", tgl, kode, status, "pencairan", obj["bukti_transfer"]?.jsonPrimitive?.content)
+                        tambahkanItemRiwayat(
+                            "", "Penarikan $labelSumber",
+                            "${formatRupiah(jumlah)}  •  $bank $noRek",
+                            tgl, kode, status, "pencairan",
+                            obj["bukti_transfer"]?.jsonPrimitive?.content,
+                            obj["alasan_penolakan"]?.jsonPrimitive?.content   // ← tambah ini
+                        )
                     }
                 }
             } catch (e: Exception) { tambahkanLabel("Request Penarikan"); tambahkanInfoKosong("Gagal memuat data") }
@@ -273,7 +279,7 @@ class RiwayatUnitBisnisFragment : Fragment() {
 
     // --- SISANYA ADALAH LOGIKA UI ASLI ANDA (TIDAK ADA PERUBAHAN) ---
 
-    private fun tambahkanItemRiwayat(icon: String, judul: String, detail: String, tanggal: String, kode: String, status: String, tipeStatus: String, buktiTransfer: String?) {
+    private fun tambahkanItemRiwayat(icon: String, judul: String, detail: String, tanggal: String, kode: String, status: String, tipeStatus: String, buktiTransfer: String?, alasanPenolakan: String? = null) {
         val dp4  = (4  * resources.displayMetrics.density).toInt()
         val dp8  = (8  * resources.displayMetrics.density).toInt()
         val dp10 = (10 * resources.displayMetrics.density).toInt()
@@ -314,6 +320,17 @@ class RiwayatUnitBisnisFragment : Fragment() {
         inner.addView(TextView(requireContext()).apply { text = tanggal; textSize = 11f; setTextColor(requireContext().getColor(R.color.gray_text)); setPadding(0, dp4, 0, 0) })
         inner.addView(TextView(requireContext()).apply { text = detail; textSize = 12f; setTextColor(requireContext().getColor(R.color.orange_primary)); setPadding(0, dp4, 0, 0) })
         inner.addView(TextView(requireContext()).apply { text = kode; textSize = 10f; setTextColor(requireContext().getColor(R.color.gray_text)) })
+
+        if ((status == "ditolak" || status == "gagal") && !alasanPenolakan.isNullOrBlank()) {
+            inner.addView(TextView(requireContext()).apply {
+                text = "⚠ Alasan: $alasanPenolakan"
+                textSize = 11f
+                setTextColor(requireContext().getColor(R.color.notif_error_bg))
+                setTypeface(null, Typeface.ITALIC)
+                val dp = (resources.displayMetrics.density).toInt()
+                setPadding(0, 4 * dp, 0, 0)
+            })
+        }
 
         if (tipeStatus == "pencairan" && status == "selesai" && !buktiTransfer.isNullOrEmpty()) {
             val btnBukti = TextView(requireContext()).apply {
@@ -445,13 +462,92 @@ class RiwayatUnitBisnisFragment : Fragment() {
     }
 
     private fun tambahkanItemRedeem(idRedeem: String, poin: String, tgl: String, kode: String, status: String) {
-        val dp8 = (8 * resources.displayMetrics.density).toInt(); val dp14 = (14 * resources.displayMetrics.density).toInt()
-        val card = CardView(requireContext()).apply { radius = (12 * resources.displayMetrics.density); setCardBackgroundColor(requireContext().getColor(R.color.white)); layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply { setMargins(40, 0, 40, dp8) } }
-        val inner = LinearLayout(requireContext()).apply { orientation = LinearLayout.VERTICAL; setPadding(dp14, dp14, dp14, dp14) }
-        inner.addView(TextView(requireContext()).apply { text = "Penukaran Reward"; setTypeface(null, Typeface.BOLD) })
-        inner.addView(TextView(requireContext()).apply { text = "$poin Poin • $tgl"; textSize = 11f })
-        val btn = TextView(requireContext()).apply { text = "Lihat QR Redeem"; gravity = Gravity.CENTER; setTextColor(requireContext().getColor(R.color.orange_primary)); setPadding(0, 20, 0, 0); setOnClickListener { tampilkanDialogQrRedeem(idRedeem, poin, status) } }
-        inner.addView(btn)
+        val dp4  = (4  * resources.displayMetrics.density).toInt()
+        val dp8  = (8  * resources.displayMetrics.density).toInt()
+        val dp10 = (10 * resources.displayMetrics.density).toInt()
+        val dp12 = (12 * resources.displayMetrics.density).toInt()
+        val dp14 = (14 * resources.displayMetrics.density).toInt()
+        val dp20 = (20 * resources.displayMetrics.density).toInt()
+
+        // ===== BADGE STATUS untuk reward =====
+        val (bgStatus, labelStatus) = when (status) {
+            "selesai"   -> Pair(R.drawable.ic_bg_status_berhasil, "Selesai")
+            "disetujui" -> Pair(R.drawable.ic_bg_status_berhasil, "Disetujui")
+            "menunggu"  -> Pair(R.drawable.ic_bg_status_pending,  "Menunggu")
+            "ditolak"   -> Pair(R.drawable.ic_bg_status_gagal,    "Ditolak")
+            else        -> Pair(R.drawable.ic_bg_status_pending,  status)
+        }
+
+        val card = CardView(requireContext()).apply {
+            radius        = (12 * resources.displayMetrics.density)
+            cardElevation = (2  * resources.displayMetrics.density)
+            setCardBackgroundColor(requireContext().getColor(R.color.white))
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            ).apply { setMargins(dp20, 0, dp20, dp8) }
+        }
+
+        val inner = LinearLayout(requireContext()).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(dp14, dp14, dp14, dp14)
+        }
+
+        // Row judul + badge status (konsisten dengan item lain)
+        val row1 = LinearLayout(requireContext()).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity     = Gravity.CENTER_VERTICAL
+        }
+        val tvJudul = TextView(requireContext()).apply {
+            text      = "Penukaran Reward"
+            textSize  = 13f
+            setTypeface(null, Typeface.BOLD)
+            setTextColor(requireContext().getColor(R.color.black))
+            layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+        }
+        val tvBadge = TextView(requireContext()).apply {
+            text      = labelStatus
+            textSize  = 11f
+            setTextColor(requireContext().getColor(R.color.white))
+            setBackgroundResource(bgStatus)
+            setPadding(dp10, dp4, dp10, dp4)
+        }
+        row1.addView(tvJudul)
+        row1.addView(tvBadge)
+
+        inner.addView(row1)
+        inner.addView(TextView(requireContext()).apply {
+            text = "$poin Poin  •  $tgl"
+            textSize = 11f
+            setTextColor(requireContext().getColor(R.color.gray_text))
+            setPadding(0, dp4, 0, 0)
+        })
+        inner.addView(TextView(requireContext()).apply {
+            text = "ID: $kode"
+            textSize = 10f
+            setTextColor(requireContext().getColor(R.color.gray_text))
+            setPadding(0, dp4, 0, 0)
+        })
+
+        // Tombol lihat QR hanya muncul jika bukan ditolak
+        if (status != "ditolak") {
+            val btnQr = TextView(requireContext()).apply {
+                text = "Lihat QR Redeem"
+                textSize = 12f
+                setTypeface(null, Typeface.BOLD)
+                setTextColor(requireContext().getColor(R.color.orange_primary))
+                gravity = Gravity.CENTER
+                background = requireContext().getDrawable(R.drawable.ic_bg_aktivitas_orange)
+                setPadding(dp12, dp10, dp12, dp10)
+                layoutParams = LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+                ).apply { setMargins(0, dp8, 0, 0) }
+                setOnClickListener { tampilkanDialogQrRedeem(idRedeem, poin, status) }
+            }
+            inner.addView(btnQr)
+        }
+
         card.addView(inner)
         binding.layoutDaftarRiwayat.addView(card)
     }

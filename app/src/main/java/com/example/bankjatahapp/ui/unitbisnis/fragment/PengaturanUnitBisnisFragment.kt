@@ -330,20 +330,24 @@ class PengaturanUnitBisnisFragment : Fragment() {
         }
 
         binding.itemEditJamBuka.setOnClickListener {
-            tampilkanDialogEdit("Jam Buka Operasional", cachedUnit?.jamBuka ?: "", InputType.TYPE_CLASS_DATETIME) { nilaiBaru ->
-                val payload = buildJsonObject { put("jam_buka", nilaiBaru.ifEmpty { null }) }
+            tampilkanTimePickerDialog(
+                judul       = "Jam Buka Operasional",
+                nilaiSaatIni = cachedUnit?.jamBuka
+            ) { jamTerpilih ->
+                val payload = buildJsonObject { put("jam_buka", jamTerpilih) }
                 updateKeSupabase("unit_bisnis_data", payload)
-                cachedUnit = cachedUnit?.copy(jamBuka = nilaiBaru.ifEmpty { null })
-                null
+                cachedUnit = cachedUnit?.copy(jamBuka = jamTerpilih)
             }
         }
 
         binding.itemEditJamTutup.setOnClickListener {
-            tampilkanDialogEdit("Jam Tutup Operasional", cachedUnit?.jamTutup ?: "", InputType.TYPE_CLASS_DATETIME) { nilaiBaru ->
-                val payload = buildJsonObject { put("jam_tutup", nilaiBaru.ifEmpty { null }) }
+            tampilkanTimePickerDialog(
+                judul        = "Jam Tutup Operasional",
+                nilaiSaatIni = cachedUnit?.jamTutup
+            ) { jamTerpilih ->
+                val payload = buildJsonObject { put("jam_tutup", jamTerpilih) }
                 updateKeSupabase("unit_bisnis_data", payload)
-                cachedUnit = cachedUnit?.copy(jamTutup = nilaiBaru.ifEmpty { null })
-                null
+                cachedUnit = cachedUnit?.copy(jamTutup = jamTerpilih)
             }
         }
 
@@ -455,6 +459,43 @@ class PengaturanUnitBisnisFragment : Fragment() {
             builder.dismiss()
         }
         builder.show()
+    }
+
+    // ================= TIME PICKER DIALOG (UNTUK JAM BUKA & TUTUP) =================
+    private fun tampilkanTimePickerDialog(
+        judul: String,
+        nilaiSaatIni: String?,   // format "HH:mm" atau null
+        onJamDipilih: (String) -> Unit
+    ) {
+        // Parse jam & menit dari nilai yang sudah tersimpan, fallback ke jam sekarang
+        val (jamAwal, menitAwal) = try {
+            val parts = nilaiSaatIni?.split(":")
+            val h = parts?.getOrNull(0)?.toIntOrNull()
+            val m = parts?.getOrNull(1)?.take(2)?.toIntOrNull()
+            if (h != null && m != null) Pair(h, m)
+            else {
+                val cal = java.util.Calendar.getInstance()
+                Pair(cal.get(java.util.Calendar.HOUR_OF_DAY), cal.get(java.util.Calendar.MINUTE))
+            }
+        } catch (e: Exception) {
+            val cal = java.util.Calendar.getInstance()
+            Pair(cal.get(java.util.Calendar.HOUR_OF_DAY), cal.get(java.util.Calendar.MINUTE))
+        }
+
+        val timePicker = android.app.TimePickerDialog(
+            requireContext(),
+            { _, jam, menit ->
+                // Format hasil menjadi "HH:mm" — konsisten, tidak perlu ketik
+                val hasilFormatted = String.format("%02d:%02d", jam, menit)
+                onJamDipilih(hasilFormatted)
+            },
+            jamAwal,
+            menitAwal,
+            true // true = format 24 jam (lebih cocok untuk jam operasional bisnis)
+        )
+
+        timePicker.setTitle(judul)
+        timePicker.show()
     }
 
     // ================= DIALOG GANTI PASSWORD =================
