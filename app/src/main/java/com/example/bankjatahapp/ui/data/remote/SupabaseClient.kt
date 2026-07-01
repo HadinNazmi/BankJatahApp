@@ -6,6 +6,7 @@ import io.github.jan.supabase.createSupabaseClient
 import io.github.jan.supabase.postgrest.Postgrest
 import io.github.jan.supabase.realtime.Realtime
 import io.github.jan.supabase.storage.Storage
+import io.github.jan.supabase.logging.LogLevel
 
 object SupabaseClient {
 
@@ -16,6 +17,8 @@ object SupabaseClient {
         supabaseUrl = SUPABASE_URL,
         supabaseKey = SUPABASE_KEY
     ) {
+        defaultLogLevel = LogLevel.NONE
+
         install(Auth) {
             // Simpan session ke storage permanen (SharedPreferences)
             // sehingga user tidak perlu login ulang walau app di-kill

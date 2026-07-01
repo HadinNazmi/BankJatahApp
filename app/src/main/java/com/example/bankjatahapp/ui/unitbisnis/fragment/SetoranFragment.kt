@@ -136,7 +136,7 @@ class SetoranFragment : Fragment() {
     }
 
     private fun cekPengajuanBerhentiAktif() {
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             val adaPengajuan = (activity as? UnitBisnisActivity)?.cekAdaPengajuanAktif() ?: false
             if (adaPengajuan && _binding != null) {
                 // Set flag — ini yang mencegah muatHargaDanKomisi() override blokir ini
@@ -158,7 +158,7 @@ class SetoranFragment : Fragment() {
         setFormEnabled(false)
         binding.btnKonfirmasi.text = "Memuat harga..."
 
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             try {
                 val idUnit = client.auth.currentUserOrNull()?.id
                     ?: throw Exception("Session tidak ditemukan, silakan login ulang.")
@@ -335,7 +335,7 @@ class SetoranFragment : Fragment() {
                 binding.tvTidakAdaHasil.visibility     = View.GONE
                 binding.progressCariNasabah.visibility = View.VISIBLE
 
-                searchJob = lifecycleScope.launch {
+                searchJob = viewLifecycleOwner.lifecycleScope.launch {
                     delay(500)
                     cariNasabahByNama(query)
                 }
@@ -526,7 +526,7 @@ class SetoranFragment : Fragment() {
         binding.etIdNasabah.setText(user.idUser.take(8) + "...")
 
         val sponsorInfo = NasabahSponsorInfo(idSponsor = nasabahData.idSponsor)
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             tampilkanUser(user, user.idUser.take(8), sponsorInfo)
         }
     }
@@ -641,7 +641,7 @@ class SetoranFragment : Fragment() {
     // ===== CEK USER =====
     private fun cekUserByUuid(uuid: String) {
         setTombolCek(loading = true)
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             try {
                 val user = client.postgrest
                     .from("users")
@@ -661,7 +661,7 @@ class SetoranFragment : Fragment() {
 
     private fun cekUserManual(inputId: String) {
         setTombolCek(loading = true)
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             try {
                 val semuaUser = client.postgrest
                     .from("users")
@@ -853,7 +853,7 @@ class SetoranFragment : Fragment() {
         setLoading(true)
         val catatanValue = catatan.ifEmpty { null }
 
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             try {
                 val idUnit = client.auth.currentUserOrNull()?.id
                     ?: throw Exception("Session login tidak ditemukan, silakan login ulang.")

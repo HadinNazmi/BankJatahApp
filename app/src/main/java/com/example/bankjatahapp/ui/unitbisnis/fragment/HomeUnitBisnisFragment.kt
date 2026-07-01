@@ -73,7 +73,7 @@ class HomeUnitBisnisFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             try {
                 realtimeChannel?.let { client.realtime.removeChannel(it) }
             } catch (_: Exception) {}
@@ -82,7 +82,7 @@ class HomeUnitBisnisFragment : Fragment() {
     }
 
     private fun mulaiDengarkanNotifikasi() {
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             try {
                 val idUser = client.auth.currentUserOrNull()?.id ?: return@launch
 
@@ -116,7 +116,7 @@ class HomeUnitBisnisFragment : Fragment() {
     }
 
     private fun updateBadgeNotifikasi() {
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             try {
                 val idUser = client.auth.currentUserOrNull()?.id ?: return@launch
                 val listBelumDibaca = client.postgrest
@@ -150,7 +150,7 @@ class HomeUnitBisnisFragment : Fragment() {
     }
 
     private fun loadData() {
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             try {
                 val idUser = client.auth.currentUserOrNull()?.id ?: return@launch
 
@@ -192,7 +192,7 @@ class HomeUnitBisnisFragment : Fragment() {
     }
 
     private fun loadUnitBisnisPreview() {
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             try {
                 val listUnit = client.postgrest
                     .from("unit_bisnis_data")

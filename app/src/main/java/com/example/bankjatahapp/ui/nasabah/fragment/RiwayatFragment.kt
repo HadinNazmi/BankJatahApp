@@ -143,7 +143,7 @@ class RiwayatFragment : Fragment() {
     }
 
     private fun loadData() {
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             try {
                 val idUser = client.auth.currentUserOrNull()?.id ?: return@launch
                 val batas  = getBatasTanggal()
@@ -463,7 +463,7 @@ class RiwayatFragment : Fragment() {
     }
 
     private fun downloadBuktiTransfer(urlBukti: String, kodePencairan: String) {
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             try {
                 Toast.makeText(requireContext(), "Mengunduh gambar...", Toast.LENGTH_SHORT).show()
 

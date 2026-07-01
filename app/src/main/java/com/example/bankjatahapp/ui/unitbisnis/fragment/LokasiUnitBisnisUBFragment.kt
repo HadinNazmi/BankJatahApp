@@ -38,7 +38,7 @@ class LokasiUnitBisnisUBFragment : Fragment() {
     }
 
     private fun loadUnitBisnis() {
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             try {
                 binding.progressBar.visibility  = View.VISIBLE
                 binding.rvUnitBisnis.visibility = View.GONE

@@ -58,7 +58,7 @@ class PenarikanUnitBisnisFragment : Fragment() {
     }
 
     private fun cekPengajuanBerhentiAktif() {
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             val adaPengajuan = (activity as? UnitBisnisActivity)?.cekAdaPengajuanAktif() ?: false
             if (adaPengajuan && _binding != null) {
                 binding.btnAjukanPenarikan.isEnabled = false
@@ -70,7 +70,7 @@ class PenarikanUnitBisnisFragment : Fragment() {
     }
 
     private fun loadData() {
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             try {
                 val idUser = client.auth.currentUserOrNull()?.id ?: return@launch
 
@@ -461,7 +461,7 @@ class PenarikanUnitBisnisFragment : Fragment() {
         namaPemilik: String
     ) {
         setLoading(true)
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             try {
                 val idUser = client.auth.currentUserOrNull()?.id
                     ?: throw Exception("Session tidak ditemukan")

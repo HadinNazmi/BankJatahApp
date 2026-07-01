@@ -70,7 +70,7 @@ class PengaturanUnitBisnisFragment : Fragment() {
     // ===================== LOAD DATA =====================
     private fun loadData() {
         setFormLoading(true)
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             try {
                 idUser = client.auth.currentUserOrNull()?.id ?: return@launch
 
@@ -554,7 +554,7 @@ class PengaturanUnitBisnisFragment : Fragment() {
             btnBatal.isEnabled  = false
             progressBar.visibility = android.view.View.VISIBLE
 
-            lifecycleScope.launch {
+            viewLifecycleOwner.lifecycleScope.launch {
                 try {
                     val email = cachedUser?.email
                         ?: throw Exception("Data akun tidak ditemukan, silakan muat ulang halaman")
@@ -613,7 +613,7 @@ class PengaturanUnitBisnisFragment : Fragment() {
     // ================= UPDATE KE SUPABASE =================
     private fun updateKeSupabase(namaTabel: String, dataPayload: kotlinx.serialization.json.JsonObject) {
         setFormLoading(true)
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             try {
                 val id = idUser ?: throw Exception("Sesi kedaluwarsa")
                 val kolomKunci = when (namaTabel) {

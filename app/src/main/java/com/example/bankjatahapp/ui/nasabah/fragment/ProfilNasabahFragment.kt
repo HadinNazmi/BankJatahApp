@@ -51,7 +51,7 @@ class ProfilNasabahFragment : Fragment() {
     }
 
     private fun loadData() {
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             try {
                 val idUser = client.auth.currentUserOrNull()?.id ?: return@launch
 
@@ -145,7 +145,7 @@ class ProfilNasabahFragment : Fragment() {
             .setTitle("Konfirmasi Logout")
             .setMessage("Apakah Anda yakin ingin keluar dari akun ini?")
             .setPositiveButton("Ya, Logout") { _, _ ->
-                lifecycleScope.launch {
+                viewLifecycleOwner.lifecycleScope.launch {
                     try { client.auth.signOut() } catch (_: Exception) {}
                 }
                 val intent = Intent(requireContext(), LoginActivity::class.java)

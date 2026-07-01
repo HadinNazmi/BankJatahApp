@@ -63,7 +63,7 @@ class RewardFragment : Fragment() {
     }
 
     private fun cekPengajuanBerhentiAktif() {
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             val adaPengajuan = (activity as? NasabahActivity)?.cekAdaPengajuanAktif() ?: false
             if (adaPengajuan && _binding != null) {
                 Toast.makeText(
@@ -91,7 +91,7 @@ class RewardFragment : Fragment() {
         binding.layoutEmpty.visibility    = View.GONE
         binding.rvProdukReward.visibility = View.GONE
 
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             try {
                 val idUser = client.auth.currentUserOrNull()?.id ?: return@launch
 
@@ -235,7 +235,7 @@ class RewardFragment : Fragment() {
     }
 
     private fun ajukanRedeem(produk: ProdukReward) {
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             try {
                 val idUser = client.auth.currentUserOrNull()?.id
                     ?: throw Exception("Session tidak ditemukan")

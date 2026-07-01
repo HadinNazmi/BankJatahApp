@@ -106,7 +106,7 @@ class AjukanBerhentiUnitBisnisFragment : Fragment() {
      * Jika ada, tampilkan status dan sembunyikan form.
      */
     private fun cekPengajuanAktif() {
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             try {
                 showLoading(true)
                 val idUser = client.auth.currentUserOrNull()?.id ?: return@launch
@@ -201,7 +201,7 @@ class AjukanBerhentiUnitBisnisFragment : Fragment() {
     private fun kirimPengajuan() {
         val alasan = binding.etAlasan.text.toString().trim()
 
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             showLoading(true)
             val errorMsg = validasiSaldoSebelumKirim()
             showLoading(false)
@@ -276,7 +276,7 @@ class AjukanBerhentiUnitBisnisFragment : Fragment() {
     }
 
     private fun prosesKirim(alasan: String) {
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             try {
                 showLoading(true)
                 binding.btnKirimPengajuan.isEnabled = false

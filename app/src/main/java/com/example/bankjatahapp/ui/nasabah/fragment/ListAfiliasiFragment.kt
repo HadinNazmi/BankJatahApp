@@ -41,7 +41,7 @@ class ListAfiliasiFragment : Fragment() {
     }
 
     private fun loadAfiliasi() {
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             try {
                 binding.progressBar.visibility = View.VISIBLE
                 binding.rvAfiliasi.visibility = View.GONE
@@ -100,7 +100,7 @@ class ListAfiliasiFragment : Fragment() {
     }
 
     private fun setupReferral() {
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             try {
                 val uid = client.auth.currentUserOrNull()?.id ?: return@launch
                 idUser = uid
@@ -176,7 +176,7 @@ class ListAfiliasiFragment : Fragment() {
     private fun simpanSponsor(kodeRefSponsor: String) {
         binding.btnSimpanSponsor.isEnabled = false
         binding.btnSimpanSponsor.text = "Menyimpan..."
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             try {
                 val uid = idUser ?: return@launch
                 val sponsorData = client.postgrest

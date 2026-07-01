@@ -120,7 +120,7 @@ class RegistrasiUnitBisnisFragment : Fragment() {
     }
 
     private fun cekPengajuanBerhentiAktif() {
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             val adaPengajuan = (activity as? com.example.bankjatahapp.ui.nasabah.NasabahActivity)
                 ?.cekAdaPengajuanAktif() ?: false
             if (adaPengajuan && _binding != null) {
@@ -213,7 +213,7 @@ class RegistrasiUnitBisnisFragment : Fragment() {
     // ===== LOAD WILAYAH BERTINGKAT =====
 
     private fun loadProvinsi() {
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             try {
                 binding.spinnerProvinsi.isEnabled = false
                 val hasil = client.postgrest
@@ -266,7 +266,7 @@ class RegistrasiUnitBisnisFragment : Fragment() {
     }
 
     private fun loadKabupaten(idProvinsi: String) {
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             try {
                 val hasil = client.postgrest
                     .from("master_kabupaten")
@@ -299,7 +299,7 @@ class RegistrasiUnitBisnisFragment : Fragment() {
     }
 
     private fun loadKecamatan(idKabupaten: String) {
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             try {
                 val hasil = client.postgrest
                     .from("master_kecamatan")
@@ -329,7 +329,7 @@ class RegistrasiUnitBisnisFragment : Fragment() {
     }
 
     private fun loadWilayahByKecamatan(idKecamatan: String) {
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             try {
                 val hasil = client.postgrest
                     .from("master_wilayah")
@@ -358,7 +358,7 @@ class RegistrasiUnitBisnisFragment : Fragment() {
     }
 
     private fun loadHargaWilayah(idWilayah: String) {
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             try {
                 binding.cardHargaWilayah.visibility = View.GONE
                 binding.tvHargaLoading.visibility   = View.VISIBLE
@@ -565,7 +565,7 @@ class RegistrasiUnitBisnisFragment : Fragment() {
     ) {
         setLoading(true)
 
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             try {
                 val idUser = client.auth.currentUserOrNull()?.id ?: throw Exception("Session habis")
 
