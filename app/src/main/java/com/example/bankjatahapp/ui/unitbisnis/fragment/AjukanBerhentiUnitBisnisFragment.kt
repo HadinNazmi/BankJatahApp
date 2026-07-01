@@ -228,17 +228,21 @@ class AjukanBerhentiUnitBisnisFragment : Fragment() {
     private fun bersihkanPesanError(pesanAsli: String?): String {
         if (pesanAsli == null) return "Gagal mengirim pengajuan. Silakan coba lagi."
 
-        val regex = Regex("Gagal mengajukan:[^\"\\\\]*")
-        val match = regex.find(pesanAsli)
-        if (match != null) {
-            return match.value.trim()
+        // Cari pesan dari trigger PostgreSQL — formatnya: "message":"Gagal mengajukan: ..."
+        val regexMessage = Regex(""""message"\s*:\s*"([^"]+)"""")
+        val matchMessage = regexMessage.find(pesanAsli)
+        if (matchMessage != null) {
+            return matchMessage.groupValues[1].trim()
         }
 
-        return if (pesanAsli.length > 200) {
-            "Anda masih memiliki transaksi (setoran/penarikan/reward) yang sedang berjalan. Selesaikan semua transaksi terlebih dahulu sebelum mengajukan berhenti."
-        } else {
-            "Gagal mengirim pengajuan: $pesanAsli"
+        // Fallback: cari pola "Gagal mengajukan:" langsung
+        val regexGagal = Regex("Gagal mengajukan:[^\"\\\\\\n]*")
+        val matchGagal = regexGagal.find(pesanAsli)
+        if (matchGagal != null) {
+            return matchGagal.value.trim()
         }
+
+        return "Gagal mengirim pengajuan. Pastikan semua transaksi sudah selesai dan coba lagi."
     }
 
     private fun tampilkanDialogKonfirmasi(alasan: String) {

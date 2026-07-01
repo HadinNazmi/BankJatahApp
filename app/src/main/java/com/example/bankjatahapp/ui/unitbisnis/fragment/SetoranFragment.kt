@@ -113,6 +113,10 @@ class SetoranFragment : Fragment() {
         ).show()
     }
 
+    private var isFormDiblokir = false
+
+    private var isNasabahDiblokir = false
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -135,6 +139,8 @@ class SetoranFragment : Fragment() {
         lifecycleScope.launch {
             val adaPengajuan = (activity as? UnitBisnisActivity)?.cekAdaPengajuanAktif() ?: false
             if (adaPengajuan && _binding != null) {
+                // Set flag — ini yang mencegah muatHargaDanKomisi() override blokir ini
+                isFormDiblokir = true
                 setFormEnabled(false)
                 binding.btnKonfirmasi.text = "Tidak dapat setor"
 
@@ -197,8 +203,14 @@ class SetoranFragment : Fragment() {
                     "Nasabah -${formatRupiah(biayaJemputPerKg)}/kg • UB +${formatRupiah(biayaJemputPerKg)}/kg"
                 binding.tvPoinNilai.text = "${formatRupiah(harga.hargaPerKg)}/Kg"
 
-                setFormEnabled(true)
-                binding.btnKonfirmasi.text = "Konfirmasi Setor"
+                if (!isFormDiblokir) {
+                    setFormEnabled(true)
+                    binding.btnKonfirmasi.text = "Konfirmasi Setor"
+                } else {
+                    // Tetap disable, pastikan teks tombol sesuai
+                    setFormEnabled(false)
+                    binding.btnKonfirmasi.text = "Tidak dapat setor"
+                }
 
             } catch (e: Exception) {
                 if (_binding == null) return@launch
@@ -343,9 +355,14 @@ class SetoranFragment : Fragment() {
         binding.layoutDaftarHasil.removeAllViews()
 
         val nasabahDataMap = try {
+            val idList = users.map { it.idUser }
             client.postgrest
                 .from("nasabah_data")
-                .select()
+                .select {
+                    filter {
+                        isIn("id_nasabah", idList)
+                    }
+                }
                 .decodeList<NasabahData>()
                 .associateBy { it.idNasabah }
         } catch (e: Exception) {
@@ -646,31 +663,58 @@ class SetoranFragment : Fragment() {
                 .select {
                     filter {
                         eq("id_user", idNasabah)
-                        or {
-                            eq("status", "menunggu")
-                            eq("status", "diproses")
-                        }
+                        isIn("status", listOf("menunggu", "diproses"))
                     }
                 }
                 .data
+
+            android.util.Log.d("CEK_BERHENTI", "idNasabah=$idNasabah hasil=$hasil")
+
             hasil != "[]" && hasil.isNotBlank()
-        } catch (_: Exception) { false }
+        } catch (e: Exception) {
+            android.util.Log.e("CEK_BERHENTI", "Error: ${e.message}")
+            false
+        }
     }
 
     private suspend fun tampilkanUser(user: User, displayId: String, sponsorInfo: NasabahSponsorInfo?) {
         // ===== CEK NASABAH SEDANG PROSES BERHENTI =====
         val sedangBerhenti = cekNasabahAdaPengajuanBerhenti(user.idUser)
         if (sedangBerhenti) {
-            userTidakDitemukan()
-            if (_binding != null) {
-                androidx.appcompat.app.AlertDialog.Builder(requireContext())
-                    .setTitle("Tidak Dapat Memproses Setoran")
-                    .setMessage("Nasabah ini sedang mengajukan proses berhenti dan tidak dapat melanjutkan transaksi setoran.")
-                    .setPositiveButton("Mengerti", null)
-                    .setCancelable(true)
-                    .show()
+            if (_binding == null) return
+
+            // Reset semua state dulu sebelum tampilkan dialog
+            isNasabahDiblokir  = false
+            idNasabahDipilih   = null
+            namaNasabahDipilih = null
+            binding.layoutInfoNasabah.visibility = View.GONE
+            binding.tvStatusSponsor.visibility   = View.GONE
+            binding.etIdNasabah.setText("")
+            if (!isFormDiblokir) {
+                binding.btnKonfirmasi.isEnabled = true
+                binding.btnKonfirmasi.text      = "Konfirmasi Setor"
             }
+
+            // Tampilkan popup dan kembali ke home setelah klik OK
+            androidx.appcompat.app.AlertDialog.Builder(requireContext())
+                .setTitle("Nasabah Sedang Mengajukan Berhenti")
+                .setMessage("Nasabah \"${user.namaLengkap}\" sedang dalam proses pengajuan berhenti dari platform.\n\nSetoran tidak dapat diproses untuk nasabah ini.")
+                .setPositiveButton("Mengerti") { _, _ ->
+                    (activity as? com.example.bankjatahapp.ui.unitbisnis.UnitBisnisActivity)
+                        ?.navigateTo(com.example.bankjatahapp.R.id.nav_home)
+                }
+                .setCancelable(false)
+                .show()
             return
+        }
+
+        // Nasabah normal — reset flag blokir nasabah
+        isNasabahDiblokir = false
+
+        // Pulihkan tombol konfirmasi (kecuali UB sendiri yang sedang diblokir)
+        if (!isFormDiblokir) {
+            binding.btnKonfirmasi.isEnabled = true
+            binding.btnKonfirmasi.text      = "Konfirmasi Setor"
         }
 
         idNasabahDipilih   = user.idUser
@@ -684,19 +728,24 @@ class SetoranFragment : Fragment() {
 
         if (sponsorInfo != null) {
             binding.tvStatusSponsor.visibility = View.VISIBLE
-
             when {
                 user.idUser == idUnitSaatIni -> {
                     binding.tvStatusSponsor.text = "⚠️ Ini akun Anda sendiri — sponsor tidak bisa diassign ke diri sendiri"
-                    binding.tvStatusSponsor.setTextColor(ContextCompat.getColor(requireContext(), android.R.color.holo_orange_dark))
+                    binding.tvStatusSponsor.setTextColor(
+                        ContextCompat.getColor(requireContext(), android.R.color.holo_orange_dark)
+                    )
                 }
                 sponsorInfo.idSponsor == null -> {
                     binding.tvStatusSponsor.text = "⚠️ Nasabah belum memiliki sponsor — UB ini akan otomatis menjadi sponsornya"
-                    binding.tvStatusSponsor.setTextColor(ContextCompat.getColor(requireContext(), android.R.color.holo_orange_dark))
+                    binding.tvStatusSponsor.setTextColor(
+                        ContextCompat.getColor(requireContext(), android.R.color.holo_orange_dark)
+                    )
                 }
                 else -> {
                     binding.tvStatusSponsor.text = "✓ Nasabah sudah memiliki sponsor"
-                    binding.tvStatusSponsor.setTextColor(ContextCompat.getColor(requireContext(), android.R.color.holo_green_dark))
+                    binding.tvStatusSponsor.setTextColor(
+                        ContextCompat.getColor(requireContext(), android.R.color.holo_green_dark)
+                    )
                 }
             }
         } else {
@@ -709,9 +758,16 @@ class SetoranFragment : Fragment() {
     private fun userTidakDitemukan() {
         idNasabahDipilih   = null
         namaNasabahDipilih = null
+        isNasabahDiblokir  = false
         binding.layoutInfoNasabah.visibility = View.GONE
         binding.tvStatusSponsor.visibility   = View.GONE
-        binding.etIdNasabah.setText("")   // kosongkan total supaya scan ulang selalu bersih
+        binding.etIdNasabah.setText("")
+
+        // Pulihkan tombol konfirmasi jika UB sendiri tidak sedang diblokir
+        if (!isFormDiblokir) {
+            binding.btnKonfirmasi.isEnabled = true
+            binding.btnKonfirmasi.text      = "Konfirmasi Setor"
+        }
     }
 
     private fun setTombolCek(loading: Boolean) {
