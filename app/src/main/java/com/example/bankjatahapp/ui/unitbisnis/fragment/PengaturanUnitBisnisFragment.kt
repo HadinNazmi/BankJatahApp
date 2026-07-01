@@ -315,6 +315,10 @@ class PengaturanUnitBisnisFragment : Fragment() {
             }
         }
 
+        binding.itemGantiPassword.setOnClickListener {
+            tampilkanDialogGantiPassword()
+        }
+
         // --- Data Unit Bisnis ---
         binding.itemEditNamaUsaha.setOnClickListener {
             tampilkanDialogEdit("Nama Usaha / Outlet", cachedUnit?.namaUsaha ?: "", InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_CAP_WORDS) { nilaiBaru ->
@@ -451,6 +455,118 @@ class PengaturanUnitBisnisFragment : Fragment() {
             builder.dismiss()
         }
         builder.show()
+    }
+
+    // ================= DIALOG GANTI PASSWORD =================
+    private fun tampilkanDialogGantiPassword() {
+        val dialogView = LayoutInflater.from(requireContext())
+            .inflate(com.example.bankjatahapp.R.layout.dialog_ganti_password, null)
+
+        val tilPasswordLama     = dialogView.findViewById<com.google.android.material.textfield.TextInputLayout>(com.example.bankjatahapp.R.id.tilPasswordLama)
+        val etPasswordLama      = dialogView.findViewById<com.google.android.material.textfield.TextInputEditText>(com.example.bankjatahapp.R.id.etPasswordLama)
+        val tilPasswordBaru     = dialogView.findViewById<com.google.android.material.textfield.TextInputLayout>(com.example.bankjatahapp.R.id.tilPasswordBaru)
+        val etPasswordBaru      = dialogView.findViewById<com.google.android.material.textfield.TextInputEditText>(com.example.bankjatahapp.R.id.etPasswordBaru)
+        val tilKonfirmasiPassword = dialogView.findViewById<com.google.android.material.textfield.TextInputLayout>(com.example.bankjatahapp.R.id.tilKonfirmasiPassword)
+        val etKonfirmasiPassword  = dialogView.findViewById<com.google.android.material.textfield.TextInputEditText>(com.example.bankjatahapp.R.id.etKonfirmasiPassword)
+        val btnBatal            = dialogView.findViewById<android.widget.Button>(com.example.bankjatahapp.R.id.btnDialogBatalPassword)
+        val btnSimpan           = dialogView.findViewById<android.widget.Button>(com.example.bankjatahapp.R.id.btnDialogSimpanPassword)
+        val progressBar         = dialogView.findViewById<android.widget.ProgressBar>(com.example.bankjatahapp.R.id.progressBarPassword)
+
+        val dialog = AlertDialog.Builder(requireContext())
+            .setView(dialogView)
+            .create()
+        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+
+        btnBatal.setOnClickListener { dialog.dismiss() }
+
+        btnSimpan.setOnClickListener {
+            val passwordLama      = etPasswordLama.text.toString()
+            val passwordBaru      = etPasswordBaru.text.toString()
+            val konfirmasiPassword = etKonfirmasiPassword.text.toString()
+
+            // Reset error sebelumnya
+            tilPasswordLama.error     = null
+            tilPasswordBaru.error     = null
+            tilKonfirmasiPassword.error = null
+
+            // Validasi input lokal dulu
+            var valid = true
+            if (passwordLama.isEmpty()) {
+                tilPasswordLama.error = "Password lama tidak boleh kosong"
+                valid = false
+            }
+            if (passwordBaru.isEmpty()) {
+                tilPasswordBaru.error = "Password baru tidak boleh kosong"
+                valid = false
+            } else if (passwordBaru.length < 8) {
+                tilPasswordBaru.error = "Password baru minimal 8 karakter"
+                valid = false
+            }
+            if (konfirmasiPassword != passwordBaru) {
+                tilKonfirmasiPassword.error = "Konfirmasi password tidak cocok"
+                valid = false
+            }
+            if (!valid) return@setOnClickListener
+
+            // Nonaktifkan tombol, tampilkan loading
+            btnSimpan.isEnabled = false
+            btnBatal.isEnabled  = false
+            progressBar.visibility = android.view.View.VISIBLE
+
+            lifecycleScope.launch {
+                try {
+                    val email = cachedUser?.email
+                        ?: throw Exception("Data akun tidak ditemukan, silakan muat ulang halaman")
+
+                    // ===== STEP 1: Verifikasi password lama =====
+                    // Pakai signInWith untuk mengecek apakah password lama benar
+                    try {
+                        com.example.bankjatahapp.data.remote.SupabaseClient.client.auth
+                            .signInWith(io.github.jan.supabase.auth.providers.builtin.Email) {
+                                this.email    = email
+                                this.password = passwordLama
+                            }
+                    } catch (e: Exception) {
+                        // signInWith gagal = password lama salah
+                        progressBar.visibility = android.view.View.GONE
+                        btnSimpan.isEnabled    = true
+                        btnBatal.isEnabled     = true
+                        tilPasswordLama.error  = "Password lama tidak sesuai"
+                        etPasswordLama.requestFocus()
+                        return@launch
+                    }
+
+                    // ===== STEP 2: Update password baru =====
+                    // Session sudah aktif dari signInWith di atas, langsung update
+                    com.example.bankjatahapp.data.remote.SupabaseClient.client.auth.updateUser {
+                        password = passwordBaru
+                    }
+
+                    progressBar.visibility = android.view.View.GONE
+                    btnSimpan.isEnabled    = true
+                    btnBatal.isEnabled     = true
+
+                    dialog.dismiss()
+                    android.widget.Toast.makeText(
+                        requireContext(),
+                        "✓ Password berhasil diubah!",
+                        android.widget.Toast.LENGTH_SHORT
+                    ).show()
+
+                } catch (e: Exception) {
+                    progressBar.visibility = android.view.View.GONE
+                    btnSimpan.isEnabled    = true
+                    btnBatal.isEnabled     = true
+                    android.widget.Toast.makeText(
+                        requireContext(),
+                        "Gagal mengubah password: ${e.message}",
+                        android.widget.Toast.LENGTH_LONG
+                    ).show()
+                }
+            }
+        }
+
+        dialog.show()
     }
 
     // ================= UPDATE KE SUPABASE =================
