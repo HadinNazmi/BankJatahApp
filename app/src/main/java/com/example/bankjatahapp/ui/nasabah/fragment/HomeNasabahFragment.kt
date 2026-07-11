@@ -34,6 +34,11 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import java.text.NumberFormat
 import java.util.Locale
+import android.Manifest
+import android.content.pm.PackageManager
+import androidx.core.content.ContextCompat
+import com.google.android.gms.location.LocationServices
+import kotlin.math.*
 
 class HomeNasabahFragment : Fragment() {
 
@@ -219,7 +224,7 @@ class HomeNasabahFragment : Fragment() {
                             user.namaLengkap
                         } catch (_: Exception) { "Unit Bisnis" }
                     }
-                    unit to nama
+                    Triple(unit, nama, null)  // ← UBAH DI SINI
                 }
 
                 if (_binding == null) return@launch
@@ -230,6 +235,15 @@ class HomeNasabahFragment : Fragment() {
 
             } catch (_: Exception) {}
         }
+    }
+
+    private fun hitungJarakKm(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Double {
+        val r = 6371.0
+        val dLat = Math.toRadians(lat2 - lat1)
+        val dLon = Math.toRadians(lon2 - lon1)
+        val a = sin(dLat / 2).pow(2) +
+                cos(Math.toRadians(lat1)) * cos(Math.toRadians(lat2)) * sin(dLon / 2).pow(2)
+        return r * 2 * atan2(sqrt(a), sqrt(1 - a))
     }
 
     private fun tampilkanData(

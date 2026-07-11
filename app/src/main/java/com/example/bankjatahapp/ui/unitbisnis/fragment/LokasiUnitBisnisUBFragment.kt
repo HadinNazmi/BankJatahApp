@@ -15,6 +15,11 @@ import com.example.bankjatahapp.databinding.FragmentLokasiUnitBisnisBinding
 import com.example.bankjatahapp.databinding.FragmentLokasiUnitBisnisUBBinding
 import io.github.jan.supabase.postgrest.postgrest
 import kotlinx.coroutines.launch
+import android.Manifest
+import android.content.pm.PackageManager
+import androidx.core.content.ContextCompat
+import com.google.android.gms.location.LocationServices
+import kotlin.math.*
 
 class LokasiUnitBisnisUBFragment : Fragment() {
 
@@ -44,14 +49,11 @@ class LokasiUnitBisnisUBFragment : Fragment() {
                 binding.rvUnitBisnis.visibility = View.GONE
                 binding.tvKosong.visibility     = View.GONE
 
-                // Ambil semua UB yang sudah disetujui
-                // SEMENTARA hapus filter untuk test apakah data masuk
                 val listUnit = client.postgrest
                     .from("unit_bisnis_data")
-                    .select()  // ← tanpa filter dulu
+                    .select()
                     .decodeList<UnitBisnisData>()
 
-                // Untuk setiap UB, ambil nama dari nama_usaha atau fallback ke nama user
                 val listWithNama = listUnit.map { unit ->
                     val namaDisplay = if (!unit.namaUsaha.isNullOrEmpty()) {
                         unit.namaUsaha!!
@@ -62,12 +64,23 @@ class LokasiUnitBisnisUBFragment : Fragment() {
                                 .select { filter { eq("id_user", unit.idUnitBisnis) } }
                                 .decodeSingle<User>()
                             user.namaLengkap
-                        } catch (_: Exception) {
-                            "Unit Bisnis"
-                        }
+                        } catch (_: Exception) { "Unit Bisnis" }
                     }
                     unit to namaDisplay
                 }
+
+                // Ambil lokasi user
+                val lokasiUser = ambilLokasiUser()
+
+                // Hitung jarak dan sort
+                val listDenganJarak = listWithNama.map { (unit, nama) ->
+                    val jarak = if (lokasiUser != null &&
+                        unit.lokasiLat != 0.0 && unit.lokasiLong != 0.0) {
+                        hitungJarakKm(lokasiUser.first, lokasiUser.second,
+                            unit.lokasiLat, unit.lokasiLong)
+                    } else null
+                    Triple(unit, nama, jarak)
+                }.sortedWith(compareBy(nullsLast()) { it.third })
 
                 binding.progressBar.visibility = View.GONE
                 binding.tvJumlah.text = "${listUnit.size} unit bisnis tersedia"
@@ -76,19 +89,48 @@ class LokasiUnitBisnisUBFragment : Fragment() {
                     binding.tvKosong.visibility = View.VISIBLE
                 } else {
                     binding.rvUnitBisnis.visibility = View.VISIBLE
-                    binding.rvUnitBisnis.adapter = LokasiUnitBisnisAdapter(listWithNama)
+                    binding.rvUnitBisnis.adapter = LokasiUnitBisnisAdapter(listDenganJarak)
                 }
 
             } catch (e: Exception) {
                 binding.progressBar.visibility = View.GONE
-                Toast.makeText(
-                    requireContext(),
-                    "Gagal memuat: ${e.message}",
-                    Toast.LENGTH_LONG
-                ).show()
+                Toast.makeText(requireContext(), "Gagal memuat: ${e.message}", Toast.LENGTH_LONG).show()
             }
         }
     }
+
+    private suspend fun ambilLokasiUser(): Pair<Double, Double>? {
+        val izinOk = ContextCompat.checkSelfPermission(
+            requireContext(), Manifest.permission.ACCESS_FINE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED ||
+                ContextCompat.checkSelfPermission(
+                    requireContext(), Manifest.permission.ACCESS_COARSE_LOCATION
+                ) == PackageManager.PERMISSION_GRANTED
+
+        if (!izinOk) return null
+
+        return try {
+            kotlinx.coroutines.suspendCancellableCoroutine { cont ->
+                LocationServices.getFusedLocationProviderClient(requireActivity())
+                    .lastLocation
+                    .addOnSuccessListener { loc ->
+                        cont.resume(if (loc != null) Pair(loc.latitude, loc.longitude) else null) {}
+                    }
+                    .addOnFailureListener { cont.resume(null) {} }
+            }
+        } catch (_: Exception) { null }
+    }
+
+    private fun hitungJarakKm(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Double {
+        val r = 6371.0
+        val dLat = Math.toRadians(lat2 - lat1)
+        val dLon = Math.toRadians(lon2 - lon1)
+        val a = sin(dLat / 2).pow(2) +
+                cos(Math.toRadians(lat1)) * cos(Math.toRadians(lat2)) * sin(dLon / 2).pow(2)
+        return r * 2 * atan2(sqrt(a), sqrt(1 - a))
+    }
+
+
 
     override fun onDestroyView() {
         super.onDestroyView()

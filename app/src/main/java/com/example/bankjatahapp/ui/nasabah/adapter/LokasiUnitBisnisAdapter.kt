@@ -15,7 +15,8 @@ import com.example.bankjatahapp.R
 import com.example.bankjatahapp.data.model.UnitBisnisData
 
 class LokasiUnitBisnisAdapter(
-    private val list: List<Pair<UnitBisnisData, String?>>
+    private val list: List<Triple<UnitBisnisData, String?, Double?>>
+    // Triple: UnitBisnisData, NamaDisplay, JarakKm (null = tidak diketahui)
 ) : RecyclerView.Adapter<LokasiUnitBisnisAdapter.VH>() {
 
     private var expandedPosition: Int = -1
@@ -23,6 +24,7 @@ class LokasiUnitBisnisAdapter(
     class VH(v: View) : RecyclerView.ViewHolder(v) {
         val tvNama: TextView           = v.findViewById(R.id.tvNamaUnit)
         val tvTipe: TextView           = v.findViewById(R.id.tvTipeUnit)
+        val tvJarak: TextView          = v.findViewById(R.id.tvJarak)
         val layoutDetail: LinearLayout = v.findViewById(R.id.layoutDetail)
         val tvAlamat: TextView         = v.findViewById(R.id.tvAlamat)
         val tvJamOps: TextView         = v.findViewById(R.id.tvJamOperasional)
@@ -38,13 +40,20 @@ class LokasiUnitBisnisAdapter(
     )
 
     override fun onBindViewHolder(holder: VH, position: Int) {
-        val (unit, nama) = list[position]
+        val (unit, nama, jarakKm) = list[position]
         val ctx = holder.itemView.context
 
         holder.tvNama.text = nama ?: "Unit Bisnis"
         holder.tvTipe.text = when (unit.tipeUnit) {
             "kabupaten" -> "UB Kabupaten"
             else        -> "UB Kelurahan"
+        }
+
+        // Tampilkan jarak
+        holder.tvJarak.text = when {
+            jarakKm == null          -> " Lokasi tidak tersedia"
+            jarakKm < 1.0            -> " ${(jarakKm * 1000).toInt()} m dari Anda"
+            else                     -> " ${"%.1f".format(jarakKm)} km dari Anda"
         }
 
         val isExpanded = position == expandedPosition

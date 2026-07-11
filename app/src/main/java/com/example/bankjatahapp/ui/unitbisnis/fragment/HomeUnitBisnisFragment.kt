@@ -35,6 +35,11 @@ import java.util.Locale
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.bankjatahapp.ui.nasabah.fragment.LokasiUnitBisnisAdapter
 import com.example.bankjatahapp.ui.nasabah.fragment.LokasiUnitBisnisUBFragment
+import android.Manifest
+import android.content.pm.PackageManager
+import androidx.core.content.ContextCompat
+import com.google.android.gms.location.LocationServices
+import kotlin.math.*
 
 class HomeUnitBisnisFragment : Fragment() {
 
@@ -198,7 +203,6 @@ class HomeUnitBisnisFragment : Fragment() {
                     .from("unit_bisnis_data")
                     .select()
                     .decodeList<UnitBisnisData>()
-                    .take(5)
 
                 val listWithNama = listUnit.map { unit ->
                     val nama = if (!unit.namaUsaha.isNullOrEmpty()) {
@@ -215,14 +219,48 @@ class HomeUnitBisnisFragment : Fragment() {
                     unit to nama
                 }
 
+                // Cek izin lokasi
+                val izinOk = ContextCompat.checkSelfPermission(
+                    requireContext(), Manifest.permission.ACCESS_FINE_LOCATION
+                ) == PackageManager.PERMISSION_GRANTED
+
+                val lokasiUser: Pair<Double, Double>? = if (izinOk) {
+                    try {
+                        kotlinx.coroutines.suspendCancellableCoroutine { cont ->
+                            LocationServices.getFusedLocationProviderClient(requireActivity())
+                                .lastLocation
+                                .addOnSuccessListener { loc ->
+                                    cont.resume(if (loc != null) Pair(loc.latitude, loc.longitude) else null) {}
+                                }
+                                .addOnFailureListener { cont.resume(null) {} }
+                        }
+                    } catch (_: Exception) { null }
+                } else null
+
+                val listDenganJarak = listWithNama.map { (unit, nama) ->
+                    val jarak = if (lokasiUser != null &&
+                        unit.lokasiLat != 0.0 && unit.lokasiLong != 0.0) {
+                        hitungJarakKm(lokasiUser.first, lokasiUser.second,
+                            unit.lokasiLat, unit.lokasiLong)
+                    } else null
+                    Triple(unit, nama, jarak)
+                }.sortedWith(compareBy(nullsLast()) { it.third }).take(5)
+
                 if (_binding == null) return@launch
-                binding.rvUnitBisnisPreview.layoutManager =
-                    LinearLayoutManager(requireContext())
-                binding.rvUnitBisnisPreview.adapter =
-                    LokasiUnitBisnisAdapter(listWithNama)
+                binding.rvUnitBisnisPreview.layoutManager = LinearLayoutManager(requireContext())
+                binding.rvUnitBisnisPreview.adapter = LokasiUnitBisnisAdapter(listDenganJarak)
 
             } catch (_: Exception) {}
         }
+    }
+
+    private fun hitungJarakKm(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Double {
+        val r = 6371.0
+        val dLat = Math.toRadians(lat2 - lat1)
+        val dLon = Math.toRadians(lon2 - lon1)
+        val a = sin(dLat / 2).pow(2) +
+                cos(Math.toRadians(lat1)) * cos(Math.toRadians(lat2)) * sin(dLon / 2).pow(2)
+        return r * 2 * atan2(sqrt(a), sqrt(1 - a))
     }
 
     private fun tampilkanData(
