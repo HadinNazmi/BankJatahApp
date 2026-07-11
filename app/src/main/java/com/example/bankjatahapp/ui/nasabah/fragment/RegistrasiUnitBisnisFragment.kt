@@ -401,13 +401,13 @@ class RegistrasiUnitBisnisFragment : Fragment() {
 
     // ===== KOMPRESI GAMBAR =====
     private fun kompresGambar(bytes: ByteArray, maxSizeKb: Int = 800): ByteArray {
+        // ===== STEP 1: Baca dimensi tanpa decode penuh =====
         val options = android.graphics.BitmapFactory.Options().apply {
             inJustDecodeBounds = true
         }
         android.graphics.BitmapFactory.decodeByteArray(bytes, 0, bytes.size, options)
 
-        // ===== STEP 1: Hitung inSampleSize untuk pre-scale sebelum decode penuh =====
-        // Target resolusi maksimal 1080px di sisi terpanjang
+        // ===== STEP 2: Hitung inSampleSize (target max 1080px) =====
         val maxPx = 1080
         var sampleSize = 1
         val tinggi = options.outHeight
@@ -420,13 +420,13 @@ class RegistrasiUnitBisnisFragment : Fragment() {
             }
         }
 
-        // ===== STEP 2: Decode dengan sample size =====
+        // ===== STEP 3: Decode dengan sample size =====
         val decodeOptions = android.graphics.BitmapFactory.Options().apply {
             inSampleSize = sampleSize
         }
         var bitmap = android.graphics.BitmapFactory.decodeByteArray(bytes, 0, bytes.size, decodeOptions)
 
-        // ===== STEP 3: Scale ulang jika masih lebih besar dari maxPx =====
+        // ===== STEP 4: Scale ulang jika masih lebih besar dari maxPx =====
         val w = bitmap.width
         val h = bitmap.height
         if (w > maxPx || h > maxPx) {
@@ -436,7 +436,10 @@ class RegistrasiUnitBisnisFragment : Fragment() {
             bitmap = android.graphics.Bitmap.createScaledBitmap(bitmap, newW, newH, true)
         }
 
-        // ===== STEP 4: Compress quality bertahap sampai di bawah maxSizeKb =====
+        // ===== STEP 5: TAMBAHKAN WATERMARK =====
+        bitmap = tambahkanWatermark(bitmap, "Bukti Pendaftaran Unit Bisnis")
+
+        // ===== STEP 6: Compress quality bertahap sampai di bawah maxSizeKb =====
         var quality = 85
         var hasil: ByteArray
         do {
@@ -445,6 +448,123 @@ class RegistrasiUnitBisnisFragment : Fragment() {
             hasil = out.toByteArray()
             quality -= 10
         } while (hasil.size > maxSizeKb * 1024 && quality > 10)
+
+        return hasil
+    }
+
+    private fun tambahkanWatermark(src: android.graphics.Bitmap, tipeDokumen: String = "Dokumen Resmi"): android.graphics.Bitmap {
+        val lebar  = src.width
+        val tinggi = src.height
+
+        val hasil = src.copy(android.graphics.Bitmap.Config.ARGB_8888, true)
+        val canvas = android.graphics.Canvas(hasil)
+
+        val ukuranLogo = maxOf((lebar * 0.08f).toInt(), 40)
+        val padding    = (lebar * 0.025f).toInt()
+
+        // ===== 1. LOAD DAN PUTIHKAN LOGO =====
+        var logoPutih: android.graphics.Bitmap? = null
+        try {
+            val logoAsli = android.graphics.BitmapFactory.decodeResource(
+                requireContext().resources,
+                R.drawable.bankjatahlogo
+            )
+            if (logoAsli != null) {
+                // Buat salinan ARGB_8888 agar pixel bisa dimanipulasi
+                val logoEditabel = logoAsli.copy(android.graphics.Bitmap.Config.ARGB_8888, true)
+                val totalPixel   = logoEditabel.width * logoEditabel.height
+                val arrayPixel   = IntArray(totalPixel)
+
+                // Baca semua pixel sekaligus (lebih efisien dari getPixel loop)
+                logoEditabel.getPixels(arrayPixel, 0, logoEditabel.width, 0, 0, logoEditabel.width, logoEditabel.height)
+
+                // Ganti semua pixel yang tidak transparan menjadi PUTIH
+                // Pertahankan nilai alpha aslinya agar tepi logo tetap halus (anti-alias)
+                for (i in arrayPixel.indices) {
+                    val alpha = android.graphics.Color.alpha(arrayPixel[i])
+                    if (alpha > 10) { // threshold kecil untuk abaikan pixel semi-transparan tepi
+                        arrayPixel[i] = android.graphics.Color.argb(alpha, 255, 255, 255)
+                    }
+                }
+
+                logoEditabel.setPixels(arrayPixel, 0, logoEditabel.width, 0, 0, logoEditabel.width, logoEditabel.height)
+
+                logoPutih = android.graphics.Bitmap.createScaledBitmap(
+                    logoEditabel, ukuranLogo, ukuranLogo, true
+                )
+            }
+        } catch (e: Exception) {
+            // Lanjut tanpa logo jika gagal
+        }
+
+        // ===== 2. UKURAN DAN POSISI ELEMEN TEKS =====
+        val ukuranTeks    = lebar * 0.035f
+        val ukuranTeksSub = ukuranTeks * 0.75f
+
+        val paintTeks = android.graphics.Paint().apply {
+            color       = android.graphics.Color.WHITE
+            textSize    = ukuranTeks
+            isAntiAlias = true
+            typeface    = android.graphics.Typeface.create(android.graphics.Typeface.DEFAULT, android.graphics.Typeface.BOLD)
+            setShadowLayer(2f, 1f, 1f, android.graphics.Color.BLACK)
+        }
+        val paintTeksSub = android.graphics.Paint().apply {
+            color       = android.graphics.Color.argb(210, 255, 255, 255)
+            textSize    = ukuranTeksSub
+            isAntiAlias = true
+            typeface    = android.graphics.Typeface.DEFAULT
+        }
+
+        val teksUtama = "Bank Jatah Indonesia"
+        val teksSub = "$tipeDokumen • ${
+            java.text.SimpleDateFormat("dd/MM/yyyy", java.util.Locale.getDefault()).format(java.util.Date())
+        }"
+
+        val lebarTeksUtama = paintTeks.measureText(teksUtama)
+        val lebarTeksSub   = paintTeksSub.measureText(teksSub)
+
+        // Lebar kotak = logo + teks terlebar + padding
+        val gapLogoTeks  = (padding * 0.8f).toInt()
+        val lebarIsiTeks = maxOf(lebarTeksUtama, lebarTeksSub)
+        val lebarKotak   = (if (logoPutih != null) ukuranLogo + gapLogoTeks else 0) + lebarIsiTeks + (padding * 2f)
+        val tinggiKotak  = maxOf(ukuranLogo.toFloat(), ukuranTeks * 3.2f) + (padding * 1f)
+
+        val kotakX = lebar  - lebarKotak - padding
+        val kotakY = tinggi - tinggiKotak - padding
+
+        // ===== 3. BACKGROUND KOTAK SEMI-TRANSPARAN =====
+        val paintBg = android.graphics.Paint().apply {
+            color = android.graphics.Color.argb(150, 0, 0, 0) // hitam 59% opacity
+            style = android.graphics.Paint.Style.FILL
+        }
+        val rectF = android.graphics.RectF(
+            kotakX.toFloat(), kotakY.toFloat(),
+            lebar.toFloat() - padding,
+            tinggi.toFloat() - padding
+        )
+        canvas.drawRoundRect(rectF, 14f, 14f, paintBg)
+
+        // ===== 4. GAMBAR LOGO PUTIH (vertikal center di dalam kotak) =====
+        if (logoPutih != null) {
+            val logoX = kotakX + padding
+            val logoY = kotakY + (tinggiKotak - ukuranLogo) / 2f
+            canvas.drawBitmap(logoPutih, logoX.toFloat(), logoY, null)
+        }
+
+        // ===== 5. GAMBAR TEKS (di sebelah kanan logo) =====
+        val teksStartX = if (logoPutih != null) {
+            kotakX + padding + ukuranLogo + gapLogoTeks
+        } else {
+            kotakX + padding
+        }.toFloat()
+
+        // Teks utama: posisi vertikal sedikit di atas tengah kotak
+        val tengahKotakY   = kotakY + tinggiKotak / 2f
+        val teksUtamaY     = tengahKotakY - (ukuranTeks * 0.15f)
+        val teksSubY       = teksUtamaY + ukuranTeks * 1.2f
+
+        canvas.drawText(teksUtama, teksStartX, teksUtamaY, paintTeks)
+        canvas.drawText(teksSub,   teksStartX, teksSubY,   paintTeksSub)
 
         return hasil
     }
