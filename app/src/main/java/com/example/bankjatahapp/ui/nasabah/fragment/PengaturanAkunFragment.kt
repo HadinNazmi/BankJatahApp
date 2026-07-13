@@ -13,6 +13,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import com.example.bankjatahapp.R
 import com.example.bankjatahapp.data.model.MasterBank
 import com.example.bankjatahapp.data.model.NasabahData
 import com.example.bankjatahapp.data.model.User
@@ -20,6 +21,7 @@ import com.example.bankjatahapp.data.remote.SupabaseClient.client
 import com.example.bankjatahapp.databinding.DialogEditFieldBinding
 import com.example.bankjatahapp.databinding.FragmentPengaturanAkunBinding
 import com.example.bankjatahapp.ui.component.AvatarUtils
+import com.example.bankjatahapp.ui.component.TourHelper
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.postgrest.postgrest
 import kotlinx.coroutines.launch
@@ -194,6 +196,16 @@ class PengaturanAkunFragment : Fragment() {
         binding.itemGantiPassword.setOnClickListener {
             tampilkanDialogGantiPassword()
         }
+
+        binding.itemTourPanduan.setOnClickListener {
+            val activity = activity ?: return@setOnClickListener
+            TourHelper.resetSemuaTour(activity)
+            // Navigasi langsung ke Home, bukan sekedar popBackStack
+            (activity as? com.example.bankjatahapp.ui.nasabah.NasabahActivity)
+                ?.navigateTo(R.id.nav_home)
+        }
+
+// Di PengaturanUnitBisnisFragment (UB) — sama persis
     }
 
     // ================= FUNGSI GENERIK DIALOG INPUT POP UP TEXT =================

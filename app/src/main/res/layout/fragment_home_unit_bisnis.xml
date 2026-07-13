@@ -289,7 +289,7 @@
                     android:layout_width="match_parent" android:layout_height="wrap_content" android:padding="16dp">
                     <ImageView android:id="@+id/ivKoin"
                         android:layout_width="36dp" android:layout_height="36dp"
-                        android:src="@drawable/ic_koin"
+                        android:src="@drawable/ic_poin_reward"
                         app:layout_constraintBottom_toBottomOf="@+id/tvTotalPoinLabel"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toTopOf="parent"

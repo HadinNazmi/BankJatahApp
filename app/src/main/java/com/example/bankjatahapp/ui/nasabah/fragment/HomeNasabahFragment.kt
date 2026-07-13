@@ -37,6 +37,7 @@ import java.util.Locale
 import android.Manifest
 import android.content.pm.PackageManager
 import androidx.core.content.ContextCompat
+import com.example.bankjatahapp.ui.component.TourHelper
 import com.google.android.gms.location.LocationServices
 import kotlin.math.*
 
@@ -73,8 +74,38 @@ class HomeNasabahFragment : Fragment() {
             // Pakai cache — tidak fetch ulang
             tampilkanData(dataUser!!, dataDompet!!, dataNasabah!!, dataRewardTersedia)
             loadUnitBisnisPreview()
+            cekDanMulaiTour()
         } else {
             loadData()
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Cek tour saat fragment kembali aktif (misal setelah dari pengaturan)
+        if (sudahLoad && dataUser != null) {
+            cekDanMulaiTour()
+        }
+    }
+
+    private fun cekDanMulaiTour() {
+        val activity = activity ?: return
+        if (!TourHelper.sudahLihatTourNasabah(activity)) {
+            // Delay kecil supaya layout sudah ter-render sempurna
+            binding.root.postDelayed({
+                if (_binding == null) return@postDelayed
+                TourHelper.mulaiTourNasabahHome(
+                    activity     = activity,
+                    viewSaldoTabungan  = binding.cardSaldoTabungan,   // sesuaikan ID view
+                    viewSaldoBonus     = binding.cardSaldoBonus,
+                    viewLevel          = binding.tvLevelLabel,
+                    viewPoin           = binding.tvTotalPoin,
+                    viewTombolAksi     = binding.layoutMenuAksi,
+                    viewUbTerdekat     = binding.rvUnitBisnisPreview
+                ) {
+                    // onSelesai — tidak perlu aksi tambahan
+                }
+            }, 800)
         }
     }
 
@@ -196,6 +227,7 @@ class HomeNasabahFragment : Fragment() {
                 sudahLoad          = true
 
                 tampilkanData(user, dompet, nasabahData!!, rewardTersedia)
+                cekDanMulaiTour()
 
             } catch (e: Exception) {
                 Toast.makeText(requireContext(), "Gagal memuat data: ${e.message}", Toast.LENGTH_LONG).show()

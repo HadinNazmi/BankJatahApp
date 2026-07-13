@@ -101,4 +101,6 @@ dependencies {
 
     implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
 
+    implementation("com.getkeepsafe.taptargetview:taptargetview:1.13.3")
+
 }

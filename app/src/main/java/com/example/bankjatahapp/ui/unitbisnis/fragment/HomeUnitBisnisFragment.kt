@@ -38,6 +38,7 @@ import com.example.bankjatahapp.ui.nasabah.fragment.LokasiUnitBisnisUBFragment
 import android.Manifest
 import android.content.pm.PackageManager
 import androidx.core.content.ContextCompat
+import com.example.bankjatahapp.ui.component.TourHelper
 import com.google.android.gms.location.LocationServices
 import kotlin.math.*
 
@@ -71,8 +72,33 @@ class HomeUnitBisnisFragment : Fragment() {
         if (sudahLoad && dataUser != null) {
             tampilkanData(dataUser!!, dataDompet!!, dataNasabah!!, dataRewardTersedia)
             loadUnitBisnisPreview()
+
+
         } else {
             loadData()
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (sudahLoad && dataUser != null) {
+            cekDanMulaiTourUb()
+        }
+    }
+    private fun cekDanMulaiTourUb() {
+        val activity = activity ?: return
+        if (!TourHelper.sudahLihatTourUb(activity)) {
+            binding.root.postDelayed({
+                if (_binding == null) return@postDelayed
+                TourHelper.mulaiTourUbHome(
+                    activity           = activity,
+                    viewSaldoTabungan  = binding.tvSaldoTabungan,
+                    viewSaldoKomisi    = binding.tvSaldoKomisi,
+                    viewSaldoBonus     = binding.tvSaldoBonus,
+                    viewTombolSetoran  = binding.btnSetoran,
+                    viewTombolPenarikan = binding.btnRequestPenarikan
+                ) {}
+            }, 800)
         }
     }
 
@@ -189,6 +215,7 @@ class HomeUnitBisnisFragment : Fragment() {
                 sudahLoad          = true
 
                 tampilkanData(user, dompet, nasabah, rewardTersedia)
+                cekDanMulaiTourUb()
 
             } catch (e: Exception) {
                 Toast.makeText(requireContext(), "Gagal memuat data: ${e.message}", Toast.LENGTH_LONG).show()
