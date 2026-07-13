@@ -80,9 +80,13 @@ class RewardFragment : Fragment() {
         adapter = ProdukRewardAdapter(emptyList()) { produk ->
             onTukarKlik(produk)
         }
-        binding.rvProdukReward.apply {
-            layoutManager = GridLayoutManager(requireContext(), 2)
-            adapter       = this@RewardFragment.adapter
+        binding.rvProdukReward.layoutManager = GridLayoutManager(requireContext(), 2)
+        binding.rvProdukReward.adapter = adapter
+
+        binding.btnViewMore.visibility = View.GONE
+        binding.btnViewMore.setOnClickListener {
+            adapter.setTampilSemua(true)
+            binding.btnViewMore.visibility = View.GONE
         }
     }
 
@@ -137,6 +141,12 @@ class RewardFragment : Fragment() {
                     binding.layoutEmpty.visibility    = View.GONE
                     binding.rvProdukReward.visibility = View.VISIBLE
                     adapter.updateData(produkList)
+                    if (produkList.size > 4) {
+                        binding.btnViewMore.visibility = View.VISIBLE
+                        binding.btnViewMore.text = "Lihat Semua (${produkList.size} produk)"
+                    } else {
+                        binding.btnViewMore.visibility = View.GONE
+                    }
                     val tersedia = produkList.count { it.stok > 0 }
                     binding.tvRewardTersedia.text = tersedia.toString()
                     binding.tvJumlahProduk.text   = "${produkList.size} produk"

@@ -241,6 +241,25 @@
                 android:clipToPadding="false"
                 android:nestedScrollingEnabled="false" />
 
+            <Button
+                android:id="@+id/btnViewMore"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:text="Lihat Semua"
+                android:textSize="13sp"
+                android:textColor="@color/orange_primary"
+                android:fontFamily="@font/poppins_semibold"
+                android:backgroundTint="@color/white"
+                android:strokeColor="@color/orange_primary"
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="20dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="16dp"
+                android:visibility="gone"
+                app:cornerRadius="12dp"
+                app:strokeColor="@color/orange_primary"
+                app:strokeWidth="1dp" />
+
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 

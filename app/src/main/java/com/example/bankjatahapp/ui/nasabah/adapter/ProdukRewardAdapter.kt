@@ -18,6 +18,12 @@ class ProdukRewardAdapter(
     private val onTukarClick: (ProdukReward) -> Unit
 ) : RecyclerView.Adapter<ProdukRewardAdapter.ViewHolder>() {
     private var semuaDisabled = false
+    private var tampilSemua = false
+
+    fun setTampilSemua(semua: Boolean) {
+        tampilSemua = semua
+        notifyDataSetChanged()
+    }
 
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val ivFoto: ImageView        = view.findViewById(R.id.ivFotoProduk)
@@ -93,7 +99,8 @@ class ProdukRewardAdapter(
         notifyDataSetChanged()
     }
 
-    override fun getItemCount(): Int = listProduk.size
+    override fun getItemCount(): Int =
+        if (tampilSemua) listProduk.size else minOf(4, listProduk.size)
 
     fun updateData(data: List<ProdukReward>) {
         listProduk = data
