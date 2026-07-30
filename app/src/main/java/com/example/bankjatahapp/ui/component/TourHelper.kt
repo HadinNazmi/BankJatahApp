@@ -241,34 +241,39 @@ object TourHelper {
         viewBerat: android.view.View,
         onSelesai: () -> Unit
     ) {
-        TapTargetSequence(activity)
-            .targets(
-                buatTarget(
-                    viewQrScanner,
-                    "Scan QR Nasabah",
-                    "Minta nasabah menunjukkan QR dari halaman Profil mereka, lalu scan di sini untuk identifikasi otomatis."
-                ),
-                buatTarget(
-                    viewCariNama,
-                    "Cari Nama Nasabah",
-                    "Alternatif jika kamera bermasalah — ketik minimal 2 huruf nama nasabah untuk mencari datanya."
-                ),
-                buatTarget(
-                    viewToggleJemput,
-                    "Mode Jemput",
-                    "Aktifkan jika kamu yang menjemput minyak ke lokasi nasabah. Harga nasabah akan dikurangi biaya jemput, dan komisimu bertambah."
-                ),
-                buatTarget(
-                    viewBerat,
-                    "Berat Minyak",
-                    "Isi berat bersih minyak dalam kilogram. Nilai rupiah nasabah akan terhitung otomatis berdasarkan harga wilayahmu."
-                )
-            )
-            .listener(object : TapTargetSequence.Listener {
-                override fun onSequenceFinish() { onSelesai() }
-                override fun onSequenceStep(lastTarget: TapTarget, targetClicked: Boolean) {}
-                override fun onSequenceCanceled(lastTarget: TapTarget) { onSelesai() }
-            })
-            .start()
+        // Delay kecil supaya fragment setoran sudah fully rendered
+        android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+            if (!activity.isFinishing && !activity.isDestroyed) {
+                TapTargetSequence(activity)
+                    .targets(
+                        buatTarget(
+                            viewQrScanner,
+                            "Scan QR Nasabah",
+                            "Minta nasabah membuka halaman Profil lalu tunjukkan QR-nya. Tap area kamera ini untuk memulai scan — identitas nasabah langsung terdeteksi otomatis."
+                        ),
+                        buatTarget(
+                            viewCariNama,
+                            "Cari Nama (Alternatif)",
+                            "Jika kamera bermasalah, ketik minimal 2 huruf nama nasabah di sini. Pilih dari daftar yang muncul untuk mengisi identitas."
+                        ),
+                        buatTarget(
+                            viewToggleJemput,
+                            "Mode Jemput",
+                            "Aktifkan jika kamu yang mendatangi nasabah untuk mengambil minyaknya. Harga nasabah akan dikurangi biaya jemput, dan komisimu bertambah otomatis."
+                        ),
+                        buatTarget(
+                            viewBerat,
+                            "Berat Minyak Bersih",
+                            "Isi berat minyak dalam kilogram sesuai timbangan. Nilai rupiah untuk nasabah dihitung otomatis berdasarkan harga aktif di wilayahmu."
+                        )
+                    )
+                    .listener(object : TapTargetSequence.Listener {
+                        override fun onSequenceFinish() { onSelesai() }
+                        override fun onSequenceStep(lastTarget: TapTarget, targetClicked: Boolean) {}
+                        override fun onSequenceCanceled(lastTarget: TapTarget) { onSelesai() }
+                    })
+                    .start()
+            }
+        }, 600)
     }
 }

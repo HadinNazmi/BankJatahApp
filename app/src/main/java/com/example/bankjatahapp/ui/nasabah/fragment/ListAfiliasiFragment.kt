@@ -179,6 +179,16 @@ class ListAfiliasiFragment : Fragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             try {
                 val uid = idUser ?: return@launch
+
+                // Cek jangan sampai user memasukkan kode referral miliknya sendiri
+                val kodeReferralSendiri = binding.tvKodeReferralSaya.text.toString().trim()
+                if (kodeRefSponsor == kodeReferralSendiri) {
+                    binding.btnSimpanSponsor.isEnabled = true
+                    binding.btnSimpanSponsor.text = "Simpan"
+                    binding.tilKodeReferralSponsor.error = "Tidak dapat menggunakan kode referral milik sendiri"
+                    return@launch
+                }
+
                 val sponsorData = client.postgrest
                     .from("nasabah_data")
                     .select { filter { eq("kode_referral", kodeRefSponsor) } }
