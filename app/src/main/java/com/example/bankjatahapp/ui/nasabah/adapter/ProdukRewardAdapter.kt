@@ -18,6 +18,7 @@ class ProdukRewardAdapter(
     private val onTukarClick: (ProdukReward) -> Unit
 ) : RecyclerView.Adapter<ProdukRewardAdapter.ViewHolder>() {
     private var semuaDisabled = false
+    private var sudahDiklaim: Set<String> = emptySet() // ← TAMBAH INI
     private var tampilSemua = false
 
     fun setTampilSemua(semua: Boolean) {
@@ -82,13 +83,21 @@ class ProdukRewardAdapter(
             holder.btnTukar.text          = "Tukar"
         }
 
+        // Cek apakah produk ini sudah diklaim di siklus aktif
+        val sudahKlaimProdukIni = sudahDiklaim.contains(produk.idProduk)
+        if (sudahKlaimProdukIni) {
+            holder.btnTukar.isEnabled = false
+            holder.btnTukar.alpha     = 0.5f
+            holder.btnTukar.text      = "Sudah Diklaim"
+        }
+
         if (semuaDisabled) {
             holder.btnTukar.isEnabled = false
             holder.btnTukar.alpha     = 0.4f
         }
 
         holder.btnTukar.setOnClickListener {
-            if (produk.stok > 0 && !semuaDisabled) {
+            if (produk.stok > 0 && !semuaDisabled && !sudahKlaimProdukIni) {
                 onTukarClick(produk)
             }
         }
@@ -106,6 +115,14 @@ class ProdukRewardAdapter(
         listProduk = data
         notifyDataSetChanged()
     }
+
+    fun updateDataDenganKlaim(data: List<ProdukReward>, klaim: Set<String>) {
+        listProduk   = data
+        sudahDiklaim = klaim
+        notifyDataSetChanged()
+    }
+
+    fun currentList(): List<ProdukReward> = listProduk
 
     private fun formatAngka(angka: Int): String =
         String.format("%,d", angka).replace(',', '.')

@@ -69,7 +69,7 @@
                         android:id="@+id/tvTotalPoinLabel"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Total Poin"
+                        android:text="Poin Terkumpul"
                         android:textSize="11sp"
                         android:textColor="@color/gray_text"
                         android:fontFamily="@font/poppins_regular"

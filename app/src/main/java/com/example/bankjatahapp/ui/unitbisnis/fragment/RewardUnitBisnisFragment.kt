@@ -46,6 +46,9 @@ class RewardUnitBisnisFragment : Fragment() {
     private var minBintangRedeem: Int = 0
     private var minKgPribadiRedeem: Double = 0.0
 
+    private var siklusPoinAktif: Int = 1                   // ← TAMBAH
+    private var idKlaimPerSiklus: Set<String> = emptySet() // ← TAMBAH
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -138,6 +141,23 @@ class RewardUnitBisnisFragment : Fragment() {
                     .select { filter { eq("status_produk", "aktif") } }
                     .decodeList<ProdukReward>()
 
+                // ← Ambil siklus poin aktif & daftar produk yang sudah diklaim di siklus ini
+                siklusPoinAktif  = extractSiklusPoin(dompet)
+                idKlaimPerSiklus = try {
+                    client.postgrest
+                        .from("redeem_reward")
+                        .select {
+                            filter {
+                                eq("id_nasabah", idUser)
+                                eq("siklus_poin", siklusPoinAktif)
+                                neq("status_redeem", "ditolak")
+                            }
+                        }
+                        .decodeList<RedeemReward>()
+                        .map { it.idProduk }
+                        .toSet()
+                } catch (e: Exception) { emptySet() }
+
                 binding.progressBar.visibility = View.GONE
 
                 if (produkList.isEmpty()) {
@@ -146,7 +166,7 @@ class RewardUnitBisnisFragment : Fragment() {
                 } else {
                     binding.layoutEmpty.visibility    = View.GONE
                     binding.rvProdukReward.visibility = View.VISIBLE
-                    adapter.updateData(produkList)
+                    adapter.updateDataDenganKlaim(produkList, idKlaimPerSiklus)
 
                     if (produkList.size > 4) {
                         binding.btnViewMore.visibility = View.VISIBLE
@@ -264,6 +284,7 @@ class RewardUnitBisnisFragment : Fragment() {
                     put("id_produk",     produk.idProduk)
                     put("poin_dipakai",  produk.poinDibutuhkan)
                     put("status_redeem", "menunggu")
+                    put("siklus_poin",   siklusPoinAktif)   // ← FIX: catat siklus poin saat redeem
                 }
 
                 val result = client.postgrest
@@ -273,6 +294,10 @@ class RewardUnitBisnisFragment : Fragment() {
 
                 poinSaatIni -= produk.poinDibutuhkan
                 binding.tvTotalPoin.text = formatAngka(poinSaatIni)
+
+                // Tandai produk ini sudah diklaim di siklus aktif, refresh adapter
+                idKlaimPerSiklus = idKlaimPerSiklus + produk.idProduk
+                adapter.updateDataDenganKlaim(adapter.currentList(), idKlaimPerSiklus)
 
                 tampilkanQrRedeem(result, produk)
 
@@ -361,6 +386,12 @@ class RewardUnitBisnisFragment : Fragment() {
         return try {
             """"poin_reward"\s*:\s*(\d+)""".toRegex().find(jsonStr)?.groupValues?.get(1)?.toInt() ?: 0
         } catch (e: Exception) { 0 }
+    }
+
+    private fun extractSiklusPoin(jsonStr: String): Int {
+        return try {
+            """"siklus_poin"\s*:\s*(\d+)""".toRegex().find(jsonStr)?.groupValues?.get(1)?.toInt() ?: 1
+        } catch (e: Exception) { 1 }
     }
 
     private fun formatAngka(angka: Int): String =
