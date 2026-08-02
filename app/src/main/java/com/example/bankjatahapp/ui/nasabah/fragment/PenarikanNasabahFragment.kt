@@ -6,15 +6,23 @@ import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.AdapterView
 import android.widget.ArrayAdapter
+import android.widget.Button
+import android.widget.Spinner
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import com.example.bankjatahapp.R
 import com.example.bankjatahapp.data.model.DompetUser
+import com.example.bankjatahapp.data.model.MasterBank
 import com.example.bankjatahapp.data.model.NasabahData
 import com.example.bankjatahapp.data.model.SystemConfig
 import com.example.bankjatahapp.data.remote.SupabaseClient.client
 import com.example.bankjatahapp.databinding.FragmentPenarikanNasabahBinding
+import com.example.bankjatahapp.ui.nasabah.NasabahActivity
+import com.google.android.material.textfield.TextInputEditText
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.postgrest.postgrest
 import kotlinx.coroutines.launch
@@ -23,7 +31,6 @@ import kotlinx.serialization.json.put
 import java.text.NumberFormat
 import java.util.Locale
 import java.util.UUID
-import com.example.bankjatahapp.ui.nasabah.NasabahActivity
 
 class PenarikanNasabahFragment : Fragment() {
 
@@ -39,6 +46,9 @@ class PenarikanNasabahFragment : Fragment() {
     private var nasabahData: NasabahData? = null
     private var isAktif: Boolean          = false
     private var biayaAdmin: Double        = 0.0
+
+    // Cache daftar bank untuk dipakai di dialog rekening
+    private var daftarBank: List<MasterBank> = emptyList()
 
     private var rekeningDipilih: Triple<String, String, String> = Triple("", "", "")
 
@@ -88,6 +98,13 @@ class PenarikanNasabahFragment : Fragment() {
                     .select { filter { eq("id_config", 1) } }
                     .decodeSingle<SystemConfig>()
 
+                // Load daftar bank untuk dipakai di dialog rekening nanti
+                try {
+                    daftarBank = client.postgrest.from("master_bank")
+                        .select { filter { eq("status_bank", "aktif") } }
+                        .decodeList<MasterBank>()
+                } catch (_: Exception) {}
+
                 biayaAdmin    = config?.biayaAdminPencairan ?: 0.0
                 isAktif       = nasabahData?.kategoriNasabah == "aktif"
                 saldoTabungan = dompet.saldoNasabah
@@ -96,14 +113,12 @@ class PenarikanNasabahFragment : Fragment() {
                 binding.tvSaldoTabunganNilai.text = formatRupiah(saldoTabungan)
                 binding.tvSaldoAfiliasiNilai.text = formatRupiah(saldoAfiliasi)
 
-                // Tampilkan syarat di bawah card tabungan
                 val cfg = config
                 val threshold  = cfg?.thresholdSaldoNasabah ?: 120000.0
                 val minSisa    = cfg?.minSisaSaldoNasabah ?: 20000.0
                 val minBintang = cfg?.minBintangPenarikan ?: 3
                 val biayaInfo  = if (biayaAdmin > 0) formatRupiah(biayaAdmin) else "Gratis"
 
-                // Syarat saldo tabungan — ditampilkan langsung di card sebagai informasi
                 binding.tvSyaratTabungan.text = buildString {
                     append("• Saldo min. ${formatRupiah(threshold)} untuk mulai tarik\n")
                     append("• Sisa saldo min. ${formatRupiah(minSisa)} setelah penarikan\n")
@@ -111,7 +126,6 @@ class PenarikanNasabahFragment : Fragment() {
                     append("• Biaya admin: $biayaInfo")
                 }
 
-                // Syarat saldo bonus afiliasi
                 val minAfiliasi = cfg?.minPenarikanAfiliasi ?: 10000.0
                 binding.tvSyaratAfiliasi.text = buildString {
                     append("• Minimal Bintang $minBintang\n")
@@ -121,18 +135,22 @@ class PenarikanNasabahFragment : Fragment() {
                 }
 
                 // Rekening dari profil
-                val noRek    = nasabahData?.noRekening ?: ""
-                val bank     = nasabahData?.bankCode ?: ""
-                val atasNama = nasabahData?.atasNamaRekening ?: ""
+                val nasabah = nasabahData
+                val bank = nasabah?.bankCode ?: ""
+                val noRek = nasabah?.noRekening ?: ""
+                val atasNama = nasabah?.atasNamaRekening ?: ""
 
-                val adapter = ArrayAdapter(
-                    requireContext(),
-                    android.R.layout.simple_spinner_item,
-                    listOf("$bank - $noRek ($atasNama)")
-                )
-                adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-                binding.spinnerBank.adapter = adapter
-                rekeningDipilih = Triple(bank, noRek, atasNama)
+                if (bank.isNotEmpty() && noRek.isNotEmpty()) {
+                    tampilkanInfoRekening(bank, noRek, atasNama)
+                } else {
+                    val adapter = ArrayAdapter(
+                        requireContext(),
+                        android.R.layout.simple_spinner_item,
+                        listOf("Belum ada rekening — tap di sini untuk mengisi")
+                    )
+                    adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+                    binding.spinnerBank.adapter = adapter
+                }
 
                 pilihJenis("tabungan")
 
@@ -152,28 +170,23 @@ class PenarikanNasabahFragment : Fragment() {
         }
         binding.tvSaldoTersedia.text = formatRupiah(saldoTerpilih)
 
-        // Reset state seleksi & check radio button agar tidak bertabrakan
         binding.optionTabungan.isSelected = false
         binding.optionAfiliasi.isSelected = false
         binding.radioTabungan.isChecked = false
         binding.radioAfiliasi.isChecked = false
 
-        // Atur background kartu secara dinamis & picu pendelegasian status isSelected ke XML
         if (jenis == "tabungan") {
-            binding.optionTabungan.setBackgroundResource(com.example.bankjatahapp.R.drawable.ic_bg_tab_active)
+            binding.optionTabungan.setBackgroundResource(R.drawable.ic_bg_tab_active)
             binding.optionTabungan.isSelected = true
             binding.radioTabungan.isChecked = true
-
-            binding.optionAfiliasi.setBackgroundResource(com.example.bankjatahapp.R.drawable.ic_bg_tab_inactive)
+            binding.optionAfiliasi.setBackgroundResource(R.drawable.ic_bg_tab_inactive)
         } else {
-            binding.optionAfiliasi.setBackgroundResource(com.example.bankjatahapp.R.drawable.ic_bg_tab_active)
+            binding.optionAfiliasi.setBackgroundResource(R.drawable.ic_bg_tab_active)
             binding.optionAfiliasi.isSelected = true
             binding.radioAfiliasi.isChecked = true
-
-            binding.optionTabungan.setBackgroundResource(com.example.bankjatahapp.R.drawable.ic_bg_tab_inactive)
+            binding.optionTabungan.setBackgroundResource(R.drawable.ic_bg_tab_inactive)
         }
 
-        // Cek syarat — tampilkan warning jika belum memenuhi, disable input
         val syaratInfo = cekSyaratPenarikan(jenis)
         if (syaratInfo != null) {
             binding.tvWarningNominal.text = syaratInfo
@@ -198,7 +211,6 @@ class PenarikanNasabahFragment : Fragment() {
         binding.cardRingkasan.visibility = View.GONE
     }
 
-    // Semua nilai dari system_config — tidak ada yang hardcode
     private fun cekSyaratPenarikan(jenis: String): String? {
         val cfg = config
         return when (jenis) {
@@ -266,7 +278,143 @@ class PenarikanNasabahFragment : Fragment() {
             }
         })
 
-        binding.btnAjukanPenarikan.setOnClickListener { ajukanPenarikan() }
+        // KLIK PADA SPINNER / REKENING UNTUK BUKA DIALOG EDIT
+        binding.spinnerBank.setOnTouchListener { _, _ ->
+            cekDanTampilkanDialogRekening {}
+            true
+        }
+
+        // TOMBOL AJUKAN LANGSUNG MEMANGGIL VALIDASI
+        binding.btnAjukanPenarikan.setOnClickListener {
+            ajukanPenarikan()
+        }
+    }
+
+    // DIALOG INPUT REKENING JIKA BELUM LENGKAP
+    private fun cekDanTampilkanDialogRekening(onRekeningLengkap: () -> Unit) {
+        val nasabah = nasabahData
+
+        // Rekening belum lengkap — tampilkan dialog input
+        val dialogView = LayoutInflater.from(requireContext())
+            .inflate(R.layout.dialog_input_rekening, null)
+
+        val spinnerBank   = dialogView.findViewById<Spinner>(R.id.spinnerBank)
+        val etNoRek       = dialogView.findViewById<TextInputEditText>(R.id.etNoRekening)
+        val etAtasNama    = dialogView.findViewById<TextInputEditText>(R.id.etAtasNama)
+        val btnBatal      = dialogView.findViewById<Button>(R.id.btnBatalRekening)
+        val btnSimpan     = dialogView.findViewById<Button>(R.id.btnSimpanRekening)
+
+        val dialog = AlertDialog.Builder(requireContext())
+            .setView(dialogView)
+            .create()
+        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+
+        // Setup spinner bank dari cache yang sudah diload
+        var bankDipilihKode: String? = nasabah?.bankCode
+        val namaBank = daftarBank.map { it.namaBank }
+        val adapterSpinner = ArrayAdapter(
+            requireContext(),
+            android.R.layout.simple_spinner_item,
+            namaBank
+        )
+        adapterSpinner.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        spinnerBank.adapter = adapterSpinner
+
+        val indexBank = daftarBank.indexOfFirst { it.kodeBank == nasabah?.bankCode }
+        if (indexBank >= 0) spinnerBank.setSelection(indexBank)
+
+        spinnerBank.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(p: AdapterView<*>?, v: View?, pos: Int, id: Long) {
+                if (daftarBank.isNotEmpty()) {
+                    bankDipilihKode = daftarBank[pos].kodeBank
+                }
+            }
+            override fun onNothingSelected(p: AdapterView<*>?) {}
+        }
+
+        // Isi nilai parsial yang sudah ada jika ada
+        etNoRek.setText(nasabah?.noRekening ?: "")
+        etAtasNama.setText(nasabah?.atasNamaRekening ?: "")
+
+        btnBatal.setOnClickListener { dialog.dismiss() }
+
+        btnSimpan.setOnClickListener {
+            val noRek    = etNoRek.text.toString().trim()
+            val atasNama = etAtasNama.text.toString().trim()
+
+            if (bankDipilihKode.isNullOrEmpty()) {
+                Toast.makeText(requireContext(), "Pilih bank tujuan", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+            if (noRek.isEmpty()) {
+                Toast.makeText(requireContext(), "Nomor rekening tidak boleh kosong", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+            if (atasNama.isEmpty()) {
+                Toast.makeText(requireContext(), "Atas nama tidak boleh kosong", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            // LANGSUNG TUTUP POP-UP AGAR USER TIDAK KELIRU
+            dialog.dismiss()
+
+            viewLifecycleOwner.lifecycleScope.launch {
+                try {
+                    val idUser = client.auth.currentUserOrNull()?.id
+                        ?: throw Exception("Sesi tidak valid")
+
+                    val payload = buildJsonObject {
+                        put("bank_code",          bankDipilihKode)
+                        put("no_rekening",         noRek)
+                        put("atas_nama_rekening",  atasNama)
+                    }
+                    client.postgrest.from("nasabah_data").update(payload) {
+                        filter { eq("id_nasabah", idUser) }
+                    }
+
+                    // Update cache lokal dan data rekening terpilih
+                    nasabahData = nasabahData?.copy(
+                        bankCode         = bankDipilihKode,
+                        noRekening       = noRek,
+                        atasNamaRekening = atasNama
+                    )
+                    rekeningDipilih = Triple(bankDipilihKode ?: "", noRek, atasNama)
+
+                    // Update Tampilan UI Rekening
+                    tampilkanInfoRekening(bankDipilihKode ?: "", noRek, atasNama)
+
+                    Toast.makeText(requireContext(), "✓ Rekening berhasil disimpan", Toast.LENGTH_SHORT).show()
+
+                    // Lanjut ke proses penarikan
+                    onRekeningLengkap()
+
+                } catch (e: Exception) {
+                    Toast.makeText(
+                        requireContext(),
+                        "Gagal menyimpan rekening: ${e.message}",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+            }
+        }
+
+        dialog.show()
+    }
+
+    private fun tampilkanInfoRekening(bankCode: String, noRek: String, atasNama: String) {
+        val namaBank = try {
+            daftarBank.find { it.kodeBank == bankCode }?.namaBank ?: bankCode
+        } catch (e: Exception) { bankCode }
+
+        val labelRekening = "$namaBank - $noRek ($atasNama)"
+        val adapter = ArrayAdapter(
+            requireContext(),
+            android.R.layout.simple_spinner_item,
+            listOf(labelRekening)
+        )
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        binding.spinnerBank.adapter = adapter
+        rekeningDipilih = Triple(bankCode, noRek, atasNama)
     }
 
     private fun setNominal(nominal: Long) {
@@ -282,9 +430,6 @@ class PenarikanNasabahFragment : Fragment() {
 
         when (jenisTerpilih) {
             "tabungan" -> {
-                // Tidak ada minimum nominal khusus untuk tabungan —
-                // hanya ada syarat threshold (sudah dicek di cekSyaratPenarikan)
-                // dan sisa saldo minimal
                 val minSisa = cfg?.minSisaSaldoNasabah ?: 20000.0
                 when {
                     nominal <= 0 -> binding.cardRingkasan.visibility = View.GONE
@@ -371,11 +516,10 @@ class PenarikanNasabahFragment : Fragment() {
         val namaPemilik = rekeningDipilih.third
 
         if (kodeBank.isEmpty() || noRekening.isEmpty()) {
-            Toast.makeText(
-                requireContext(),
-                "Data rekening belum tersedia. Lengkapi rekening di Pengaturan Akun.",
-                Toast.LENGTH_LONG
-            ).show()
+            // Jika rekening kosong saat klik Ajukan, otomatis bukakan dialog input rekening
+            cekDanTampilkanDialogRekening {
+                ajukanPenarikan()
+            }
             return
         }
 
