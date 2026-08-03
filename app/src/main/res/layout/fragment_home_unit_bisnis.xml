@@ -18,275 +18,446 @@
             android:orientation="vertical"
             android:paddingBottom="24dp">
 
-            <androidx.constraintlayout.widget.ConstraintLayout
+            <!-- HEADER ATAS MELENGKUNG SEPERTI AIR -->
+            <RelativeLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:paddingStart="20dp"
-                android:paddingEnd="20dp"
-                android:paddingTop="20dp"
-                android:paddingBottom="12dp">
+                android:layout_height="wrap_content">
 
-                <TextView
-                    android:id="@+id/tvGreeting"
-                    android:layout_width="0dp"
+                <!-- Background Header Oranye Melengkung -->
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="170dp"
+                    android:background="@drawable/bg_header_curved" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Selamat datang kembali,"
-                    android:textSize="12sp"
-                    android:textColor="@color/gray_text"
-                    android:fontFamily="@font/poppins_regular"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintEnd_toStartOf="@+id/frameNotif" />
+                    android:orientation="vertical">
 
-                <TextView
-                    android:id="@+id/tvNamaUser"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:text="Nama Unit Bisnis"
-                    android:textSize="16sp"
-                    android:textStyle="bold"
-                    android:textColor="@color/black"
-                    android:fontFamily="@font/poppins_bold"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/tvGreeting"
-                    app:layout_constraintEnd_toStartOf="@+id/frameNotif" />
+                    <!-- TOP BAR HEADER -->
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:paddingStart="20dp"
+                        android:paddingEnd="20dp"
+                        android:paddingTop="16dp"
+                        android:paddingBottom="12dp">
 
-                <TextView
-                    android:id="@+id/tvRoleUser"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:text="Unit Bisnis"
-                    android:textSize="11sp"
-                    android:textColor="@color/orange_primary"
-                    android:fontFamily="@font/poppins_regular"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/tvNamaUser"
-                    app:layout_constraintEnd_toStartOf="@+id/frameNotif" />
+                        <!-- Logo Bank Jatah Warna Putih Bersih -->
+                        <ImageView
+                            android:id="@+id/ivLogoHeader"
+                            android:layout_width="38dp"
+                            android:layout_height="38dp"
+                            android:src="@drawable/bankjatahlogo"
+                            app:tint="@color/white"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"
+                            app:layout_constraintBottom_toBottomOf="parent" />
 
-                <FrameLayout
-                    android:id="@+id/frameNotif"
-                    android:layout_width="44dp"
-                    android:layout_height="44dp"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintBottom_toBottomOf="parent">
+                        <TextView
+                            android:id="@+id/tvGreeting"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:text="Selamat datang kembali,"
+                            android:textSize="11sp"
+                            android:textColor="#E0FFFFFF"
+                            android:fontFamily="@font/poppins_regular"
+                            android:layout_marginStart="10dp"
+                            app:layout_constraintStart_toEndOf="@+id/ivLogoHeader"
+                            app:layout_constraintTop_toTopOf="parent"
+                            app:layout_constraintEnd_toStartOf="@+id/layoutKananHeader" />
 
-                    <ImageView
-                        android:id="@+id/ivNotifikasi"
-                        android:layout_width="36dp"
-                        android:layout_height="36dp"
-                        android:src="@drawable/ic_notifikasi"
-                        android:background="@drawable/ic_bg_notif"
-                        android:padding="8dp"
-                        android:scaleType="centerInside"
-                        android:layout_gravity="center" />
+                        <TextView
+                            android:id="@+id/tvNamaUser"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:text="Nama Unit Bisnis"
+                            android:textSize="15sp"
+                            android:textStyle="bold"
+                            android:textColor="@color/white"
+                            android:fontFamily="@font/poppins_bold"
+                            android:layout_marginStart="10dp"
+                            android:ellipsize="end"
+                            android:maxLines="1"
+                            app:layout_constraintStart_toEndOf="@+id/ivLogoHeader"
+                            app:layout_constraintTop_toBottomOf="@+id/tvGreeting"
+                            app:layout_constraintEnd_toStartOf="@+id/layoutKananHeader" />
 
-                    <TextView
-                        android:id="@+id/tvBadgeNotif"
-                        android:layout_width="18dp"
-                        android:layout_height="18dp"
-                        android:text="0"
-                        android:textSize="9sp"
-                        android:textColor="@color/white"
-                        android:fontFamily="@font/poppins_bold"
-                        android:gravity="center"
-                        android:background="@color/red_gagal"
-                        android:visibility="gone"
-                        android:layout_gravity="top|end" />
+                        <TextView
+                            android:id="@+id/tvRoleUser"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:text="Unit Bisnis"
+                            android:textSize="10sp"
+                            android:textColor="#CCFFFFFF"
+                            android:fontFamily="@font/poppins_regular"
+                            android:layout_marginStart="10dp"
+                            app:layout_constraintStart_toEndOf="@+id/ivLogoHeader"
+                            app:layout_constraintTop_toBottomOf="@+id/tvNamaUser"
+                            app:layout_constraintEnd_toStartOf="@+id/layoutKananHeader" />
 
-                </FrameLayout>
+                        <!-- Area Kanan Header: Notifikasi + Pusat Bantuan -->
+                        <LinearLayout
+                            android:id="@+id/layoutKananHeader"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"
+                            app:layout_constraintBottom_toBottomOf="parent">
 
-            </androidx.constraintlayout.widget.ConstraintLayout>
+                            <FrameLayout
+                                android:id="@+id/frameNotif"
+                                android:layout_width="38dp"
+                                android:layout_height="38dp"
+                                android:layout_marginEnd="6dp">
 
+                                <ImageView
+                                    android:id="@+id/ivNotifikasi"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:src="@drawable/ic_notifikasi"
+                                    android:background="@drawable/ic_bg_notif"
+                                    android:padding="8dp"
+                                    android:scaleType="centerInside" />
+
+                                <TextView
+                                    android:id="@+id/tvBadgeNotif"
+                                    android:layout_width="16dp"
+                                    android:layout_height="16dp"
+                                    android:text="0"
+                                    android:textSize="8sp"
+                                    android:textColor="@color/white"
+                                    android:fontFamily="@font/poppins_bold"
+                                    android:gravity="center"
+                                    android:background="@color/red_gagal"
+                                    android:visibility="gone"
+                                    android:layout_gravity="top|end" />
+                            </FrameLayout>
+
+                            <!-- Tombol Pusat Bantuan -->
+                            <LinearLayout
+                                android:id="@+id/btnPusatBantuan"
+                                android:layout_width="wrap_content"
+                                android:layout_height="34dp"
+                                android:background="@drawable/ic_bg_notif"
+                                android:gravity="center_vertical"
+                                android:paddingStart="8dp"
+                                android:paddingEnd="10dp"
+                                android:clickable="true"
+                                android:focusable="true">
+
+                                <ImageView
+                                    android:layout_width="16dp"
+                                    android:layout_height="16dp"
+                                    android:src="@android:drawable/ic_menu_help"
+                                    app:tint="@color/white" />
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="4dp"
+                                    android:fontFamily="@font/poppins_semibold"
+                                    android:text="Bantuan"
+                                    android:textColor="@color/white"
+                                    android:textSize="10sp" />
+                            </LinearLayout>
+
+                        </LinearLayout>
+
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+
+                </LinearLayout>
+            </RelativeLayout>
+
+            <!-- CARD SALDO & MENU AKSI -->
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="20dp"
                 android:layout_marginEnd="20dp"
-                app:cardCornerRadius="16dp"
+                android:layout_marginTop="8dp"
+                app:cardCornerRadius="18dp"
                 app:cardElevation="4dp"
-                app:cardBackgroundColor="@color/orange_primary">
+                app:cardBackgroundColor="@color/white">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="16dp">
+                    android:padding="12dp">
 
-                    <androidx.constraintlayout.widget.ConstraintLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content">
-
-                        <TextView
-                            android:id="@+id/tvMulaiMenyetor"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:text="Mulai Menyetor"
-                            android:textColor="@color/white"
-                            android:textSize="16sp"
-                            android:textStyle="bold"
-                            android:fontFamily="@font/poppins_bold"
-                            app:layout_constraintStart_toStartOf="parent"
-                            app:layout_constraintEnd_toStartOf="@+id/ivLogo"
-                            app:layout_constraintTop_toTopOf="parent" />
-
-                        <ImageView
-                            android:id="@+id/ivLogo"
-                            android:layout_width="32dp"
-                            android:layout_height="32dp"
-                            android:src="@drawable/bankjatahlogo"
-                            android:alpha="0.4"
-                            app:layout_constraintEnd_toEndOf="parent"
-                            app:layout_constraintTop_toTopOf="parent" />
-                    </androidx.constraintlayout.widget.ConstraintLayout>
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:layout_marginTop="12dp">
-
-                        <androidx.cardview.widget.CardView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:layout_marginEnd="6dp"
-                            app:cardCornerRadius="12dp"
-                            app:cardElevation="0dp"
-                            app:cardBackgroundColor="@color/white">
-                            <LinearLayout android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:orientation="vertical" android:padding="12dp">
-                                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                                    android:text="Saldo Tabungan" android:textColor="@color/gray_text"
-                                    android:textSize="11sp" android:fontFamily="@font/poppins_regular" />
-                                <TextView android:id="@+id/tvSaldoTabungan"
-                                    android:layout_width="wrap_content" android:layout_height="wrap_content"
-                                    android:text="Rp 0" android:textColor="@color/orange_primary"
-                                    android:textSize="15sp" android:textStyle="bold"
-                                    android:fontFamily="@font/poppins_bold" android:layout_marginTop="4dp" />
-                            </LinearLayout>
-                        </androidx.cardview.widget.CardView>
-
-                        <androidx.cardview.widget.CardView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:layout_marginStart="6dp"
-                            app:cardCornerRadius="12dp"
-                            app:cardElevation="0dp"
-                            app:cardBackgroundColor="@color/white">
-                            <LinearLayout android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:orientation="vertical" android:padding="12dp">
-                                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                                    android:text="Saldo Komisi" android:textColor="@color/gray_text"
-                                    android:textSize="11sp" android:fontFamily="@font/poppins_regular" />
-                                <TextView android:id="@+id/tvSaldoKomisi"
-                                    android:layout_width="wrap_content" android:layout_height="wrap_content"
-                                    android:text="Rp 0" android:textColor="@color/orange_primary"
-                                    android:textSize="15sp" android:textStyle="bold"
-                                    android:fontFamily="@font/poppins_bold" android:layout_marginTop="4dp" />
-                            </LinearLayout>
-                        </androidx.cardview.widget.CardView>
-                    </LinearLayout>
-
+                    <!-- Inner Card Oranye -->
                     <androidx.cardview.widget.CardView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        app:cardCornerRadius="12dp"
+                        app:cardCornerRadius="14dp"
                         app:cardElevation="0dp"
-                        app:cardBackgroundColor="@color/white">
-                        <LinearLayout android:layout_width="match_parent"
+                        app:cardBackgroundColor="@color/orange_primary">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:orientation="horizontal"
-                            android:gravity="center_vertical" android:padding="12dp">
-                            <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content"
-                                android:layout_weight="1" android:orientation="vertical">
-                                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                                    android:text="Saldo Bonus Afiliasi" android:textColor="@color/gray_text"
-                                    android:textSize="11sp" android:fontFamily="@font/poppins_regular" />
-                                <TextView android:id="@+id/tvSaldoBonus"
-                                    android:layout_width="wrap_content" android:layout_height="wrap_content"
-                                    android:text="Rp 0" android:textColor="@color/orange_primary"
-                                    android:textSize="15sp" android:textStyle="bold"
-                                    android:fontFamily="@font/poppins_bold" android:layout_marginTop="4dp" />
+                            android:orientation="vertical"
+                            android:padding="16dp">
+
+                            <RelativeLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content">
+
+                                <TextView
+                                    android:id="@+id/tvMulaiMenyetor"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_alignParentStart="true"
+                                    android:layout_centerVertical="true"
+                                    android:fontFamily="@font/poppins_bold"
+                                    android:text="Mulai Menyetor"
+                                    android:textColor="@color/white"
+                                    android:textSize="15sp"
+                                    android:textStyle="bold" />
+
+                                <!-- Tombol Mata Sembunyikan Saldo -->
+                                <ImageView
+                                    android:id="@+id/btnToggleHideSaldo"
+                                    android:layout_width="24dp"
+                                    android:layout_height="24dp"
+                                    android:layout_alignParentEnd="true"
+                                    android:layout_centerVertical="true"
+                                    android:clickable="true"
+                                    android:focusable="true"
+                                    android:src="@android:drawable/ic_menu_view"
+                                    app:tint="@color/white" />
+                            </RelativeLayout>
+
+                            <!-- Row 1: Saldo Tabungan & Saldo Komisi -->
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal"
+                                android:layout_marginTop="12dp">
+
+                                <androidx.cardview.widget.CardView
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:layout_marginEnd="6dp"
+                                    app:cardCornerRadius="12dp"
+                                    app:cardElevation="0dp"
+                                    app:cardBackgroundColor="@color/white">
+
+                                    <LinearLayout
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+                                        android:orientation="vertical"
+                                        android:padding="12dp">
+
+                                        <TextView
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:text="Saldo Tabungan"
+                                            android:textColor="@color/gray_text"
+                                            android:textSize="11sp"
+                                            android:fontFamily="@font/poppins_regular" />
+
+                                        <TextView
+                                            android:id="@+id/tvSaldoTabungan"
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:text="Rp 0"
+                                            android:textColor="@color/orange_primary"
+                                            android:textSize="15sp"
+                                            android:textStyle="bold"
+                                            android:fontFamily="@font/poppins_bold"
+                                            android:layout_marginTop="4dp" />
+                                    </LinearLayout>
+                                </androidx.cardview.widget.CardView>
+
+                                <androidx.cardview.widget.CardView
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:layout_marginStart="6dp"
+                                    app:cardCornerRadius="12dp"
+                                    app:cardElevation="0dp"
+                                    app:cardBackgroundColor="@color/white">
+
+                                    <LinearLayout
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+                                        android:orientation="vertical"
+                                        android:padding="12dp">
+
+                                        <TextView
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:text="Saldo Komisi"
+                                            android:textColor="@color/gray_text"
+                                            android:textSize="11sp"
+                                            android:fontFamily="@font/poppins_regular" />
+
+                                        <TextView
+                                            android:id="@+id/tvSaldoKomisi"
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:text="Rp 0"
+                                            android:textColor="@color/orange_primary"
+                                            android:textSize="15sp"
+                                            android:textStyle="bold"
+                                            android:fontFamily="@font/poppins_bold"
+                                            android:layout_marginTop="4dp" />
+                                    </LinearLayout>
+                                </androidx.cardview.widget.CardView>
                             </LinearLayout>
-                            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                                android:text="Bonus Sponsor &amp; Afiliasi"
-                                android:textSize="10sp" android:textColor="@color/orange_primary"
-                                android:fontFamily="@font/poppins_regular"
-                                android:background="@drawable/ic_bg_tab_inactive"
-                                android:paddingStart="8dp" android:paddingEnd="8dp"
-                                android:paddingTop="4dp" android:paddingBottom="4dp" />
+
+                            <!-- Row 2: Saldo Bonus Afiliasi -->
+                            <androidx.cardview.widget.CardView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="8dp"
+                                app:cardCornerRadius="12dp"
+                                app:cardElevation="0dp"
+                                app:cardBackgroundColor="@color/white">
+
+                                <LinearLayout
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:orientation="horizontal"
+                                    android:gravity="center_vertical"
+                                    android:padding="12dp">
+
+                                    <LinearLayout
+                                        android:layout_width="0dp"
+                                        android:layout_height="wrap_content"
+                                        android:layout_weight="1"
+                                        android:orientation="vertical">
+
+                                        <TextView
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:text="Saldo Bonus Afiliasi"
+                                            android:textColor="@color/gray_text"
+                                            android:textSize="11sp"
+                                            android:fontFamily="@font/poppins_regular" />
+
+                                        <TextView
+                                            android:id="@+id/tvSaldoBonus"
+                                            android:layout_width="wrap_content"
+                                            android:layout_height="wrap_content"
+                                            android:text="Rp 0"
+                                            android:textColor="@color/orange_primary"
+                                            android:textSize="15sp"
+                                            android:textStyle="bold"
+                                            android:fontFamily="@font/poppins_bold"
+                                            android:layout_marginTop="4dp" />
+                                    </LinearLayout>
+
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:text="Bonus Sponsor &amp; Afiliasi"
+                                        android:textSize="10sp"
+                                        android:textColor="@color/orange_primary"
+                                        android:fontFamily="@font/poppins_regular"
+                                        android:background="@drawable/ic_bg_tab_inactive"
+                                        android:paddingStart="8dp"
+                                        android:paddingEnd="8dp"
+                                        android:paddingTop="4dp"
+                                        android:paddingBottom="4dp" />
+                                </LinearLayout>
+                            </androidx.cardview.widget.CardView>
+
                         </LinearLayout>
                     </androidx.cardview.widget.CardView>
 
+                    <!-- MENU AKSI DENGAN BACKGROUND BULATAN ORANGE SOFT -->
                     <LinearLayout
                         android:id="@+id/layoutMenuAksi"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
-                        android:layout_marginTop="16dp">
+                        android:layout_marginTop="16dp"
+                        android:paddingBottom="4dp">
 
                         <LinearLayout android:id="@+id/btnSetoran"
                             android:layout_width="0dp" android:layout_height="wrap_content"
-                            android:layout_weight="1" android:orientation="vertical" android:gravity="center">
-                            <ImageView android:layout_width="40dp" android:layout_height="40dp"
-                                android:src="@drawable/ic_nav_setor" android:background="@drawable/ic_bg_menu_aksi"
-                                android:padding="10dp" android:scaleType="centerInside" />
+                            android:layout_weight="1" android:orientation="vertical" android:gravity="center"
+                            android:clickable="true" android:focusable="true">
+                            <ImageView android:layout_width="48dp" android:layout_height="48dp"
+                                android:src="@drawable/ic_nav_setor"
+                                android:background="@drawable/ic_bg_menu_aksi_orange"
+                                app:tint="@color/orange_primary"
+                                android:padding="11dp" android:scaleType="centerInside" />
                             <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                                android:text="Setor\nMinyak" android:textColor="@color/white"
+                                android:text="Setor\nMinyak" android:textColor="@color/black"
                                 android:textSize="10sp" android:gravity="center"
-                                android:fontFamily="@font/poppins_regular" android:layout_marginTop="6dp" />
+                                android:fontFamily="@font/poppins_semibold" android:layout_marginTop="6dp" />
                         </LinearLayout>
 
                         <LinearLayout android:id="@+id/btnReward"
                             android:layout_width="0dp" android:layout_height="wrap_content"
-                            android:layout_weight="1" android:orientation="vertical" android:gravity="center">
-                            <ImageView android:layout_width="40dp" android:layout_height="40dp"
-                                android:src="@drawable/ic_nav_reward" android:background="@drawable/ic_bg_menu_aksi"
-                                android:padding="10dp" android:scaleType="centerInside" />
+                            android:layout_weight="1" android:orientation="vertical" android:gravity="center"
+                            android:clickable="true" android:focusable="true">
+                            <ImageView android:layout_width="48dp" android:layout_height="48dp"
+                                android:src="@drawable/ic_nav_reward"
+                                android:background="@drawable/ic_bg_menu_aksi_orange"
+                                app:tint="@color/orange_primary"
+                                android:padding="11dp" android:scaleType="centerInside" />
                             <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                                android:text="Reward" android:textColor="@color/white"
+                                android:text="Reward" android:textColor="@color/black"
                                 android:textSize="10sp" android:gravity="center"
-                                android:fontFamily="@font/poppins_regular" android:layout_marginTop="6dp" />
+                                android:fontFamily="@font/poppins_semibold" android:layout_marginTop="6dp" />
                         </LinearLayout>
 
                         <LinearLayout android:id="@+id/btnRiwayat"
                             android:layout_width="0dp" android:layout_height="wrap_content"
-                            android:layout_weight="1" android:orientation="vertical" android:gravity="center">
-                            <ImageView android:layout_width="40dp" android:layout_height="40dp"
-                                android:src="@drawable/ic_riwayat" android:background="@drawable/ic_bg_menu_aksi"
-                                android:padding="10dp" android:scaleType="centerInside" />
+                            android:layout_weight="1" android:orientation="vertical" android:gravity="center"
+                            android:clickable="true" android:focusable="true">
+                            <ImageView android:layout_width="48dp" android:layout_height="48dp"
+                                android:src="@drawable/ic_riwayat"
+                                android:background="@drawable/ic_bg_menu_aksi_orange"
+                                app:tint="@color/orange_primary"
+                                android:padding="11dp" android:scaleType="centerInside" />
                             <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                                android:text="Riwayat" android:textColor="@color/white"
+                                android:text="Riwayat" android:textColor="@color/black"
                                 android:textSize="10sp" android:gravity="center"
-                                android:fontFamily="@font/poppins_regular" android:layout_marginTop="6dp" />
+                                android:fontFamily="@font/poppins_semibold" android:layout_marginTop="6dp" />
                         </LinearLayout>
 
                         <LinearLayout android:id="@+id/btnRequestPenarikan"
                             android:layout_width="0dp" android:layout_height="wrap_content"
-                            android:layout_weight="1" android:orientation="vertical" android:gravity="center">
-                            <ImageView android:layout_width="40dp" android:layout_height="40dp"
-                                android:src="@drawable/ic_request" android:background="@drawable/ic_bg_menu_aksi"
-                                android:padding="10dp" android:scaleType="centerInside" />
+                            android:layout_weight="1" android:orientation="vertical" android:gravity="center"
+                            android:clickable="true" android:focusable="true">
+                            <ImageView android:layout_width="48dp" android:layout_height="48dp"
+                                android:src="@drawable/ic_request"
+                                android:background="@drawable/ic_bg_menu_aksi_orange"
+                                app:tint="@color/orange_primary"
+                                android:padding="11dp" android:scaleType="centerInside" />
                             <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                                android:text="Request\nPenarikan" android:textColor="@color/white"
+                                android:text="Request\nPenarikan" android:textColor="@color/black"
                                 android:textSize="10sp" android:gravity="center"
-                                android:fontFamily="@font/poppins_regular" android:layout_marginTop="6dp" />
+                                android:fontFamily="@font/poppins_semibold" android:layout_marginTop="6dp" />
                         </LinearLayout>
                     </LinearLayout>
+
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
+            <!-- CARD TOTAL POIN & REWARD TERSEDIA -->
             <androidx.cardview.widget.CardView
-                android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:layout_marginStart="20dp" android:layout_marginEnd="20dp" android:layout_marginTop="16dp"
-                app:cardCornerRadius="16dp" app:cardElevation="4dp" app:cardBackgroundColor="@color/white">
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="20dp"
+                android:layout_marginTop="16dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="4dp"
+                app:cardBackgroundColor="@color/white">
                 <androidx.constraintlayout.widget.ConstraintLayout
-                    android:layout_width="match_parent" android:layout_height="wrap_content" android:padding="16dp">
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="16dp">
                     <ImageView android:id="@+id/ivKoin"
                         android:layout_width="36dp" android:layout_height="36dp"
                         android:src="@drawable/ic_poin_reward"
@@ -342,6 +513,7 @@
                 </androidx.constraintlayout.widget.ConstraintLayout>
             </androidx.cardview.widget.CardView>
 
+            <!-- CARD SETORAN MINYAK & LEVEL -->
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent" android:layout_height="wrap_content"
                 android:layout_marginStart="20dp" android:layout_marginEnd="20dp" android:layout_marginTop="16dp"
@@ -388,28 +560,7 @@
                 </androidx.constraintlayout.widget.ConstraintLayout>
             </androidx.cardview.widget.CardView>
 
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:paddingStart="20dp" android:paddingEnd="20dp" android:paddingTop="20dp">
-                <TextView android:id="@+id/tvRekomendasi"
-                    android:layout_width="wrap_content" android:layout_height="wrap_content"
-                    android:text="Rekomendasi" android:textSize="15sp" android:textStyle="bold"
-                    android:textColor="@color/black" android:fontFamily="@font/poppins_bold"
-                    app:layout_constraintStart_toStartOf="parent" app:layout_constraintTop_toTopOf="parent" />
-                <TextView android:id="@+id/tvLihatSemua"
-                    android:layout_width="wrap_content" android:layout_height="wrap_content"
-                    android:text="Lihat Semua" android:textSize="12sp"
-                    android:textColor="@color/orange_primary" android:fontFamily="@font/poppins_regular"
-                    app:layout_constraintEnd_toEndOf="parent" app:layout_constraintTop_toTopOf="parent" />
-            </androidx.constraintlayout.widget.ConstraintLayout>
-
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rvRekomendasi"
-                android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:layout_marginTop="8dp" android:paddingStart="20dp" android:paddingEnd="20dp"
-                android:clipToPadding="false" android:orientation="horizontal"
-                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
-
+            <!-- PREVIEW UNIT BISNIS TERDEKAT -->
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

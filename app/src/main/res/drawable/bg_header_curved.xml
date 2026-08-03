@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="360dp"
+    android:height="260dp"
+    android:viewportWidth="360"
+    android:viewportHeight="260">
+
+    <!-- Gelombang Lapisan Belakang (Agak Transparan/Soft) -->
+    <path
+        android:fillColor="#80FF6600"
+        android:pathData="M0,0 H360 V190 C270,230 180,160 90,210 C45,235 0,220 0,220 Z" />
+
+    <!-- Gelombang Lapisan Depan (Oranye Utama) -->
+    <path
+        android:fillColor="@color/orange_primary"
+        android:pathData="M0,0 H360 V170 C280,220 200,150 100,200 C50,225 0,200 0,200 Z" />
+</vector>

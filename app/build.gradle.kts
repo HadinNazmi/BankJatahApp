@@ -1,7 +1,8 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
-    alias(libs.plugins.kotlin.serialization)  // ← tambah ini
+    alias(libs.plugins.kotlin.serialization)
+    id("com.google.gms.google-services")
 
 }
 
@@ -102,5 +103,10 @@ dependencies {
     implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
 
     implementation("com.getkeepsafe.taptargetview:taptargetview:1.13.3")
+
+    implementation(platform("com.google.firebase:firebase-bom:32.7.0"))
+    implementation("com.google.firebase:firebase-messaging-ktx")
+
+    implementation("androidx.core:core-ktx:1.13.1")
 
 }

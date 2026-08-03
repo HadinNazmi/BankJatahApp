@@ -34,11 +34,8 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import java.text.NumberFormat
 import java.util.Locale
-import android.Manifest
-import android.content.pm.PackageManager
-import androidx.core.content.ContextCompat
 import com.example.bankjatahapp.ui.component.TourHelper
-import com.google.android.gms.location.LocationServices
+import com.example.bankjatahapp.ui.unitbisnis.fragment.BantuanFaqFragment
 import kotlin.math.*
 
 class HomeNasabahFragment : Fragment() {
@@ -55,6 +52,9 @@ class HomeNasabahFragment : Fragment() {
     private var dataNasabah: NasabahData? = null
     private var dataRewardTersedia: Int = 0
     private var sudahLoad = false
+
+    // State sembunyikan saldo (Default diubah ke true agar tersembunyi saat pertama dibuka)
+    private var isSaldoHidden = true
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -82,7 +82,6 @@ class HomeNasabahFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        // Cek tour saat fragment kembali aktif (misal setelah dari pengaturan)
         if (sudahLoad && dataUser != null) {
             cekDanMulaiTour()
         }
@@ -91,20 +90,17 @@ class HomeNasabahFragment : Fragment() {
     private fun cekDanMulaiTour() {
         val activity = activity ?: return
         if (!TourHelper.sudahLihatTourNasabah(activity)) {
-            // Delay kecil supaya layout sudah ter-render sempurna
             binding.root.postDelayed({
                 if (_binding == null) return@postDelayed
                 TourHelper.mulaiTourNasabahHome(
-                    activity     = activity,
-                    viewSaldoTabungan  = binding.cardSaldoTabungan,   // sesuaikan ID view
+                    activity           = activity,
+                    viewSaldoTabungan  = binding.cardSaldoTabungan,
                     viewSaldoBonus     = binding.cardSaldoBonus,
                     viewLevel          = binding.tvLevelLabel,
                     viewPoin           = binding.tvTotalPoin,
                     viewTombolAksi     = binding.layoutMenuAksi,
                     viewUbTerdekat     = binding.rvUnitBisnisPreview
-                ) {
-                    // onSelesai — tidak perlu aksi tambahan
-                }
+                ) {}
             }, 800)
         }
     }
@@ -207,7 +203,7 @@ class HomeNasabahFragment : Fragment() {
                     .select { filter { eq("id_nasabah", idUser) } }
                     .decodeSingle<NasabahData>()
 
-                loadUnitBisnisPreview() // ← tambah di sini
+                loadUnitBisnisPreview()
 
                 systemConfig = client.postgrest
                     .from("system_config")
@@ -256,26 +252,19 @@ class HomeNasabahFragment : Fragment() {
                             user.namaLengkap
                         } catch (_: Exception) { "Unit Bisnis" }
                     }
-                    Triple(unit, nama, null)  // ← UBAH DI SINI
+                    Triple(unit, nama, null)
                 }
 
                 if (_binding == null) return@launch
                 binding.rvUnitBisnisPreview.layoutManager =
                     LinearLayoutManager(requireContext())
+
+                // Gunakan nama adapter persis seperti kode asli
                 binding.rvUnitBisnisPreview.adapter =
                     LokasiUnitBisnisAdapter(listWithNama)
 
             } catch (_: Exception) {}
         }
-    }
-
-    private fun hitungJarakKm(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Double {
-        val r = 6371.0
-        val dLat = Math.toRadians(lat2 - lat1)
-        val dLon = Math.toRadians(lon2 - lon1)
-        val a = sin(dLat / 2).pow(2) +
-                cos(Math.toRadians(lat1)) * cos(Math.toRadians(lat2)) * sin(dLon / 2).pow(2)
-        return r * 2 * atan2(sqrt(a), sqrt(1 - a))
     }
 
     private fun tampilkanData(
@@ -286,11 +275,11 @@ class HomeNasabahFragment : Fragment() {
     ) {
         binding.tvNamaUser.text      = user.namaLengkap
         binding.tvRoleUser.text      = "Nasabah"
-        binding.tvSaldoTabungan.text = formatRupiah(dompet.saldoNasabah)
-        binding.tvSaldoBonus.text    = formatRupiah(dompet.saldoAfiliasi)
         binding.tvTotalPoin.text      = dompet.poinReward.toString()
         binding.tvRewardTersedia.text = rewardTersedia.toString()
         binding.tvInfoReward.text     = "Ada $rewardTersedia reward yang bisa kamu tukar sekarang!"
+
+        renderSaldo()
 
         val totalKg = nasabah.totalSetoranLifetime ?: 0.0
         binding.tvSaldoMinyak.text = "$totalKg Kg"
@@ -304,6 +293,17 @@ class HomeNasabahFragment : Fragment() {
             "Level maksimum tercapai! 🎉"
         } else {
             "$progressPersen% menuju level ${level + 1}"
+        }
+    }
+
+    private fun renderSaldo() {
+        val dompet = dataDompet ?: return
+        if (isSaldoHidden) {
+            binding.tvSaldoTabungan.text = "••••••••"
+            binding.tvSaldoBonus.text    = "••••••••"
+        } else {
+            binding.tvSaldoTabungan.text = formatRupiah(dompet.saldoNasabah)
+            binding.tvSaldoBonus.text    = formatRupiah(dompet.saldoAfiliasi)
         }
     }
 
@@ -333,8 +333,25 @@ class HomeNasabahFragment : Fragment() {
             .commitAllowingStateLoss()
     }
 
+    private fun bukaHalamanBantuan() {
+        parentFragmentManager.beginTransaction()
+            .replace(R.id.fragmentContainer, BantuanFaqFragment())
+            .addToBackStack(null)
+            .commitAllowingStateLoss()
+    }
+
     private fun setupClickListeners() {
         binding.ivNotifikasi.setOnClickListener { bukaHalamanNotifikasi() }
+
+        // Tombol Pusat Bantuan di header kanan
+        binding.btnPusatBantuan.setOnClickListener { bukaHalamanBantuan() }
+
+        // Icon Mata untuk Toggle Sembunyikan Saldo
+        binding.btnToggleHideSaldo.setOnClickListener {
+            isSaldoHidden = !isSaldoHidden
+            renderSaldo()
+        }
+
         binding.btnCariUB.setOnClickListener {
             parentFragmentManager.beginTransaction()
                 .replace(R.id.fragmentContainer, LokasiUnitBisnisFragment())
@@ -353,19 +370,12 @@ class HomeNasabahFragment : Fragment() {
                 .addToBackStack(null)
                 .commitAllowingStateLoss()
         }
-        binding.tvLihatSemuaUB.setOnClickListener {
-            parentFragmentManager.beginTransaction()
-                .replace(R.id.fragmentContainer, LokasiUnitBisnisFragment())
-                .addToBackStack(null)
-                .commitAllowingStateLoss()
-        }
         binding.btnRequestPenarikan.setOnClickListener {
             parentFragmentManager.beginTransaction()
                 .replace(R.id.fragmentContainer, PenarikanNasabahFragment())
                 .addToBackStack(null)
                 .commitAllowingStateLoss()
         }
-        binding.tvLihatSemua.setOnClickListener { }
         binding.btnDaftarUnitBisnis.setOnClickListener { cekSyaratDanBukaRegistrasiUB() }
 
         binding.swipeRefresh.setColorSchemeColors(
@@ -374,7 +384,6 @@ class HomeNasabahFragment : Fragment() {
         binding.swipeRefresh.setOnRefreshListener {
             sudahLoad = false
             loadData()
-            // Matikan loading indicator setelah selesai
             binding.swipeRefresh.isRefreshing = false
         }
     }

@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:layout_marginBottom="6dp">
+    android:layout_marginBottom="2dp">
 
     <!-- Garis konektor kiri -->
     <LinearLayout
@@ -15,20 +15,20 @@
 
         <!-- Garis vertikal + horizontal connector -->
         <LinearLayout
-            android:layout_width="20dp"
+            android:layout_width="12dp"
             android:layout_height="match_parent"
             android:orientation="vertical"
             android:gravity="center_horizontal">
 
             <View
                 android:layout_width="2dp"
-                android:layout_height="24dp"
-                android:background="@color/orange_light" />
+                android:layout_height="18dp"
+                android:background="#FFCC80" />
 
             <View
-                android:layout_width="14dp"
+                android:layout_width="8dp"
                 android:layout_height="2dp"
-                android:background="@color/orange_light"
+                android:background="#FFCC80"
                 android:layout_gravity="end" />
 
         </LinearLayout>
@@ -40,13 +40,14 @@
             android:layout_weight="1"
             app:cardCornerRadius="10dp"
             app:cardElevation="1dp"
+            app:cardUseCompatPadding="true"
             app:cardBackgroundColor="#FFF8F3">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="12dp">
+                android:padding="8dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -54,10 +55,10 @@
                     android:orientation="horizontal"
                     android:gravity="center_vertical">
 
-                    <!-- Avatar G2 — lebih kecil, warna lebih muda -->
+                    <!-- Avatar G2 -->
                     <LinearLayout
-                        android:layout_width="36dp"
-                        android:layout_height="36dp"
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
                         android:background="@drawable/ic_bg_tab_inactive"
                         android:gravity="center">
 
@@ -66,7 +67,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="A"
-                            android:textSize="13sp"
+                            android:textSize="12sp"
                             android:textStyle="bold"
                             android:textColor="@color/orange_primary"
                             android:fontFamily="@font/poppins_bold" />
@@ -78,7 +79,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:orientation="vertical"
-                        android:layout_marginStart="10dp">
+                        android:layout_marginStart="8dp">
 
                         <LinearLayout
                             android:layout_width="wrap_content"
@@ -91,7 +92,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="Nama"
-                                android:textSize="13sp"
+                                android:textSize="12sp"
                                 android:textStyle="bold"
                                 android:textColor="@color/black"
                                 android:fontFamily="@font/poppins_semibold" />
@@ -100,10 +101,10 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text=" G2"
-                                android:textSize="10sp"
+                                android:textSize="9sp"
                                 android:textColor="@color/gray_text"
-                                android:fontFamily="@font/poppins_regular"
-                                android:layout_marginStart="4dp" />
+                                android:fontFamily="@font/poppins_bold"
+                                android:layout_marginStart="3dp" />
 
                         </LinearLayout>
 
@@ -112,10 +113,9 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="B1 • Pasif"
-                            android:textSize="11sp"
+                            android:textSize="10sp"
                             android:textColor="@color/gray_text"
-                            android:fontFamily="@font/poppins_regular"
-                            android:layout_marginTop="1dp" />
+                            android:fontFamily="@font/poppins_regular" />
 
                     </LinearLayout>
 
@@ -124,21 +124,21 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="0 Kg"
-                        android:textSize="13sp"
+                        android:textSize="12sp"
                         android:textStyle="bold"
                         android:textColor="@color/orange_primary"
                         android:fontFamily="@font/poppins_bold" />
 
                 </LinearLayout>
 
-                <!-- Container G3 (selalu tampil jika ada) -->
+                <!-- Container G3 -->
                 <LinearLayout
                     android:id="@+id/containerG3"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:layout_marginStart="12dp"
-                    android:layout_marginTop="6dp"
+                    android:layout_marginStart="6dp"
+                    android:layout_marginTop="4dp"
                     android:visibility="gone" />
 
             </LinearLayout>

@@ -18,9 +18,13 @@ import com.example.bankjatahapp.data.remote.SupabaseClient.client
 import com.example.bankjatahapp.databinding.ActivityLoginBinding
 import com.example.bankjatahapp.ui.nasabah.NasabahActivity
 import com.example.bankjatahapp.ui.unitbisnis.UnitBisnisActivity
+import com.google.firebase.messaging.FirebaseMessaging
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.auth.providers.builtin.Email
 import io.github.jan.supabase.postgrest.postgrest
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class LoginActivity : AppCompatActivity() {
@@ -207,8 +211,6 @@ class LoginActivity : AppCompatActivity() {
     }
 
     // ===== NAVIGASI SETELAH LOGIN =====
-    // Cek status_akun dulu sebelum navigasi
-    // Jika tidak aktif → logout paksa + tampilkan pesan error
     private suspend fun navigasiSetelahLogin() {
         try {
             val userId = client.auth.currentUserOrNull()?.id
@@ -221,7 +223,6 @@ class LoginActivity : AppCompatActivity() {
 
             // ===== CEK STATUS AKUN =====
             if (user.statusAkun != "aktif") {
-                // Logout paksa agar session tidak tersimpan di device
                 try { client.auth.signOut() } catch (_: Exception) {}
 
                 setLoading(false)
@@ -236,6 +237,20 @@ class LoginActivity : AppCompatActivity() {
                 }
                 showError(pesan)
                 return
+            }
+
+            // ===== SIMPAN FCM TOKEN SETELAH LOGIN BERHASIL =====
+            FirebaseMessaging.getInstance().token.addOnSuccessListener { token ->
+                lifecycleScope.launch(Dispatchers.IO) {
+                    try {
+                        val payload = buildJsonObject { put("fcm_token", token) }
+                        client.postgrest
+                            .from("users")
+                            .update(payload) {
+                                filter { eq("id_user", userId) }
+                            }
+                    } catch (_: Exception) {}
+                }
             }
 
             // Status aktif → navigasi ke halaman sesuai role
