@@ -133,6 +133,15 @@ class SetoranFragment : Fragment() {
         setupListeners()
         setupSearchNasabah()
         cekPengajuanBerhentiAktif()
+
+        // Cek jika ada data nasabah dari QR scan di nav bar
+        val idDariQr   = arguments?.getString("id_nasabah_dari_qr")
+        val namaDariQr = arguments?.getString("nama_nasabah_dari_qr")
+        if (!idDariQr.isNullOrEmpty() && !namaDariQr.isNullOrEmpty()) {
+            viewLifecycleOwner.lifecycleScope.launch {
+                cekUserByUuid(idDariQr)
+            }
+        }
     }
 
     private fun cekPengajuanBerhentiAktif() {
