@@ -124,8 +124,8 @@ serve(async (req) => {
         android: {
           priority: "high",
           notification: {
-            sound: "default",
-            channel_id: "bankjatah_channel"
+            sound: "notif_bankjatah",
+            channel_id: "bankjatah_channel_v2"
           }
         }
       }

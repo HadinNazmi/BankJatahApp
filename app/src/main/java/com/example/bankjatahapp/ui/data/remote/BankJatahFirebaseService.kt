@@ -5,6 +5,8 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.media.AudioAttributes
+import android.net.Uri
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import com.example.bankjatahapp.R
@@ -50,11 +52,23 @@ class BankJatahFirebaseService : FirebaseMessagingService() {
     }
 
     private fun tampilkanNotifikasi(title: String, body: String) {
-        val channelId = "bankjatah_channel"
+        val channelId = "bankjatah_channel_v2"
         val manager = getSystemService(Context.NOTIFICATION_SERVICE)
                 as NotificationManager
 
+        // Hapus channel lama jika masih ada
+        manager.deleteNotificationChannel("bankjatah_channel")
+
+        val soundUri = Uri.parse(
+            "android.resource://${packageName}/${R.raw.notif_bankjatah}"
+        )
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val audioAttributes = AudioAttributes.Builder()
+                .setUsage(AudioAttributes.USAGE_NOTIFICATION)
+                .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                .build()
+
             val channel = NotificationChannel(
                 channelId,
                 "Bank Jatah Notifikasi",
@@ -62,6 +76,7 @@ class BankJatahFirebaseService : FirebaseMessagingService() {
             ).apply {
                 description = "Notifikasi transaksi Bank Jatah Indonesia"
                 enableVibration(true)
+                setSound(soundUri, audioAttributes)
             }
             manager.createNotificationChannel(channel)
         }
@@ -81,6 +96,7 @@ class BankJatahFirebaseService : FirebaseMessagingService() {
             .setStyle(NotificationCompat.BigTextStyle().bigText(body))
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setAutoCancel(true)
+            .setSound(soundUri)
             .setContentIntent(pendingIntent)
             .build()
 
