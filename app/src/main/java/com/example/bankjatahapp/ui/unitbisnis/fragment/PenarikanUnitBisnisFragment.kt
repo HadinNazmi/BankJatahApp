@@ -12,6 +12,7 @@ import android.widget.Button
 import android.widget.Spinner
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
+import androidx.core.text.HtmlCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.example.bankjatahapp.R
@@ -120,38 +121,10 @@ class PenarikanUnitBisnisFragment : Fragment() {
                 binding.tvSaldoKomisiNilai.text   = formatRupiah(saldoKomisi)
                 binding.tvSaldoAfiliasiNilai.text = formatRupiah(saldoAfiliasi)
 
-                // ===== TAMPILKAN SYARAT DI SETIAP CARD =====
-                val cfg        = config
-                val threshold  = cfg?.thresholdSaldoNasabah ?: 120000.0
-                val minSisa    = cfg?.minSisaSaldoNasabah ?: 20000.0
-                val minBintang = cfg?.minBintangPenarikan ?: 3
-                val minKomisi  = cfg?.minPenarikanUnit ?: 50000.0
-                val minAfiliasi = cfg?.minPenarikanAfiliasi ?: 10000.0
-                val biayaInfo  = if (biayaAdmin > 0) formatRupiah(biayaAdmin) else "Gratis"
-
-                // Syarat saldo tabungan
-                binding.tvSyaratTabungan.text = buildString {
-                    append("• Saldo min. ${formatRupiah(threshold)} untuk mulai tarik\n")
-                    append("• Sisa saldo min. ${formatRupiah(minSisa)} setelah penarikan\n")
-                    append("• Minimal Bintang $minBintang\n")
-                    append("• Biaya admin: $biayaInfo")
-                }
-
-                // Syarat saldo komisi unit
-                binding.tvSyaratKomisi.text = buildString {
-                    append("• Min. penarikan: ${formatRupiah(minKomisi)}\n")
-                    append("• Minimal Bintang $minBintang\n")
-                    append("• Bisa ditarik sampai Rp 0\n")
-                    append("• Biaya admin: $biayaInfo")
-                }
-
-                // Syarat saldo bonus afiliasi
-                binding.tvSyaratAfiliasi.text = buildString {
-                    append("• Min. penarikan: ${formatRupiah(minAfiliasi)}\n")
-                    append("• Minimal Bintang $minBintang\n")
-                    append("• Bisa ditarik sampai Rp 0\n")
-                    append("• Biaya admin: $biayaInfo")
-                }
+                // Biarkan teks syarat di card pilihan jenis saldo kosong agar tetap clean
+                binding.tvSyaratTabungan.text = ""
+                binding.tvSyaratKomisi.text = ""
+                binding.tvSyaratAfiliasi.text = ""
 
                 // Rekening dari profil nasabah_data
                 val nasabah  = nasabahData
@@ -177,6 +150,43 @@ class PenarikanUnitBisnisFragment : Fragment() {
                 Toast.makeText(requireContext(), "Gagal memuat data: ${e.message}", Toast.LENGTH_LONG).show()
             }
         }
+    }
+
+    // FUNGSI CUSTOM POP-UP SYARAT PENARIKAN (BERSIH & RAPI DENGAN HTML)
+    private fun tampilkanDialogSyaratPenarikan() {
+        val cfg         = config
+        val threshold   = cfg?.thresholdSaldoNasabah ?: 120000.0
+        val minSisa     = cfg?.minSisaSaldoNasabah ?: 20000.0
+        val minBintang  = cfg?.minBintangPenarikan ?: 3
+        val minKomisi   = cfg?.minPenarikanUnit ?: 50000.0
+        val minAfiliasi = cfg?.minPenarikanAfiliasi ?: 10000.0
+        val biayaInfo   = if (biayaAdmin > 0) formatRupiah(biayaAdmin) else "Gratis"
+
+        val htmlSyarat = buildString {
+            append("<b>• Tabungan:</b> Saldo min. ${formatRupiah(threshold)}, sisa min. ${formatRupiah(minSisa)}.<br><br>")
+            append("<b>• Komisi Unit:</b> Min. penarikan ${formatRupiah(minKomisi)} (bisa ditarik sampai Rp 0).<br><br>")
+            append("<b>• Bonus Afiliasi:</b> Min. penarikan ${formatRupiah(minAfiliasi)} (bisa ditarik sampai Rp 0).<br><br>")
+            append("<b>• Ketentuan Umum:</b> Minimal level Bintang $minBintang untuk semua jenis penarikan.<br><br>")
+            append("<b>• Biaya Admin:</b> $biayaInfo.")
+        }
+
+        val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_syarat_penarikan, null)
+        val tvIsi = dialogView.findViewById<android.widget.TextView>(R.id.tvIsiSyarat)
+        val btnTutup = dialogView.findViewById<Button>(R.id.btnTutupSyarat)
+
+        tvIsi.text = HtmlCompat.fromHtml(htmlSyarat, HtmlCompat.FROM_HTML_MODE_COMPACT)
+
+        val dialog = AlertDialog.Builder(requireContext())
+            .setView(dialogView)
+            .create()
+
+        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+
+        btnTutup.setOnClickListener {
+            dialog.dismiss()
+        }
+
+        dialog.show()
     }
 
     private fun pilihJenis(jenis: String) {
@@ -242,7 +252,6 @@ class PenarikanUnitBisnisFragment : Fragment() {
         binding.cardRingkasan.visibility = View.GONE
     }
 
-    // Semua nilai dari system_config — tidak ada yang hardcode
     private fun cekSyaratPenarikan(jenis: String): String? {
         val cfg = config
         return when (jenis) {
@@ -314,6 +323,11 @@ class PenarikanUnitBisnisFragment : Fragment() {
     private fun setupListeners() {
         binding.btnBack.setOnClickListener { parentFragmentManager.popBackStack() }
 
+        // TOMBOL LIHAT SYARAT DI KARTU SALDO
+        binding.tvBtnInfoSyarat.setOnClickListener {
+            tampilkanDialogSyaratPenarikan()
+        }
+
         binding.optionTabungan.setOnClickListener { pilihJenis("tabungan") }
         binding.radioTabungan.setOnClickListener  { pilihJenis("tabungan") }
         binding.optionKomisi.setOnClickListener   { pilihJenis("komisi") }
@@ -343,7 +357,6 @@ class PenarikanUnitBisnisFragment : Fragment() {
         binding.btnAjukanPenarikan.setOnClickListener { ajukanPenarikan() }
     }
 
-    // DIALOG INPUT REKENING JIKA BELUM LENGKAP ATAU INGIN MENGUBAH
     private fun cekDanTampilkanDialogRekening(onRekeningLengkap: () -> Unit) {
         val nasabah = nasabahData
 
@@ -361,7 +374,6 @@ class PenarikanUnitBisnisFragment : Fragment() {
             .create()
         dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
 
-        // Setup spinner bank dari cache yang sudah diload
         var bankDipilihKode: String? = nasabah?.bankCode
         val namaBank = daftarBank.map { it.namaBank }
         val adapterSpinner = ArrayAdapter(
@@ -384,7 +396,6 @@ class PenarikanUnitBisnisFragment : Fragment() {
             override fun onNothingSelected(p: AdapterView<*>?) {}
         }
 
-        // Isi nilai parsial yang sudah ada jika ada
         etNoRek.setText(nasabah?.noRekening ?: "")
         etAtasNama.setText(nasabah?.atasNamaRekening ?: "")
 
@@ -407,7 +418,6 @@ class PenarikanUnitBisnisFragment : Fragment() {
                 return@setOnClickListener
             }
 
-            // LANGSUNG TUTUP POP-UP AGAR USER TIDAK KELIRU
             dialog.dismiss()
 
             viewLifecycleOwner.lifecycleScope.launch {
@@ -424,7 +434,6 @@ class PenarikanUnitBisnisFragment : Fragment() {
                         filter { eq("id_nasabah", idUser) }
                     }
 
-                    // Update cache lokal dan data rekening terpilih
                     nasabahData = nasabahData?.copy(
                         bankCode         = bankDipilihKode,
                         noRekening       = noRek,
@@ -432,12 +441,9 @@ class PenarikanUnitBisnisFragment : Fragment() {
                     )
                     rekeningDipilih = Triple(bankDipilihKode ?: "", noRek, atasNama)
 
-                    // Update Tampilan UI Rekening
                     tampilkanInfoRekening(bankDipilihKode ?: "", noRek, atasNama)
 
                     Toast.makeText(requireContext(), "✓ Rekening berhasil disimpan", Toast.LENGTH_SHORT).show()
-
-                    // Lanjut ke proses penarikan
                     onRekeningLengkap()
 
                 } catch (e: Exception) {
@@ -596,7 +602,6 @@ class PenarikanUnitBisnisFragment : Fragment() {
         val namaPemilik = rekeningDipilih.third
 
         if (kodeBank.isEmpty() || noRekening.isEmpty()) {
-            // Jika rekening kosong saat klik Ajukan, otomatis bukakan dialog input rekening
             cekDanTampilkanDialogRekening {
                 ajukanPenarikan()
             }

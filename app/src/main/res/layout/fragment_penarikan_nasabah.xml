@@ -74,6 +74,20 @@
                     android:textColor="#CCFFFFFF"
                     android:fontFamily="@font/poppins_regular"
                     app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toStartOf="@+id/tvBtnInfoSyarat"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <TextView
+                    android:id="@+id/tvBtnInfoSyarat"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Lihat Syarat ⓘ"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/white"
+                    android:fontFamily="@font/poppins_semibold"
+                    android:background="?attr/selectableItemBackground"
+                    android:padding="4dp"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
 
@@ -184,7 +198,7 @@
                             android:layout_height="wrap_content"
                             android:text=""
                             android:textSize="10sp"
-                            android:textColor="@color/text_tab_selector"
+                            android:textColor="#CCFFFFFF"
                             android:fontFamily="@font/poppins_regular"
                             android:layout_marginTop="4dp" />
 
@@ -197,7 +211,7 @@
                         android:text="Rp 0"
                         android:textSize="13sp"
                         android:textStyle="bold"
-                        android:textColor="@color/text_tab_selector"
+                        android:textColor="@color/white"
                         android:fontFamily="@font/poppins_bold" />
 
                 </LinearLayout>
@@ -218,7 +232,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:checked="false"
-                        android:buttonTint="@color/orange_primary" />
+                        android:buttonTint="@color/white" />
 
                     <LinearLayout
                         android:layout_width="0dp"
@@ -346,7 +360,7 @@
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
-        <!-- CARD REKENING TUJUAN (PERUBAHAN DISINI) -->
+        <!-- CARD REKENING TUJUAN -->
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -382,7 +396,6 @@
                     android:layout_marginTop="2dp"
                     android:layout_marginBottom="14dp" />
 
-                <!-- Spinner tetap ada untuk menampilkan data Triple dari Fragment -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -400,7 +413,6 @@
                     android:background="@drawable/ic_bg_tab_inactive"
                     android:padding="12dp"
                     android:enabled="false" />
-
 
             </LinearLayout>
         </androidx.cardview.widget.CardView>

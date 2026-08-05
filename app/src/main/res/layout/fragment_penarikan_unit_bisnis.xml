@@ -73,6 +73,21 @@
                     android:textColor="#CCFFFFFF"
                     android:fontFamily="@font/poppins_regular"
                     app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toStartOf="@+id/tvBtnInfoSyarat"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <!-- TOMBOL LIHAT SYARAT DI POJOK KANAN ATAS CARD -->
+                <TextView
+                    android:id="@+id/tvBtnInfoSyarat"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Lihat Syarat ⓘ"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/white"
+                    android:fontFamily="@font/poppins_semibold"
+                    android:background="?attr/selectableItemBackground"
+                    android:padding="4dp"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toTopOf="parent" />
 
@@ -183,7 +198,7 @@
                             android:layout_height="wrap_content"
                             android:text=""
                             android:textSize="10sp"
-                            android:textColor="@color/text_tab_selector"
+                            android:textColor="#CCFFFFFF"
                             android:fontFamily="@font/poppins_regular"
                             android:layout_marginTop="4dp" />
                     </LinearLayout>
@@ -195,7 +210,7 @@
                         android:text="Rp 0"
                         android:textSize="13sp"
                         android:textStyle="bold"
-                        android:textColor="@color/text_tab_selector"
+                        android:textColor="@color/white"
                         android:fontFamily="@font/poppins_bold" />
                 </LinearLayout>
 
@@ -217,7 +232,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:checked="false"
-                        android:buttonTint="@color/orange_primary" />
+                        android:buttonTint="@color/white" />
 
                     <LinearLayout
                         android:layout_width="0dp"
@@ -282,7 +297,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:checked="false"
-                        android:buttonTint="@color/orange_primary" />
+                        android:buttonTint="@color/white" />
 
                     <LinearLayout
                         android:layout_width="0dp"
@@ -334,15 +349,13 @@
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
-
-
         <!-- CARD FORM NOMINAL -->
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="20dp"
             android:layout_marginEnd="20dp"
-            android:layout_marginTop="12dp"
+            android:layout_marginTop="16dp"
             app:cardCornerRadius="16dp"
             app:cardElevation="4dp"
             app:cardBackgroundColor="@color/white">
@@ -464,10 +477,6 @@
                     android:background="@drawable/ic_bg_tab_inactive"
                     android:padding="12dp"
                     android:enabled="false" />
-
-
-
-
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
