@@ -1,5 +1,7 @@
 package com.example.bankjatahapp.ui.unitbisnis.fragment
 
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.view.Gravity
 import android.view.LayoutInflater
@@ -151,11 +153,21 @@ class BantuanFaqFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         setupClickListeners()
         buildAllFaq()
+        setupKontakWhatsapp()
     }
 
     private fun setupClickListeners() {
         binding.btnBack.setOnClickListener {
             parentFragmentManager.popBackStack()
+        }
+    }
+
+    private fun setupKontakWhatsapp() {
+        binding.btnHubungiWa.setOnClickListener {
+            val nomorAdmin = "6282283884373"
+            val pesan = "Halo Admin Bank Jatah, saya ingin bertanya mengenai layanan dan fitur aplikasi. Mohon bantuannya."
+            val url = "https://wa.me/$nomorAdmin?text=${Uri.encode(pesan)}"
+            startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
         }
     }
 

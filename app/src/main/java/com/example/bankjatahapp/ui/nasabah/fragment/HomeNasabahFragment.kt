@@ -53,7 +53,7 @@ class HomeNasabahFragment : Fragment() {
     private var dataRewardTersedia: Int = 0
     private var sudahLoad = false
 
-    // State sembunyikan saldo (Default diubah ke true agar tersembunyi saat pertama dibuka)
+    // State sembunyikan saldo default = TRUE (Otomatis tersembunyi saat app dibuka)
     private var isSaldoHidden = true
 
     override fun onCreateView(
@@ -87,21 +87,23 @@ class HomeNasabahFragment : Fragment() {
         }
     }
 
+    // ===== PERBAIKAN TARGET TOUR AGAR TEPAT DAN TIDAK MELESET =====
     private fun cekDanMulaiTour() {
         val activity = activity ?: return
         if (!TourHelper.sudahLihatTourNasabah(activity)) {
-            binding.root.postDelayed({
-                if (_binding == null) return@postDelayed
+            // Menggunakan binding.root.post agar dihitung pasca-layout selesai ter-draw sempurna
+            binding.root.post {
+                if (_binding == null) return@post
                 TourHelper.mulaiTourNasabahHome(
                     activity           = activity,
-                    viewSaldoTabungan  = binding.cardSaldoTabungan,
-                    viewSaldoBonus     = binding.cardSaldoBonus,
+                    viewSaldoTabungan  = binding.tvSaldoTabungan,
+                    viewSaldoBonus     = binding.tvSaldoBonus,
                     viewLevel          = binding.tvLevelLabel,
                     viewPoin           = binding.tvTotalPoin,
                     viewTombolAksi     = binding.layoutMenuAksi,
                     viewUbTerdekat     = binding.rvUnitBisnisPreview
                 ) {}
-            }, 800)
+            }
         }
     }
 
@@ -259,7 +261,6 @@ class HomeNasabahFragment : Fragment() {
                 binding.rvUnitBisnisPreview.layoutManager =
                     LinearLayoutManager(requireContext())
 
-                // Gunakan nama adapter persis seperti kode asli
                 binding.rvUnitBisnisPreview.adapter =
                     LokasiUnitBisnisAdapter(listWithNama)
 
