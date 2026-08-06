@@ -389,12 +389,6 @@ class PengaturanUnitBisnisFragment : Fragment() {
         }
 
         // Di PengaturanAkunFragment (Nasabah):
-        binding.itemTourPanduan.setOnClickListener {
-            val activity = activity ?: return@setOnClickListener
-            TourHelper.resetSemuaTour(activity)
-            (activity as? com.example.bankjatahapp.ui.unitbisnis.UnitBisnisActivity)
-                ?.navigateTo(R.id.nav_home)
-        }
 
 // Di PengaturanUnitBisnisFragment (UB) — sama persis
 

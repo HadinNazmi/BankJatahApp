@@ -14,6 +14,9 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.example.bankjatahapp.R
 import com.example.bankjatahapp.databinding.FragmentBantuanFaqBinding
+import com.example.bankjatahapp.ui.component.TourHelper
+import com.example.bankjatahapp.ui.nasabah.NasabahActivity
+import com.example.bankjatahapp.ui.unitbisnis.UnitBisnisActivity
 
 class BantuanFaqFragment : Fragment() {
 
@@ -160,6 +163,17 @@ class BantuanFaqFragment : Fragment() {
         binding.btnBack.setOnClickListener {
             parentFragmentManager.popBackStack()
         }
+
+        binding.itemTourPanduan.setOnClickListener {
+            val activity = activity ?: return@setOnClickListener
+            TourHelper.resetSemuaTour(activity)
+
+            // Deteksi secara aman apakah user sedang aktif sebagai Nasabah atau Unit Bisnis
+            when (activity) {
+                is NasabahActivity -> activity.navigateTo(R.id.nav_home)
+                is UnitBisnisActivity -> activity.navigateTo(R.id.nav_home)
+            }
+        }
     }
 
     private fun setupKontakWhatsapp() {
@@ -186,7 +200,6 @@ class BantuanFaqFragment : Fragment() {
             val itemView = buatItemFaq(pertanyaan, jawaban)
             container.addView(itemView)
 
-            // Divider kecuali item terakhir
             if (index < faqList.size - 1) {
                 val divider = View(requireContext()).apply {
                     layoutParams = LinearLayout.LayoutParams(
@@ -210,7 +223,6 @@ class BantuanFaqFragment : Fragment() {
         val dp12 = (12 * resources.displayMetrics.density).toInt()
         val dp16 = (16 * resources.displayMetrics.density).toInt()
 
-        // Container utama item
         val itemLayout = LinearLayout(requireContext()).apply {
             orientation = LinearLayout.VERTICAL
             layoutParams = LinearLayout.LayoutParams(
@@ -224,7 +236,6 @@ class BantuanFaqFragment : Fragment() {
             )
         }
 
-        // Row pertanyaan + icon chevron
         val rowPertanyaan = LinearLayout(requireContext()).apply {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
@@ -251,7 +262,6 @@ class BantuanFaqFragment : Fragment() {
         rowPertanyaan.addView(tvPertanyaan)
         rowPertanyaan.addView(ivChevron)
 
-        // Jawaban (awalnya tersembunyi)
         val tvJawaban = TextView(requireContext()).apply {
             text = jawaban
             textSize = 12f
@@ -262,7 +272,6 @@ class BantuanFaqFragment : Fragment() {
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT
             )
-            // Latar belakang jawaban sedikit berbeda
             setBackgroundColor(
                 ContextCompat.getColor(requireContext(), R.color.background)
             )
@@ -271,7 +280,6 @@ class BantuanFaqFragment : Fragment() {
         itemLayout.addView(rowPertanyaan)
         itemLayout.addView(tvJawaban)
 
-        // Toggle expand/collapse saat klik
         itemLayout.setOnClickListener {
             if (tvJawaban.visibility == View.GONE) {
                 tvJawaban.visibility = View.VISIBLE

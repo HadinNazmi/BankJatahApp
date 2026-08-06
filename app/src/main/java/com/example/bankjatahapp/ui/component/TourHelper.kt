@@ -55,7 +55,7 @@ object TourHelper {
             .textTypeface(Typeface.SANS_SERIF)
             .dimColor(android.R.color.black)
             .drawShadow(true)
-            .cancelable(true)
+            .cancelable(false)
             .tintTarget(true)
             .transparentTarget(false)
     }
@@ -67,8 +67,10 @@ object TourHelper {
         viewSaldoBonus: android.view.View,
         viewLevel: android.view.View,
         viewPoin: android.view.View,
-        viewTombolAksi: android.view.View,
-        viewUbTerdekat: android.view.View,
+        viewTomboCariUB: android.view.View,
+        viewTombolReward: android.view.View,
+        viewTombolRiwayat: android.view.View,
+        viewTombolRequest: android.view.View,
         onSelesai: () -> Unit
     ) {
         TapTargetSequence(activity)
@@ -94,15 +96,26 @@ object TourHelper {
                     "Terkumpul dari setiap setoran minyak. Tukarkan poin dengan hadiah menarik di menu Reward!"
                 ),
                 buatTarget(
-                    viewTombolAksi,
-                    "Menu Aksi Cepat",
-                    "Akses cepat ke Reward, Riwayat, dan Penarikan Saldo dari sini."
+                    viewTomboCariUB,
+                    "Cari UB Terdekat",
+                    "Menampilkan Unit Bisnis terdekat dari tempat anda"
                 ),
                 buatTarget(
-                    viewUbTerdekat,
-                    "Unit Bisnis Terdekat",
-                    "Tempat kamu menyetorkan minyak jelantah. Tap untuk lihat detail lokasi dan jam operasional."
-                )
+                    viewTombolReward,
+                    "Menukarkan Poin",
+                    "Menukarkan poin yang sudah terkumpul menjadi reward"
+                ),
+                buatTarget(
+                    viewTombolRiwayat,
+                    "Melihat Riwayat Transaksi",
+                    "Melihat riwayat transaksi yang sudah anda lakukan"
+                ),
+                buatTarget(
+                    viewTombolRequest,
+                    "Pengajuan Penarikan Saldo",
+                    "Melakukan penarikan saldo tabungan dan bonus anda"
+                ),
+
             )
             .listener(object : TapTargetSequence.Listener {
                 override fun onSequenceFinish() {

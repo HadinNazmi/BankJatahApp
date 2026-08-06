@@ -100,8 +100,10 @@ class HomeNasabahFragment : Fragment() {
                     viewSaldoBonus     = binding.tvSaldoBonus,
                     viewLevel          = binding.tvLevelLabel,
                     viewPoin           = binding.tvTotalPoin,
-                    viewTombolAksi     = binding.layoutMenuAksi,
-                    viewUbTerdekat     = binding.rvUnitBisnisPreview
+                    viewTomboCariUB    = binding.btnCariUB,
+                    viewTombolReward   = binding.btnReward,
+                    viewTombolRiwayat  = binding.btnRiwayat,
+                    viewTombolRequest  = binding.btnRequestPenarikan
                 ) {}
             }
         }
