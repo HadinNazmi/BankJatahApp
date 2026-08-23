@@ -14,6 +14,7 @@ import com.example.bankjatahapp.ui.unitbisnis.fragment.SetoranFragment
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.postgrest.postgrest
 import androidx.lifecycle.lifecycleScope
+import com.example.bankjatahapp.ui.auth.DataChecker
 import kotlinx.coroutines.launch
 
 class UnitBisnisActivity : AppCompatActivity() {
@@ -30,16 +31,23 @@ class UnitBisnisActivity : AppCompatActivity() {
         binding = ActivityUnitBisnisBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        if (savedInstanceState == null) {
-            loadFragment(HomeUnitBisnisFragment(), R.id.nav_home)
+        // ✅ Cek kelengkapan data saat activity dibuka
+        lifecycleScope.launch {
+            DataChecker.cekDanArahkanJikaDataKurang(this@UnitBisnisActivity) {
+                if (savedInstanceState == null) {
+                    loadFragment(HomeUnitBisnisFragment(), R.id.nav_home)
+                }
+                binding.bottomNav.selectedItemId = R.id.nav_home
+                setupBottomNav()
+            }
         }
-        binding.bottomNav.selectedItemId = R.id.nav_home
+    }
 
+    private fun setupBottomNav() {
         binding.bottomNav.setOnItemSelectedListener { item ->
             val now = System.currentTimeMillis()
             if (now - lastNavTime < 400L) return@setOnItemSelectedListener true
             lastNavTime = now
-
             if (item.itemId == currentNavId) return@setOnItemSelectedListener true
 
             when (item.itemId) {
@@ -51,7 +59,6 @@ class UnitBisnisActivity : AppCompatActivity() {
             true
         }
 
-        // FAB QR Scan
         binding.fabQrScan.setOnClickListener {
             bukaDialogQrNavBar()
         }

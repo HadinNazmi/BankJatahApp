@@ -10,6 +10,7 @@ import com.example.bankjatahapp.data.model.PengajuanBerhenti
 import com.example.bankjatahapp.data.model.User
 import com.example.bankjatahapp.data.remote.SupabaseClient.client
 import com.example.bankjatahapp.databinding.ActivityNasabahBinding
+import com.example.bankjatahapp.ui.auth.DataChecker
 import com.example.bankjatahapp.ui.nasabah.fragment.HomeNasabahFragment
 import com.example.bankjatahapp.ui.nasabah.fragment.ProfilNasabahFragment
 import com.example.bankjatahapp.ui.nasabah.fragment.RewardFragment
@@ -32,12 +33,19 @@ class NasabahActivity : AppCompatActivity() {
         binding = ActivityNasabahBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        if (savedInstanceState == null) {
-            loadFragment(HomeNasabahFragment(), R.id.nav_home)
+        // ✅ Cek kelengkapan data saat activity dibuka
+        lifecycleScope.launch {
+            DataChecker.cekDanArahkanJikaDataKurang(this@NasabahActivity) {
+                if (savedInstanceState == null) {
+                    loadFragment(HomeNasabahFragment(), R.id.nav_home)
+                }
+                binding.bottomNav.selectedItemId = R.id.nav_home
+                setupBottomNav()
+            }
         }
+    }
 
-        binding.bottomNav.selectedItemId = R.id.nav_home
-
+    private fun setupBottomNav() {
         binding.bottomNav.setOnItemSelectedListener { item ->
             val now = System.currentTimeMillis()
             if (now - lastNavTime < 400L) return@setOnItemSelectedListener true
@@ -53,7 +61,6 @@ class NasabahActivity : AppCompatActivity() {
             true
         }
 
-        // FAB QR Scan untuk Nasabah (Menampilkan info profil, bukan ke setoran)
         binding.fabQrScan.setOnClickListener {
             bukaDialogQrNasabah()
         }

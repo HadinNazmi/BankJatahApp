@@ -13,6 +13,7 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import com.example.bankjatahapp.R
+import com.example.bankjatahapp.data.model.NasabahData
 import com.example.bankjatahapp.data.model.User
 import com.example.bankjatahapp.data.remote.SupabaseClient.client
 import com.example.bankjatahapp.databinding.ActivityLoginBinding
@@ -239,7 +240,7 @@ class LoginActivity : AppCompatActivity() {
                 return
             }
 
-            // ===== SIMPAN FCM TOKEN SETELAH LOGIN BERHASIL =====
+            // ===== SIMPAN FCM TOKEN =====
             FirebaseMessaging.getInstance().token.addOnSuccessListener { token ->
                 lifecycleScope.launch(Dispatchers.IO) {
                     try {
@@ -253,15 +254,64 @@ class LoginActivity : AppCompatActivity() {
                 }
             }
 
-            // Status aktif → navigasi ke halaman sesuai role
+            // ===== CEK KELENGKAPAN DATA SEBELUM KE HOME =====
+            val nasabah = try {
+                client.postgrest
+                    .from("nasabah_data")
+                    .select { filter { eq("id_nasabah", userId) } }
+                    .decodeSingle<NasabahData>()
+            } catch (e: Exception) {
+                android.util.Log.e("CEK_DATA", "nasabah_data error: ${e.message}")
+                null
+            }
+
+            val sudahAdaNoTelp = !user.noTelp.isNullOrEmpty()
+            val sudahAdaNik    = !nasabah?.nik.isNullOrEmpty()
+// ✅ Email dummy dari migrasi dianggap belum ada
+            val sudahAdaEmail  = user.email.isNotEmpty()
+                    && !user.email.contains("@bankjatah.local")
+            val dataLengkap    = sudahAdaNoTelp && sudahAdaNik && sudahAdaEmail
+
+            android.util.Log.d("CEK_DATA", """
+    noTelp: ${user.noTelp} → sudahAda: $sudahAdaNoTelp
+    nik: ${nasabah?.nik} → sudahAda: $sudahAdaNik
+    email: ${user.email} → sudahAda: $sudahAdaEmail
+    dataLengkap: $dataLengkap
+""".trimIndent())
+
             setLoading(false)
+
+            if (!dataLengkap) {
+                // ✅ Ada data yang belum lengkap → ke LengkapiDataActivity
+                val intent = Intent(this@LoginActivity, LengkapiDataActivity::class.java).apply {
+                    putExtra("id_user",          userId)
+                    putExtra("role_user",         user.role)
+                    putExtra("sudah_ada_no_telp", sudahAdaNoTelp)
+                    putExtra("sudah_ada_nik",     sudahAdaNik)
+                    putExtra("sudah_ada_email",   sudahAdaEmail)
+                    //  Kirim nilai aktual supaya bisa ditampilkan di form
+                    putExtra("nilai_no_telp",     user.noTelp ?: "")
+                    putExtra("nilai_nik",         nasabah?.nik ?: "")
+                    putExtra("nilai_email",       user.email)
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                }
+                startActivity(intent)
+                finish()
+                return
+            }
+
+            // ✅ Data lengkap → langsung ke home sesuai role
             when (user.role) {
                 "nasabah" -> {
-                    startActivity(Intent(this@LoginActivity, NasabahActivity::class.java))
+                    startActivity(Intent(this@LoginActivity, NasabahActivity::class.java).apply {
+                        flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                    })
                     finish()
                 }
                 "unit_bisnis" -> {
-                    startActivity(Intent(this@LoginActivity, UnitBisnisActivity::class.java))
+                    startActivity(Intent(this@LoginActivity, UnitBisnisActivity::class.java).apply {
+                        flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                    })
                     finish()
                 }
                 else -> showError("Role tidak dikenali: ${user.role}")
