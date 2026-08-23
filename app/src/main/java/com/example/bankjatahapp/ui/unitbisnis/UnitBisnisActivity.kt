@@ -15,6 +15,7 @@ import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.postgrest.postgrest
 import androidx.lifecycle.lifecycleScope
 import com.example.bankjatahapp.ui.auth.DataChecker
+import com.example.bankjatahapp.ui.auth.PermissionDialogFragment
 import kotlinx.coroutines.launch
 
 class UnitBisnisActivity : AppCompatActivity() {
@@ -41,6 +42,9 @@ class UnitBisnisActivity : AppCompatActivity() {
                 setupBottomNav()
             }
         }
+
+        // Panggil pop-up izin otomatis saat masuk halaman utama
+        PermissionDialogFragment.periksaDanTampilkan(supportFragmentManager, this)
     }
 
     private fun setupBottomNav() {

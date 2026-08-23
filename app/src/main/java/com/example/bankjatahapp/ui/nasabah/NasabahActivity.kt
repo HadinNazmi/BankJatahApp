@@ -11,6 +11,7 @@ import com.example.bankjatahapp.data.model.User
 import com.example.bankjatahapp.data.remote.SupabaseClient.client
 import com.example.bankjatahapp.databinding.ActivityNasabahBinding
 import com.example.bankjatahapp.ui.auth.DataChecker
+import com.example.bankjatahapp.ui.auth.PermissionDialogFragment
 import com.example.bankjatahapp.ui.nasabah.fragment.HomeNasabahFragment
 import com.example.bankjatahapp.ui.nasabah.fragment.ProfilNasabahFragment
 import com.example.bankjatahapp.ui.nasabah.fragment.RewardFragment
@@ -43,6 +44,9 @@ class NasabahActivity : AppCompatActivity() {
                 setupBottomNav()
             }
         }
+
+        // Panggil pop-up izin otomatis saat masuk halaman utama
+        PermissionDialogFragment.periksaDanTampilkan(supportFragmentManager, this)
     }
 
     private fun setupBottomNav() {
