@@ -1,6 +1,7 @@
 package com.example.bankjatahapp.ui.unitbisnis
 
 import android.os.Bundle
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import com.example.bankjatahapp.R
@@ -26,6 +27,8 @@ class UnitBisnisActivity : AppCompatActivity() {
     private var currentNavId = R.id.nav_home
 
     private var lastResumeTime = 0L
+
+    private var backPressedTime = 0L
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -239,6 +242,29 @@ class UnitBisnisActivity : AppCompatActivity() {
             hasil.isNotEmpty()
         } catch (_: Exception) {
             false
+        }
+    }
+
+    @Deprecated("Deprecated in Java")
+    override fun onBackPressed() {
+        // Jika ada fragment di backstack, pop dulu
+        if (supportFragmentManager.backStackEntryCount > 0) {
+            supportFragmentManager.popBackStack()
+            return
+        }
+
+        // Jika sudah di halaman utama, cek double back press
+        val now = System.currentTimeMillis()
+        if (now - backPressedTime < 2000L) {
+            // Tekan 2x dalam 2 detik → keluar tapi tidak kill
+            moveTaskToBack(true)
+        } else {
+            backPressedTime = now
+            Toast.makeText(
+                this,
+                "Tekan sekali lagi untuk keluar",
+                Toast.LENGTH_SHORT
+            ).show()
         }
     }
 }
