@@ -139,6 +139,10 @@ class PenarikanNasabahFragment : Fragment() {
 
             } catch (e: Exception) {
                 Toast.makeText(requireContext(), "Gagal memuat data: ${e.message}", Toast.LENGTH_LONG).show()
+            } finally {
+                if (_binding != null) {
+                    binding.swipeRefresh.isRefreshing = false
+                }
             }
         }
     }
@@ -308,6 +312,12 @@ class PenarikanNasabahFragment : Fragment() {
 
         binding.btnAjukanPenarikan.setOnClickListener {
             ajukanPenarikan()
+        }
+        binding.swipeRefresh.setColorSchemeColors(
+            requireContext().getColor(R.color.orange_primary)
+        )
+        binding.swipeRefresh.setOnRefreshListener {
+            loadData()
         }
     }
 

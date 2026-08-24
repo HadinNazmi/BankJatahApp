@@ -81,7 +81,12 @@ class RiwayatFragment : Fragment() {
         binding.tabSetoran.setOnClickListener { toggleFilterKonten("setoran") }
         binding.tabPenarikan.setOnClickListener { toggleFilterKonten("penarikan") }
         binding.tabReward.setOnClickListener { toggleFilterKonten("reward") }
-
+        binding.swipeRefresh.setColorSchemeColors(
+            requireContext().getColor(R.color.orange_primary)
+        )
+        binding.swipeRefresh.setOnRefreshListener {
+            loadData()
+        }
     }
 
     private fun toggleFilterKonten(tipe: String) {
@@ -184,7 +189,9 @@ class RiwayatFragment : Fragment() {
 
             } catch (e: Exception) {
                 Toast.makeText(requireContext(), "Gagal: ${e.message}", Toast.LENGTH_LONG).show()
-            }
+            } finally {
+            if (_binding != null) binding.swipeRefresh.isRefreshing = false
+        }
         }
     }
 
