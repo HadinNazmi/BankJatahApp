@@ -24,12 +24,12 @@ class PermissionDialogFragment : BottomSheetDialogFragment() {
         ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
         val lokasiGranted = permissions[Manifest.permission.ACCESS_FINE_LOCATION] ?: false
+        val kameraGranted = permissions[Manifest.permission.CAMERA] ?: false
         val notifGranted = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             permissions[Manifest.permission.POST_NOTIFICATIONS] ?: false
         } else true
 
-        // Jika sudah diizinkan, tutup pop-up kustom kita
-        if (lokasiGranted || notifGranted) {
+        if (lokasiGranted || kameraGranted || notifGranted) {
             dismiss()
         }
     }
@@ -58,7 +58,8 @@ class PermissionDialogFragment : BottomSheetDialogFragment() {
     private fun mintaIzinSistem() {
         val listIzin = mutableListOf(
             Manifest.permission.ACCESS_FINE_LOCATION,
-            Manifest.permission.ACCESS_COARSE_LOCATION
+            Manifest.permission.ACCESS_COARSE_LOCATION,
+            Manifest.permission.CAMERA
         )
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             listIzin.add(Manifest.permission.POST_NOTIFICATIONS)
@@ -69,12 +70,12 @@ class PermissionDialogFragment : BottomSheetDialogFragment() {
     companion object {
         fun periksaDanTampilkan(fragmentManager: FragmentManager, context: Context) {
             val lokasiOk = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+            val kameraOk = ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
             val notifOk = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
             } else true
 
-            // Jika ada yang belum diizinkan, munculkan pop-up
-            if (!lokasiOk || !notifOk) {
+            if (!lokasiOk || !kameraOk || !notifOk) {
                 val dialog = PermissionDialogFragment()
                 dialog.show(fragmentManager, "PermissionDialog")
             }
