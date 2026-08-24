@@ -168,12 +168,25 @@ class PengaturanUnitBisnisFragment : Fragment() {
     private fun setupPeta() {
         val unit = cachedUnit ?: return
 
-        org.osmdroid.config.Configuration.getInstance().userAgentValue = requireContext().packageName
+        org.osmdroid.config.Configuration.getInstance().apply {
+            userAgentValue    = requireContext().packageName
+            osmdroidBasePath  = requireContext().cacheDir
+            osmdroidTileCache = java.io.File(requireContext().cacheDir, "osmdroid")
+        }
+
         val lat = unit.lokasiLat.takeIf { it != 0.0 } ?: 0.5071
         val lon = unit.lokasiLong.takeIf { it != 0.0 } ?: 101.4478
 
         binding.mapViewEdit.apply {
-            setTileSource(org.osmdroid.tileprovider.tilesource.TileSourceFactory.MAPNIK)
+            setTileSource(org.osmdroid.tileprovider.tilesource.XYTileSource(
+                "Carto",
+                0, 19, 256, ".png",
+                arrayOf(
+                    "https://a.basemaps.cartocdn.com/light_all/",
+                    "https://b.basemaps.cartocdn.com/light_all/",
+                    "https://c.basemaps.cartocdn.com/light_all/"
+                )
+            ))  // ← kurung tutup XYTileSource + setTileSource
             setMultiTouchControls(true)
             controller.setZoom(15.0)
             controller.setCenter(org.osmdroid.util.GeoPoint(lat, lon))

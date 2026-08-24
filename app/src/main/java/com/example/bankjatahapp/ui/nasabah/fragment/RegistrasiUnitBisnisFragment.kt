@@ -106,7 +106,12 @@ class RegistrasiUnitBisnisFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        Configuration.getInstance().userAgentValue = requireContext().packageName
+        // Fix tile blocked — set semua config OSMDroid di sini
+        Configuration.getInstance().apply {
+            userAgentValue    = requireContext().packageName
+            osmdroidBasePath  = requireContext().cacheDir
+            osmdroidTileCache = java.io.File(requireContext().cacheDir, "osmdroid")
+        }
         _binding = FragmentRegistrasiUnitBisnisBinding.inflate(inflater, container, false)
         return binding.root
     }
@@ -139,7 +144,15 @@ class RegistrasiUnitBisnisFragment : Fragment() {
     // ===== SETUP MAP =====
     private fun setupMap() {
         binding.mapView.apply {
-            setTileSource(TileSourceFactory.MAPNIK)
+            setTileSource(org.osmdroid.tileprovider.tilesource.XYTileSource(
+                "Carto",
+                0, 19, 256, ".png",
+                arrayOf(
+                    "https://a.basemaps.cartocdn.com/light_all/",
+                    "https://b.basemaps.cartocdn.com/light_all/",
+                    "https://c.basemaps.cartocdn.com/light_all/"
+                )
+            ))
             setMultiTouchControls(true)
             controller.setZoom(13.0)
             controller.setCenter(GeoPoint(defaultLat, defaultLon))
