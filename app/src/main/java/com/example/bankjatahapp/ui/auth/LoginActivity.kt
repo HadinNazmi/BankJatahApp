@@ -41,6 +41,16 @@ class LoginActivity : AppCompatActivity() {
         setupSyaratKetentuan()
         setupTabToggle()
         setupClickListeners()
+
+        // ===== HANDLE DEEP LINK KONFIRMASI EMAIL =====
+        val uri = intent?.data
+        if (uri != null && uri.scheme == "bankjatah" && uri.host == "confirm") {
+            Toast.makeText(
+                this,
+                "✓ Email berhasil dikonfirmasi! Silakan login.",
+                Toast.LENGTH_LONG
+            ).show()
+        }
     }
 
     private fun setupSyaratKetentuan() {
