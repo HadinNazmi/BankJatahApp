@@ -38,8 +38,9 @@ object DataChecker {
 
             val sudahAdaNoTelp = !user.noTelp.isNullOrEmpty()
             val sudahAdaNik    = !nasabah?.nik.isNullOrEmpty()
-            val sudahAdaEmail  = user.email.isNotEmpty()
+            val sudahAdaEmail = user.email.isNotEmpty()
                     && !user.email.contains("@bankjatah.local")
+                    && !user.email.contains("@bankjatah.id")
             val dataLengkap    = sudahAdaNoTelp && sudahAdaNik && sudahAdaEmail
 
             if (!dataLengkap) {
@@ -52,6 +53,7 @@ object DataChecker {
                     putExtra("nilai_no_telp",     user.noTelp ?: "")
                     putExtra("nilai_nik",         nasabah?.nik ?: "")
                     putExtra("nilai_email",       user.email)
+                    putExtra("nilai_nama",        user.namaLengkap)
                     flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                 }
                 context.startActivity(intent)

@@ -268,8 +268,9 @@ class LoginActivity : AppCompatActivity() {
             val sudahAdaNoTelp = !user.noTelp.isNullOrEmpty()
             val sudahAdaNik    = !nasabah?.nik.isNullOrEmpty()
 // ✅ Email dummy dari migrasi dianggap belum ada
-            val sudahAdaEmail  = user.email.isNotEmpty()
+            val sudahAdaEmail = user.email.isNotEmpty()
                     && !user.email.contains("@bankjatah.local")
+                    && !user.email.contains("@bankjatah.id")
             val dataLengkap    = sudahAdaNoTelp && sudahAdaNik && sudahAdaEmail
 
             android.util.Log.d("CEK_DATA", """
@@ -282,17 +283,17 @@ class LoginActivity : AppCompatActivity() {
             setLoading(false)
 
             if (!dataLengkap) {
-                // ✅ Ada data yang belum lengkap → ke LengkapiDataActivity
+                //  Ada data yang belum lengkap → ke LengkapiDataActivity
                 val intent = Intent(this@LoginActivity, LengkapiDataActivity::class.java).apply {
                     putExtra("id_user",          userId)
                     putExtra("role_user",         user.role)
                     putExtra("sudah_ada_no_telp", sudahAdaNoTelp)
                     putExtra("sudah_ada_nik",     sudahAdaNik)
                     putExtra("sudah_ada_email",   sudahAdaEmail)
-                    //  Kirim nilai aktual supaya bisa ditampilkan di form
                     putExtra("nilai_no_telp",     user.noTelp ?: "")
                     putExtra("nilai_nik",         nasabah?.nik ?: "")
                     putExtra("nilai_email",       user.email)
+                    putExtra("nilai_nama",        user.namaLengkap) // ✅ tambah ini
                     flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                 }
                 startActivity(intent)
@@ -300,7 +301,7 @@ class LoginActivity : AppCompatActivity() {
                 return
             }
 
-            // ✅ Data lengkap → langsung ke home sesuai role
+            // Data lengkap → langsung ke home sesuai role
             when (user.role) {
                 "nasabah" -> {
                     startActivity(Intent(this@LoginActivity, NasabahActivity::class.java).apply {

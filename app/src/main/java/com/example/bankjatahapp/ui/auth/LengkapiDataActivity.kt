@@ -7,7 +7,8 @@ import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
-import com.example.bankjatahapp.data.remote.SupabaseClient
+import com.example.bankjatahapp.data.model.NasabahData
+import com.example.bankjatahapp.data.model.User
 import com.example.bankjatahapp.data.remote.SupabaseClient.client
 import com.example.bankjatahapp.databinding.ActivityLengkapiDataBinding
 import com.example.bankjatahapp.ui.nasabah.NasabahActivity
@@ -18,11 +19,15 @@ import kotlinx.coroutines.launch
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 
+
 class LengkapiDataActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityLengkapiDataBinding
     private var idUser: String = ""
     private var roleUser: String = ""
+
+    // Flag apakah ini kondisi migrasi (email masih default nomorhp@bankjatah.id)
+    private var isMigrasi: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -44,46 +49,93 @@ class LengkapiDataActivity : AppCompatActivity() {
         val noTelpAwal = intent.getStringExtra("nilai_no_telp") ?: ""
         val nikAwal    = intent.getStringExtra("nilai_nik")     ?: ""
         val emailAwal  = intent.getStringExtra("nilai_email")   ?: ""
+        val namaAwal   = intent.getStringExtra("nilai_nama")    ?: ""
 
-        // ===== NOMOR TELEPON =====
-        binding.etNoTelp.setText(noTelpAwal)
-        if (sudahAdaNoTelp) {
-            binding.etNoTelp.isEnabled = false
-            binding.tilNoTelp.alpha    = 0.6f
-            binding.tilNoTelp.helperText = "✓ Sudah terdaftar, tidak dapat diubah"
-            binding.tilNoTelp.isHelperTextEnabled = true
-        }
+        // ✅ Deteksi kondisi migrasi:
+        // Email masih format nomorhp@bankjatah.id atau @bankjatah.local
+        isMigrasi = emailAwal.contains("@bankjatah.id") ||
+                emailAwal.contains("@bankjatah.local")
 
-        // ===== NIK =====
-        binding.etNik.setText(nikAwal)
-        if (sudahAdaNik) {
-            binding.etNik.isEnabled = false
-            binding.tilNik.alpha    = 0.6f
-            binding.tilNik.helperText = "✓ Sudah terdaftar, tidak dapat diubah"
-            binding.tilNik.isHelperTextEnabled = true
-        }
+        if (isMigrasi) {
+            // ===== MODE MIGRASI — semua field bisa diedit =====
+            binding.tvSubtitle.text =
+                "Selamat datang! Mohon lengkapi dan perbarui data Anda untuk melanjutkan."
 
-        // ===== EMAIL =====
-        // Jangan tampilkan email dummy @bankjatah.local
-        val emailTampil = if (emailAwal.contains("@bankjatah.local")) "" else emailAwal
-        binding.etEmail.setText(emailTampil)
-        if (sudahAdaEmail && emailTampil.isNotEmpty()) {
-            binding.etEmail.isEnabled = false
-            binding.tilEmail.alpha    = 0.6f
-            binding.tilEmail.helperText = "✓ Sudah terdaftar, tidak dapat diubah"
-            binding.tilEmail.isHelperTextEnabled = true
-        }
+            // Nama lengkap — tampilkan yang sudah ada, bisa diedit
+            binding.etNama.setText(namaAwal)
+            binding.etNama.isEnabled  = true
+            binding.tilNama.alpha     = 1.0f
+            binding.tilNama.visibility = View.VISIBLE
 
-        // Subtitle dinamis
-        val missing = mutableListOf<String>()
-        if (!sudahAdaNoTelp) missing.add("nomor telepon")
-        if (!sudahAdaNik)    missing.add("NIK")
-        if (!sudahAdaEmail || emailTampil.isEmpty()) missing.add("email")
+            // Nomor telepon — bisa diedit, cek duplikat
+            binding.etNoTelp.setText(noTelpAwal)
+            binding.etNoTelp.isEnabled = true
+            binding.tilNoTelp.alpha    = 1.0f
 
-        binding.tvSubtitle.text = if (missing.isEmpty()) {
-            "Semua data sudah lengkap. Silakan lanjutkan."
+            // NIK — wajib diisi
+            binding.etNik.setText(nikAwal)
+            binding.etNik.isEnabled = true
+            binding.tilNik.alpha    = 1.0f
+
+            // Email — bisa diedit, sembunyikan email default
+            val emailTampil = if (isMigrasi) "" else emailAwal
+            binding.etEmail.setText(emailTampil)
+            binding.etEmail.isEnabled = true
+            binding.tilEmail.alpha    = 1.0f
+
+            // Password — wajib buat baru
+            binding.tilPasswordBaru.visibility       = View.VISIBLE
+            binding.tilKonfirmasiPassword.visibility = View.VISIBLE
+            binding.tvLabelPassword.visibility       = View.VISIBLE
+            binding.tvSubtitlePassword.visibility    = View.VISIBLE
+
+            // Info migrasi
+            binding.cardInfoMigrasi.visibility = View.VISIBLE
+
         } else {
-            "Lengkapi ${missing.joinToString(" dan ")} Anda untuk melanjutkan."
+            // ===== MODE NORMAL — field yang sudah ada di-disable =====
+            binding.tvSubtitle.text =
+                "Lengkapi data Anda untuk melanjutkan."
+
+            // Nama — sembunyikan jika tidak relevan
+            binding.tilNama.visibility = View.GONE
+
+            // Info migrasi disembunyikan
+            binding.cardInfoMigrasi.visibility = View.GONE
+
+            // Nomor telepon
+            binding.etNoTelp.setText(noTelpAwal)
+            if (sudahAdaNoTelp) {
+                binding.etNoTelp.isEnabled    = false
+                binding.tilNoTelp.alpha       = 0.6f
+                binding.tilNoTelp.helperText  = "✓ Sudah terdaftar, tidak dapat diubah"
+                binding.tilNoTelp.isHelperTextEnabled = true
+            }
+
+            // NIK
+            binding.etNik.setText(nikAwal)
+            if (sudahAdaNik) {
+                binding.etNik.isEnabled    = false
+                binding.tilNik.alpha       = 0.6f
+                binding.tilNik.helperText  = "✓ Sudah terdaftar, tidak dapat diubah"
+                binding.tilNik.isHelperTextEnabled = true
+            }
+
+            // Email
+            val emailTampil = if (emailAwal.contains("@bankjatah.local")) "" else emailAwal
+            binding.etEmail.setText(emailTampil)
+            if (sudahAdaEmail && emailTampil.isNotEmpty()) {
+                binding.etEmail.isEnabled    = false
+                binding.tilEmail.alpha       = 0.6f
+                binding.tilEmail.helperText  = "✓ Sudah terdaftar, tidak dapat diubah"
+                binding.tilEmail.isHelperTextEnabled = true
+            }
+
+            // Password
+            binding.tilPasswordBaru.visibility       = View.VISIBLE
+            binding.tilKonfirmasiPassword.visibility = View.VISIBLE
+            binding.tvLabelPassword.visibility       = View.VISIBLE
+            binding.tvSubtitlePassword.visibility    = View.VISIBLE
         }
     }
 
@@ -91,23 +143,59 @@ class LengkapiDataActivity : AppCompatActivity() {
         binding.btnLanjutkan.setOnClickListener {
             simpanData()
         }
+
+        binding.btnLogout.setOnClickListener {
+            tampilkanDialogLogout()
+        }
+    }
+
+    private fun tampilkanDialogLogout() {
+        androidx.appcompat.app.AlertDialog.Builder(this)
+            .setTitle("Keluar")
+            .setMessage("Anda akan keluar dari akun ini. Data yang belum disimpan akan hilang.\n\nAnda bisa login kembali kapan saja.")
+            .setPositiveButton("Ya, Keluar") { _, _ ->
+                lifecycleScope.launch {
+                    try {
+                        client.auth.signOut()
+                    } catch (_: Exception) {}
+
+                    val intent = Intent(this@LengkapiDataActivity, LoginActivity::class.java).apply {
+                        flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                    }
+                    startActivity(intent)
+                    finish()
+                }
+            }
+            .setNegativeButton("Batal", null)
+            .show()
     }
 
     private fun simpanData() {
+        val noTelp         = binding.etNoTelp.text.toString().trim()
+        val nik            = binding.etNik.text.toString().trim()
+        val email          = binding.etEmail.text.toString().trim()
+        val nama           = binding.etNama.text.toString().trim()
+        val passwordBaru   = binding.etPasswordBaru.text.toString().trim()
+        val konfirmasiPass = binding.etKonfirmasiPassword.text.toString().trim()
+
         val sudahAdaNoTelp = intent.getBooleanExtra("sudah_ada_no_telp", false)
         val sudahAdaNik    = intent.getBooleanExtra("sudah_ada_nik", false)
         val sudahAdaEmail  = intent.getBooleanExtra("sudah_ada_email", false)
         val emailAwal      = intent.getStringExtra("nilai_email") ?: ""
-        val emailDummy     = emailAwal.contains("@bankjatah.local")
+        val emailDummy     = emailAwal.contains("@bankjatah.local") ||
+                emailAwal.contains("@bankjatah.id")
 
-        val noTelp           = binding.etNoTelp.text.toString().trim()
-        val nik              = binding.etNik.text.toString().trim()
-        val email            = binding.etEmail.text.toString().trim()
-        val passwordBaru     = binding.etPasswordBaru.text.toString().trim()
-        val konfirmasiPass   = binding.etKonfirmasiPassword.text.toString().trim()
+        // ===== VALIDASI NAMA (mode migrasi) =====
+        if (isMigrasi) {
+            if (nama.isEmpty()) {
+                binding.tilNama.error = "Nama lengkap tidak boleh kosong"
+                return
+            }
+            binding.tilNama.error = null
+        }
 
         // ===== VALIDASI NOMOR TELEPON =====
-        if (!sudahAdaNoTelp) {
+        if (!sudahAdaNoTelp || isMigrasi) {
             val noTelpBersih = noTelp.replace(Regex("[\\s\\-()]"), "")
             if (noTelp.isEmpty()) {
                 binding.tilNoTelp.error = "Nomor telepon tidak boleh kosong"
@@ -121,7 +209,7 @@ class LengkapiDataActivity : AppCompatActivity() {
         }
 
         // ===== VALIDASI NIK =====
-        if (!sudahAdaNik) {
+        if (!sudahAdaNik || isMigrasi) {
             if (nik.isEmpty()) {
                 binding.tilNik.error = "NIK tidak boleh kosong"
                 return
@@ -134,19 +222,24 @@ class LengkapiDataActivity : AppCompatActivity() {
         }
 
         // ===== VALIDASI EMAIL =====
-        if (!sudahAdaEmail || emailDummy) {
+        if (!sudahAdaEmail || emailDummy || isMigrasi) {
             if (email.isEmpty()) {
                 binding.tilEmail.error = "Email tidak boleh kosong"
                 return
             }
-            if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
                 binding.tilEmail.error = "Format email tidak valid"
+                return
+            }
+            // Pastikan tidak pakai email default lagi
+            if (email.contains("@bankjatah.id") || email.contains("@bankjatah.local")) {
+                binding.tilEmail.error = "Gunakan email pribadi Anda, bukan email sistem"
                 return
             }
             binding.tilEmail.error = null
         }
 
-        // ===== VALIDASI PASSWORD BARU =====
+        // ===== VALIDASI PASSWORD =====
         if (passwordBaru.isEmpty()) {
             binding.tilPasswordBaru.error = "Password baru tidak boleh kosong"
             return
@@ -171,7 +264,7 @@ class LengkapiDataActivity : AppCompatActivity() {
 
         lifecycleScope.launch {
             try {
-                val noTelpFormatted = if (!sudahAdaNoTelp) {
+                val noTelpFormatted = run {
                     val bersih = noTelp.replace(Regex("[\\s\\-()]"), "")
                     when {
                         bersih.startsWith("+62") -> "0" + bersih.removePrefix("+62")
@@ -179,10 +272,10 @@ class LengkapiDataActivity : AppCompatActivity() {
                         bersih.startsWith("0")   -> bersih
                         else                     -> "0$bersih"
                     }
-                } else null
+                }
 
-                // ===== CEK NIK TIDAK DIPAKAI AKUN LAIN =====
-                if (!sudahAdaNik && nik.isNotEmpty()) {
+                // ===== CEK NIK DUPLIKAT =====
+                if (!sudahAdaNik || isMigrasi) {
                     val cekNik = client.postgrest
                         .from("nasabah_data")
                         .select { filter {
@@ -197,8 +290,8 @@ class LengkapiDataActivity : AppCompatActivity() {
                     }
                 }
 
-                // ===== CEK NO TELP TIDAK DIPAKAI AKUN LAIN =====
-                if (!sudahAdaNoTelp && noTelpFormatted != null) {
+                // ===== CEK NO TELP DUPLIKAT =====
+                if (!sudahAdaNoTelp || isMigrasi) {
                     val cekTelp = client.postgrest
                         .from("users")
                         .select { filter {
@@ -213,14 +306,27 @@ class LengkapiDataActivity : AppCompatActivity() {
                     }
                 }
 
+                // ===== CEK EMAIL DUPLIKAT =====
+                if (!sudahAdaEmail || emailDummy || isMigrasi) {
+                    val cekEmail = client.postgrest
+                        .from("users")
+                        .select { filter {
+                            eq("email", email)
+                            neq("id_user", idUser)
+                        }}
+                        .data
+                    if (cekEmail != "[]") {
+                        setLoading(false)
+                        binding.tilEmail.error = "Email ini sudah digunakan akun lain"
+                        return@launch
+                    }
+                }
+
                 // ===== UPDATE TABEL USERS =====
                 val updateUsers = buildJsonObject {
-                    if (!sudahAdaNoTelp && noTelpFormatted != null) {
-                        put("no_telp", noTelpFormatted)
-                    }
-                    if ((!sudahAdaEmail || emailDummy) && email.isNotEmpty()) {
-                        put("email", email)
-                    }
+                    if (isMigrasi && nama.isNotEmpty()) put("nama_lengkap", nama)
+                    if (!sudahAdaNoTelp || isMigrasi) put("no_telp", noTelpFormatted)
+                    if (!sudahAdaEmail || emailDummy || isMigrasi) put("email", email)
                 }
                 if (updateUsers.isNotEmpty()) {
                     client.postgrest.from("users").update(updateUsers) {
@@ -231,17 +337,17 @@ class LengkapiDataActivity : AppCompatActivity() {
                 // ===== UPDATE EMAIL & PASSWORD DI AUTH =====
                 try {
                     client.auth.updateUser {
-                        if ((!sudahAdaEmail || emailDummy) && email.isNotEmpty()) {
+                        if (!sudahAdaEmail || emailDummy || isMigrasi) {
                             this.email = email
+                            // TODO: Aktifkan konfirmasi email via SMTP saat sudah ready
+                            // Saat ini langsung update tanpa konfirmasi
                         }
-                        // ✅ Update password baru tanpa perlu password lama
-                        // karena user sudah login dengan session aktif
                         this.password = passwordBaru
                     }
                 } catch (_: Exception) {}
 
                 // ===== UPDATE TABEL NASABAH_DATA =====
-                if (!sudahAdaNik && nik.isNotEmpty()) {
+                if (!sudahAdaNik || isMigrasi) {
                     val updateNasabah = buildJsonObject {
                         put("nik", nik)
                     }
@@ -253,7 +359,7 @@ class LengkapiDataActivity : AppCompatActivity() {
                 setLoading(false)
                 Toast.makeText(
                     this@LengkapiDataActivity,
-                    "✓ Data dan password berhasil disimpan!",
+                    "✓ Data berhasil disimpan!",
                     Toast.LENGTH_SHORT
                 ).show()
 
@@ -287,8 +393,8 @@ class LengkapiDataActivity : AppCompatActivity() {
         binding.progressBar.visibility = if (loading) View.VISIBLE else View.GONE
     }
 
+    @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
-        // Blokir back button — user harus isi data dulu
         Toast.makeText(
             this,
             "Harap lengkapi data Anda terlebih dahulu",
