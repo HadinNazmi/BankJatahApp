@@ -334,19 +334,32 @@ class LengkapiDataActivity : AppCompatActivity() {
                     }
                 }
 
-                // ===== UPDATE EMAIL & PASSWORD DI AUTH =====
+                // ===== UPDATE EMAIL LEWAT AUTH DULU (trigger kirim konfirmasi) =====
                 try {
                     client.auth.updateUser {
-                        if (!sudahAdaEmail || emailDummy || isMigrasi) {
-                            this.email = email
-                            // TODO: Aktifkan konfirmasi email via SMTP saat sudah ready
-                            // Saat ini langsung update tanpa konfirmasi
-                        }
-                        this.password = passwordBaru
+                        this.email = email
                     }
                 } catch (_: Exception) {}
 
-                // ===== UPDATE TABEL NASABAH_DATA =====
+// ===== UPDATE PASSWORD LEWAT RPC =====
+                try {
+                    val payloadRpc = buildJsonObject {
+                        put("p_id_user",       idUser)
+                        put("p_email_baru",    email)
+                        put("p_password_baru", passwordBaru)
+                    }
+                    client.postgrest.rpc("fn_update_auth_user", payloadRpc)
+                } catch (e: Exception) {
+                    setLoading(false)
+                    Toast.makeText(
+                        this@LengkapiDataActivity,
+                        "Gagal update akun: ${e.message}",
+                        Toast.LENGTH_LONG
+                    ).show()
+                    return@launch
+                }
+
+// ===== UPDATE TABEL NASABAH_DATA =====
                 if (!sudahAdaNik || isMigrasi) {
                     val updateNasabah = buildJsonObject {
                         put("nik", nik)
@@ -356,14 +369,33 @@ class LengkapiDataActivity : AppCompatActivity() {
                     }
                 }
 
-                setLoading(false)
-                Toast.makeText(
-                    this@LengkapiDataActivity,
-                    "✓ Data berhasil disimpan!",
-                    Toast.LENGTH_SHORT
-                ).show()
+// ===== LOGOUT & TAMPILKAN DIALOG KONFIRMASI EMAIL =====
+                try { client.auth.signOut() } catch (_: Exception) {}
 
-                navigasiKeHome()
+                setLoading(false)
+
+                androidx.appcompat.app.AlertDialog.Builder(this@LengkapiDataActivity)
+                    .setTitle("✓ Data Berhasil Disimpan!")
+                    .setMessage(
+                        "Email konfirmasi telah dikirim ke:\n$email\n\n" +
+                                "Silakan buka email tersebut dan klik link konfirmasi.\n\n" +
+                                "📌 Jika email tidak ditemukan di inbox, silakan cek folder " +
+                                "Spam atau Promosi dan tandai sebagai 'Bukan Spam'.\n\n" +
+                                "Setelah konfirmasi, login menggunakan:\n" +
+                                "• Email: $email\n" +
+                                "• Nomor HP: $noTelp\n" +
+                                "• Password yang baru Anda buat\n\n" +
+                                "Pastikan Anda mengingat email dan password Anda."
+                    )
+                    .setCancelable(false)
+                    .setPositiveButton("Mengerti, Lanjut Login") { _, _ ->
+                        val intent = Intent(this@LengkapiDataActivity, LoginActivity::class.java).apply {
+                            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                        }
+                        startActivity(intent)
+                        finish()
+                    }
+                    .show()
 
             } catch (e: Exception) {
                 setLoading(false)

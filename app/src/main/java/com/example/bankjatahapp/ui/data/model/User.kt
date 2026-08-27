@@ -16,7 +16,7 @@ data class User(
     val namaLengkap: String = "",
 
     @SerialName("role")
-    val role: String = "",              // "nasabah" atau "unit_bisnis"
+    val role: String = "",
 
     @SerialName("url_foto_profil")
     val urlFotoProfil: String? = null,
@@ -25,5 +25,14 @@ data class User(
     val noTelp: String? = null,
 
     @SerialName("status_akun")
-    val statusAkun: String = "aktif"
+    val statusAkun: String = "aktif",
+
+    @SerialName("fcm_token")
+    val fcmToken: String? = null,
+
+    @SerialName("created_at")
+    val createdAt: String? = null,
+
+    @SerialName("updated_at")
+    val updatedAt: String? = null
 )

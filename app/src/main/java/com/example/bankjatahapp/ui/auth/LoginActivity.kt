@@ -345,7 +345,10 @@ class LoginActivity : AppCompatActivity() {
         msg?.contains("Invalid login credentials") == true ->
             "Email/Password salah"
         msg?.contains("Email not confirmed") == true ->
-            "Email belum dikonfirmasi, cek inbox kamu"
+            "Email belum dikonfirmasi. Cek inbox ${
+                if (modLogin == "email") binding.etEmail.text.toString()
+                else "email yang Anda daftarkan"
+            } dan klik link konfirmasi terlebih dahulu."
         msg?.contains("network") == true ||
                 msg?.contains("Unable to resolve host") == true ->
             "Tidak ada koneksi internet"

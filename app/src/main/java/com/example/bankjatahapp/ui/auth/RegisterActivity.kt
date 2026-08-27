@@ -263,7 +263,7 @@ class RegisterActivity : AppCompatActivity() {
         }
     }
 
-    // ✅ FUNGSI BARU: Dialog konfirmasi email setelah register sukses
+    //  FUNGSI BARU: Dialog konfirmasi email setelah register sukses
     private fun tampilkanDialogKonfirmasiEmail(
         email: String,
         adaRefWarning: Boolean,
@@ -272,6 +272,8 @@ class RegisterActivity : AppCompatActivity() {
         val pesan = buildString {
             append("Akun berhasil dibuat!\n\n")
             append("Kami telah mengirim email konfirmasi ke:\n$email\n\n")
+            append("📌 Jika email tidak ditemukan di inbox, silakan cek folder ")
+            append("Spam atau Promosi dan tandai sebagai 'Bukan Spam'.")
             append("Silakan buka email tersebut dan klik link konfirmasi sebelum login.")
             if (adaRefWarning) {
                 append("\n\n⚠ Kode referral \"$kodeReferal\" tidak ditemukan. Akun dibuat tanpa sponsor.")
