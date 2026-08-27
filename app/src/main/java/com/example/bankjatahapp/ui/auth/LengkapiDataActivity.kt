@@ -37,8 +37,26 @@ class LengkapiDataActivity : AppCompatActivity() {
         idUser   = intent.getStringExtra("id_user")   ?: ""
         roleUser = intent.getStringExtra("role_user") ?: "nasabah"
 
+        tampilkanDialogPeringatan()
         setupUI()
         setupClickListeners()
+    }
+
+    private fun tampilkanDialogPeringatan() {
+        androidx.appcompat.app.AlertDialog.Builder(this)
+            .setTitle("⚠ Perhatian Penting")
+            .setMessage(
+                "Pastikan Anda mengisi data yang ASLI dan VALID.\n\n" +
+                        "Seluruh proses transaksi, pencairan saldo, dan verifikasi " +
+                        "identitas akan menggunakan data yang Anda masukkan.\n\n" +
+                        "Data palsu atau tidak valid dapat menyebabkan " +
+                        "akun Anda dibekukan oleh admin."
+            )
+            .setCancelable(false)
+            .setPositiveButton("Saya Mengerti, Lanjutkan") { dialog, _ ->
+                dialog.dismiss()
+            }
+            .show()
     }
 
     private fun setupUI() {
