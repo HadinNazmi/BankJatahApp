@@ -43,6 +43,17 @@ class LupaPasswordActivity : AppCompatActivity() {
             }
         }
 
+        binding.fabWhatsapp.setOnClickListener {
+            val nomorAdmin = "6282283884373" // ← ganti dengan nomor WA admin
+            val pesan = "Halo Admin Bank Jatah Indonesia, saya ingin menanyakan NIK yang terdaftar untuk akun saya di aplikasi Bank Jatah."
+            val url = "https://wa.me/$nomorAdmin?text=${android.net.Uri.encode(pesan)}"
+            try {
+                startActivity(android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(url)))
+            } catch (e: Exception) {
+                android.widget.Toast.makeText(this, "WhatsApp tidak terinstall", android.widget.Toast.LENGTH_SHORT).show()
+            }
+        }
+
         binding.btnVerifikasi.setOnClickListener {
             val nik  = binding.etNik.text.toString().trim()
             val noHp = binding.etNoHp.text.toString().trim()
